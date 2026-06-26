@@ -57,7 +57,7 @@ jobs:
       - name: Neutralize pre-installed MinGW toolchains
         run: |
           if (Test-Path "C:\mingw64") { Rename-Item -Path "C:\mingw64" -NewName "mingw64.BAK" -Force; Write-Output "Renamed C:\mingw64" }
-          if (Test-Path "C:\Strawberry\c\bin\gcc.exe") { Rename-Item -Path "C:\Strawberry\c\bin\gcc.exe" -NewName "gcc.exe.bak" -Force; Write-Output "Renamed C:\Strawberry\c\bin\gcc.exe" }
+          if (Test-Path "C:\Strawberry\c") { Rename-Item -Path "C:\Strawberry\c" -NewName "c.BAK" -Force; Write-Output "Renamed C:\Strawberry\c" }
 
       - name: Cache npm
         uses: actions/cache@v4
