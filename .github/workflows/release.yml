@@ -71,6 +71,7 @@ jobs:
       - name: Build Tauri (${{ matrix.arch }})
         run: |
           if ("${{ matrix.dlltool }}" -ne "") { $env:DLLTOOL = "${{ matrix.dlltool }}" }
+          $env:GCC_INSTALL_PREFIX = if ("${{ matrix.arch }}" -eq "x86") { "C:\msys64\mingw32" } else { "C:\msys64\mingw64" }
           $env:SUPABASE_URL = "${{ secrets.SUPABASE_URL }}"
           $env:SUPABASE_ANON_KEY = "${{ secrets.SUPABASE_ANON_KEY }}"
           npx tauri build --bundles msi --target ${{ matrix.rust-target }}

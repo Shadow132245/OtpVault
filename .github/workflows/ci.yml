@@ -54,6 +54,17 @@ jobs:
       - name: Add MSYS2 MinGW to PATH
         run: echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
+      - name: Debug MSYS2 installation
+        run: |
+          Write-Output "=== Checking C:\msys64 ==="
+          if (Test-Path "C:\msys64") { Get-ChildItem "C:\msys64" -Depth 0 } else { Write-Output "C:\msys64 does NOT exist" }
+          if (Test-Path "C:\msys64\mingw64") { Get-ChildItem "C:\msys64\mingw64" -Depth 0 } else { Write-Output "C:\msys64\mingw64 does NOT exist" }
+          if (Test-Path "C:\msys64\mingw64\bin") { Get-ChildItem "C:\msys64\mingw64\bin\gcc*" } else { Write-Output "C:\msys64\mingw64\bin does NOT exist" }
+          if (Test-Path "C:\msys64\mingw64\bin") { Get-ChildItem "C:\msys64\mingw64\bin\ld*" } else { Write-Output "C:\msys64\mingw64\bin does NOT exist" }
+          Write-Output "=== Checking other MinGW ==="
+          if (Test-Path "C:\mingw64") { Write-Output "C:\mingw64 EXISTS" } else { Write-Output "C:\mingw64 does NOT exist" }
+          if (Test-Path "C:\Strawberry\c") { Write-Output "C:\Strawberry\c EXISTS" } else { Write-Output "C:\Strawberry\c does NOT exist" }
+
       - name: Cache npm
         uses: actions/cache@v4
         with:
@@ -74,6 +85,7 @@ jobs:
       - name: Build Tauri (${{ matrix.arch }})
         run: |
           if ("${{ matrix.dlltool }}" -ne "") { $env:DLLTOOL = "${{ matrix.dlltool }}" }
+          $env:GCC_INSTALL_PREFIX = if ("${{ matrix.arch }}" -eq "x86") { "C:\msys64\mingw32" } else { "C:\msys64\mingw64" }
           $env:SUPABASE_URL = "${{ secrets.SUPABASE_URL }}"
           $env:SUPABASE_ANON_KEY = "${{ secrets.SUPABASE_ANON_KEY }}"
           npx tauri build --bundles msi --target ${{ matrix.rust-target }}
