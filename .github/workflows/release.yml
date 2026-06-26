@@ -51,11 +51,6 @@ jobs:
       - name: Add MSYS2 MinGW to PATH
         run: echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-      - name: Neutralize broken ld.exe from pre-installed MinGW
-        run: |
-          if (Test-Path "C:\mingw64\bin\ld.exe") { Rename-Item -LiteralPath "C:\mingw64\bin\ld.exe" -NewName "ld.exe.BAK" -Force; Write-Output "Renamed C:\mingw64\bin\ld.exe" }
-          if (Test-Path "C:\Strawberry\c\bin\ld.exe") { Rename-Item -LiteralPath "C:\Strawberry\c\bin\ld.exe" -NewName "ld.exe.BAK" -Force; Write-Output "Renamed C:\Strawberry\c\bin\ld.exe" }
-
       - name: Cache npm
         uses: actions/cache@v4
         with:
