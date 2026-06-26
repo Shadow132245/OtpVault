@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OtpVault — Secure 2FA Authenticator</title>
+<meta name="description" content="A secure, zero-knowledge desktop 2FA authenticator. Encrypted vault, cloud backup, open source.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #0b0d1a;
+    color: #e2e8f0;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  a { color: #818cf8; text-decoration: none; }
+  a:hover { color: #a5b4fc; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* Nav */
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px; max-width: 1100px; margin: 0 auto;
+  }
+  nav .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 18px; color: #fff;
+  }
+  nav .logo svg { width: 28px; height: 28px; }
+  nav .links { display: flex; gap: 20px; align-items: center; }
+  nav .links a { font-size: 14px; color: #94a3b8; transition: color .2s; }
+  nav .links a:hover { color: #fff; }
+  .nav-cta {
+    padding: 8px 18px; background: #6366f1; color: #fff !important;
+    border-radius: 8px; font-size: 13px !important; font-weight: 600;
+    transition: background .2s;
+  }
+  .nav-cta:hover { background: #4f46e5 !important; }
+
+  /* Hero */
+  .hero {
+    padding: 80px 24px 100px;
+    text-align: center;
+    background: linear-gradient(180deg, #0b0d1a 0%, #111327 50%, #0b0d1a 100%);
+    position: relative;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,.15) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-badge {
+    display: inline-block; padding: 6px 14px; background: rgba(99,102,241,.15);
+    border: 1px solid rgba(99,102,241,.3); border-radius: 20px;
+    font-size: 12px; color: #818cf8; font-weight: 500; margin-bottom: 24px;
+  }
+  .hero h1 {
+    font-size: clamp(36px, 6vw, 60px); font-weight: 800;
+    letter-spacing: -1.5px; line-height: 1.1;
+    background: linear-gradient(135deg, #fff 30%, #818cf8 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: 16px;
+  }
+  .hero p {
+    font-size: 18px; color: #94a3b8; max-width: 520px; margin: 0 auto 36px;
+  }
+  .hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 28px; background: #6366f1; color: #fff !important;
+    border-radius: 12px; font-size: 16px; font-weight: 600;
+    transition: all .2s; border: none; cursor: pointer;
+  }
+  .btn-primary:hover { background: #4f46e5; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(99,102,241,.3); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 28px; background: rgba(255,255,255,.06); color: #e2e8f0 !important;
+    border-radius: 12px; font-size: 16px; font-weight: 500; border: 1px solid rgba(255,255,255,.1);
+    transition: all .2s;
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.2); }
+
+  /* App Mockup */
+  .mockup {
+    margin-top: 60px; position: relative;
+    display: inline-block; max-width: 100%;
+  }
+  .mockup-window {
+    width: 100%; max-width: 720px; border-radius: 16px;
+    border: 1px solid rgba(255,255,255,.08);
+    background: #13152a; overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,.5);
+  }
+  .mockup-bar {
+    display: flex; align-items: center; gap: 8px; padding: 12px 16px;
+    background: rgba(255,255,255,.04); border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .mockup-dot:nth-child(1) { background: #ef4444; }
+  .mockup-dot:nth-child(2) { background: #f59e0b; }
+  .mockup-dot:nth-child(3) { background: #22c55e; }
+  .mockup-bar span {
+    font-size: 12px; color: #64748b; margin-left: 8px; font-weight: 500;
+  }
+  .mockup-body { padding: 24px; }
+  .mockup-sidebar {
+    display: flex; gap: 12px; margin-bottom: 20px; align-items: center;
+  }
+  .mockup-sidebar .search {
+    flex: 1; padding: 8px 12px; background: rgba(255,255,255,.06);
+    border-radius: 8px; font-size: 12px; color: #64748b;
+  }
+  .mockup-sidebar .add-btn {
+    width: 32px; height: 32px; background: #6366f1; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; color: #fff; font-weight: 600;
+  }
+  .mockup-list { display: flex; flex-direction: column; gap: 10px; }
+  .mockup-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; background: rgba(255,255,255,.04);
+    border-radius: 10px; border: 1px solid rgba(255,255,255,.06);
+  }
+  .mockup-item .info { text-align: left; }
+  .mockup-item .name { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+  .mockup-item .issuer { font-size: 11px; color: #64748b; }
+  .mockup-item .code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 18px; font-weight: 700; color: #818cf8; letter-spacing: 2px;
+  }
+  .mockup-item .progress {
+    width: 40px; height: 3px; background: rgba(255,255,255,.08);
+    border-radius: 2px; margin-top: 6px; overflow: hidden;
+  }
+  .mockup-item .progress-fill {
+    width: 65%; height: 100%; background: #818cf8; border-radius: 2px;
+  }
+
+  /* Sections */
+  section { padding: 80px 24px; }
+  section h2 {
+    font-size: clamp(28px, 4vw, 40px); font-weight: 700; text-align: center;
+    letter-spacing: -1px; margin-bottom: 12px;
+    background: linear-gradient(135deg, #fff 30%, #818cf8 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  section .subtitle {
+    text-align: center; color: #94a3b8; font-size: 16px;
+    max-width: 500px; margin: 0 auto 48px;
+  }
+
+  /* Features */
+  .features-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  .feature-card {
+    padding: 28px; background: rgba(255,255,255,.03);
+    border: 1px solid rgba(255,255,255,.06); border-radius: 14px;
+    transition: all .2s;
+  }
+  .feature-card:hover { border-color: rgba(99,102,241,.3); background: rgba(99,102,241,.05); }
+  .feature-icon {
+    width: 44px; height: 44px; background: rgba(99,102,241,.15);
+    border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-bottom: 16px;
+  }
+  .feature-card h3 { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+  .feature-card p { font-size: 14px; color: #94a3b8; line-height: 1.7; }
+
+  /* How it Works */
+  .steps { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+  .step {
+    flex: 1; min-width: 250px; max-width: 320px; text-align: center;
+    padding: 32px 20px;
+  }
+  .step-number {
+    width: 48px; height: 48px; margin: 0 auto 16px;
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 700; color: #fff;
+  }
+  .step h3 { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+  .step p { font-size: 14px; color: #94a3b8; }
+  .step-arrow { font-size: 24px; color: #6366f1; display: flex; align-items: center; }
+
+  /* Open Source */
+  .trust {
+    text-align: center; max-width: 600px; margin: 0 auto;
+    padding: 40px; background: rgba(255,255,255,.03);
+    border: 1px solid rgba(99,102,241,.15); border-radius: 16px;
+  }
+  .trust p { font-size: 15px; color: #94a3b8; margin-bottom: 24px; }
+  .trust .stats { display: flex; gap: 32px; justify-content: center; margin-bottom: 24px; }
+  .trust .stat { text-align: center; }
+  .trust .stat-num { font-size: 24px; font-weight: 700; color: #fff; }
+  .trust .stat-label { font-size: 12px; color: #64748b; margin-top: 2px; }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid rgba(255,255,255,.06);
+    padding: 40px 24px; text-align: center;
+  }
+  footer .links { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+  footer .links a { font-size: 13px; color: #64748b; transition: color .2s; }
+  footer .links a:hover { color: #e2e8f0; }
+  footer p { font-size: 12px; color: #475569; }
+
+  @media (max-width: 640px) {
+    nav .links a:not(.nav-cta) { display: none; }
+    .mockup-body { padding: 16px; }
+    .mockup-item { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .mockup-item .code { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      <polyline points="9 12 11 14 15 10"/>
+    </svg>
+    OtpVault
+  </div>
+  <div class="links">
+    <a href="#features">Features</a>
+    <a href="#how-it-works">How it Works</a>
+    <a href="https://github.com/Shadow132245/OtpVault">GitHub</a>
+    <a href="#download" class="nav-cta">Download</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="download">
+  <div class="container">
+    <div class="hero-badge">✦ v0.1.1 — Open Source</div>
+    <h1>A secure, zero-knowledge desktop 2FA authenticator</h1>
+    <p>Your TOTP secrets encrypted with AES-256-GCM. The key never leaves your device.</p>
+    <div class="hero-buttons">
+      <a href="https://github.com/Shadow132245/OtpVault/releases/latest" class="btn-primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="14" height="14" rx="2"/><path d="M9 2v2"/><path d="M13 2v2"/><path d="M4 13h14"/><path d="M4 17h10"/><path d="M18 10v6"/></svg>
+        Download for Windows
+      </a>
+      <a href="https://github.com/Shadow132245/OtpVault" class="btn-secondary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        View Source on GitHub
+      </a>
+    </div>
+
+    <div class="mockup">
+      <div class="mockup-window">
+        <div class="mockup-bar">
+          <div class="mockup-dot"></div>
+          <div class="mockup-dot"></div>
+          <div class="mockup-dot"></div>
+          <span>OtpVault — My Accounts</span>
+        </div>
+        <div class="mockup-body">
+          <div class="mockup-sidebar">
+            <div class="search">🔍 Search accounts...</div>
+            <div class="add-btn">+</div>
+          </div>
+          <div class="mockup-list">
+            <div class="mockup-item">
+              <div class="info"><div class="name">GitHub</div><div class="issuer">github.com</div></div>
+              <div style="text-align:right"><div class="code">482 139</div><div class="progress"><div class="progress-fill"></div></div></div>
+            </div>
+            <div class="mockup-item">
+              <div class="info"><div class="name">Google</div><div class="issuer">google.com</div></div>
+              <div style="text-align:right"><div class="code">719 482</div><div class="progress"><div class="progress-fill" style="width:30%"></div></div></div>
+            </div>
+            <div class="mockup-item">
+              <div class="info"><div class="name">Microsoft</div><div class="issuer">microsoft.com</div></div>
+              <div style="text-align:right"><div class="code">203 847</div><div class="progress"><div class="progress-fill" style="width:80%"></div></div></div>
+            </div>
+            <div class="mockup-item">
+              <div class="info"><div class="name">Twitter</div><div class="issuer">twitter.com</div></div>
+              <div style="text-align:right"><div class="code">556 291</div><div class="progress"><div class="progress-fill" style="width:45%"></div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features">
+  <div class="container">
+    <h2>Built with security in mind</h2>
+    <p class="subtitle">Every layer of OtpVault is designed to keep your secrets safe — from encryption to infrastructure.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>Zero-Knowledge Encryption</h3>
+        <p>Your vault is encrypted with AES-256-GCM before leaving your device. The encryption key is derived from your password using Argon2id and is never transmitted to any server.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">☁️</div>
+        <h3>Encrypted Cloud Backup</h3>
+        <p>Your encrypted vault is automatically backed up to the cloud when you sign up or unlock. Sign in with the same email on any device to restore your codes — the server never sees plaintext data.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Blazing Fast & Lightweight</h3>
+        <p>Built with Rust and Tauri, OtpVault uses a fraction of the RAM of Electron-based apps. It launches instantly, runs efficiently, and stays out of your way.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it Works -->
+<section id="how-it-works" style="background: rgba(255,255,255,.02);">
+  <div class="container">
+    <h2>How it Works</h2>
+    <p class="subtitle">Get started in three simple steps.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3>Create Your Encrypted Vault</h3>
+        <p>Sign up with your email and password. Your password never leaves your device — it's used to derive your encryption key locally.</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3>Add Your Accounts</h3>
+        <p>Scan QR codes using your camera, upload a QR image, or enter the secret key manually. Supports SHA1/SHA256/SHA512, 6-8 digits, and custom step intervals.</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3>Sync Securely to the Cloud</h3>
+        <p>Your encrypted vault syncs automatically with Supabase. No unencrypted data ever touches the cloud — just seamless access across devices.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Open Source -->
+<section>
+  <div class="container">
+    <h2>100% Open Source</h2>
+    <p class="subtitle">Transparency you can trust. Every line of code is public and auditable.</p>
+    <div class="trust">
+      <div class="stats">
+        <div class="stat"><div class="stat-num">MIT</div><div class="stat-label">License</div></div>
+        <div class="stat"><div class="stat-num">Public</div><div class="stat-label">Source</div></div>
+        <div class="stat"><div class="stat-num">CI/CD</div><div class="stat-label">Transparent Builds</div></div>
+      </div>
+      <p>OtpVault is open-source software under the MIT license. The entire build pipeline runs on GitHub Actions — from source to signed MSI installer. Anyone can verify that the binary matches the published source code, guaranteeing no hidden backdoors or tampering.</p>
+      <a href="https://github.com/Shadow132245/OtpVault" class="btn-primary">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="links">
+    <a href="https://github.com/Shadow132245/OtpVault">GitHub</a>
+    <a href="https://github.com/Shadow132245/OtpVault/blob/main/LICENSE">License</a>
+    <a href="https://github.com/Shadow132245/OtpVault/issues/new">Report a Bug</a>
+    <a href="https://github.com/Shadow132245/OtpVault/releases/latest">Download</a>
+    <a href="https://github.com/Shadow132245/OtpVault/blob/main/docs/privacy-policy.html">Privacy Policy</a>
+    <a href="https://github.com/Shadow132245/OtpVault/blob/main/docs/terms-of-service.html">Terms of Service</a>
+  </div>
+  <p>&copy; 2026 OtpVault. MIT License. Built with Rust &amp; Tauri.</p>
+</footer>
+</body>
+</html>
