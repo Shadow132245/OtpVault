@@ -48,24 +48,8 @@ jobs:
           rustup default stable-x86_64-pc-windows-gnu
           rustup target add i686-pc-windows-gnu
 
-      - name: Neutralize competing MinGW installations + add MSYS2 to PATH
-        run: |
-          $badRoots = @("C:\mingw64", "C:\Strawberry")
-          foreach ($root in $badRoots) {
-            Get-ChildItem -Path "$root" -Filter "ld.exe" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
-              Write-Output "Neutralizing: $($_.FullName)"
-              Rename-Item -Path $_.FullName -NewName "$($_.Name).bak" -Force
-            }
-            Get-ChildItem -Path "$root" -Filter "*gcc.exe" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
-              Write-Output "Neutralizing: $($_.FullName)"
-              Rename-Item -Path $_.FullName -NewName "$($_.Name).bak" -Force
-            }
-            Get-ChildItem -Path "$root" -Filter "*mingw32*" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
-              Write-Output "Neutralizing: $($_.FullName)"
-              Rename-Item -Path $_.FullName -NewName "$($_.Name).bak" -Force
-            }
-          }
-          echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Add MSYS2 MinGW to PATH
+        run: echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
       - name: Cache npm
         uses: actions/cache@v4
