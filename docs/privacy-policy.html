@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy - OtpVault</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    line-height: 1.7;
+    padding: 0;
+  }
+  .header {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    padding: 40px 24px;
+    text-align: center;
+  }
+  .header h1 {
+    color: #fff;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .header p {
+    color: rgba(255,255,255,0.8);
+    font-size: 14px;
+    margin-top: 8px;
+  }
+  .lang-bar {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .lang-bar button {
+    padding: 6px 16px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .lang-bar button:hover { background: rgba(255,255,255,0.2); }
+  .lang-bar button.active { background: #fff; color: #4f46e5; border-color: #fff; }
+  .content {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  .section {
+    margin-bottom: 28px;
+  }
+  .section h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 8px;
+  }
+  .section p {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.7;
+  }
+  .footer {
+    text-align: center;
+    padding: 24px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+  .footer a { color: #6366f1; text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+  .hidden { display: none; }
+  .last-updated {
+    text-align: center;
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1 id="title">Privacy Policy</h1>
+  <p id="subtitle">OtpVault — Secure 2FA Authenticator</p>
+  <p class="last-updated" id="updated">Last updated: June 2026</p>
+  <div class="lang-bar">
+    <button id="btn-en" class="active" onclick="switchLang('en')">English</button>
+    <button id="btn-ar" onclick="switchLang('ar')">العربية</button>
+  </div>
+</div>
+
+<div class="content" id="content-en">
+  <div class="section">
+    <h2>Information We Collect</h2>
+    <p>When you create an account, we collect your email address and an encrypted version of your vault. The encryption key is derived from your password on your device and never sent to our servers. We do not collect any personal information beyond what is necessary to provide the service.</p>
+  </div>
+  <div class="section">
+    <h2>How We Use Your Information</h2>
+    <p>Your email is used solely for authentication and to associate your encrypted vault with your account. Your encrypted vault data is stored on our servers solely for the purpose of cloud backup and restoration across your devices.</p>
+  </div>
+  <div class="section">
+    <h2>Data Storage and Security</h2>
+    <p>All vault data is encrypted end-to-end using AES-256-GCM before leaving your device. The encryption key is derived from your password using Argon2id and never transmitted. We have no ability to access your vault contents.</p>
+  </div>
+  <div class="section">
+    <h2>Data Sharing</h2>
+    <p>We do not sell, trade, or share your personal information with third parties. Encrypted vault data may be stored on Supabase infrastructure for cloud backup functionality.</p>
+  </div>
+  <div class="section">
+    <h2>Your Rights</h2>
+    <p>You may delete your account and all associated data at any time. Contact us to request data deletion. You can export your vault data at any time from the app settings.</p>
+  </div>
+  <div class="section">
+    <h2>Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. Users will be notified of material changes through the app.</p>
+  </div>
+  <div class="section">
+    <h2>Contact</h2>
+    <p>If you have questions about this Privacy Policy, please open an issue on our <a href="https://github.com/Shadow132245/OtpVault" target="_blank">GitHub repository</a>.</p>
+  </div>
+</div>
+
+<div class="content hidden" id="content-ar" dir="rtl">
+  <div class="section">
+    <h2>المعلومات التي نجمعها</h2>
+    <p>عند إنشاء حساب، نجمع عنوان بريدك الإلكتروني ونسخة مشفرة من خزنتك. يُشتق مفتاح التشفير من كلمة المرور الخاصة بك على جهازك ولا يُرسل أبداً إلى خوادمنا. لا نجمع أي معلومات شخصية تتجاوز ما هو ضروري لتقديم الخدمة.</p>
+  </div>
+  <div class="section">
+    <h2>كيف نستخدم معلوماتك</h2>
+    <p>يُستخدم بريدك الإلكتروني فقط للمصادقة وربط خزنتك المشفرة بحسابك. تُخزّن بيانات خزنتك المشفرة على خوادمنا لغرض النسخ الاحتياطي السحابي والاستعادة عبر أجهزتك.</p>
+  </div>
+  <div class="section">
+    <h2>تخزين البيانات والأمان</h2>
+    <p>جميع بيانات الخزنة مشفرة من البداية إلى النهاية باستخدام AES-256-GCM قبل مغادرتها جهازك. يُشتق مفتاح التشفير من كلمة المرور باستخدام Argon2id ولا يُنقل أبداً. ليست لدينا القدرة على الوصول إلى محتويات خزنتك.</p>
+  </div>
+  <div class="section">
+    <h2>مشاركة البيانات</h2>
+    <p>لا نبيع أو نتبادل أو نشارك معلوماتك الشخصية مع أطراف ثالثة. قد تُخزّن بيانات الخزنة المشفرة على بنية Supabase التحتية لوظيفة النسخ الاحتياطي السحابي.</p>
+  </div>
+  <div class="section">
+    <h2>حقوقك</h2>
+    <p>يمكنك حذف حسابك وجميع البيانات المرتبطة به في أي وقت. تواصل معنا لطلب حذف البيانات. يمكنك تصدير بيانات خزنتك في أي وقت من إعدادات التطبيق.</p>
+  </div>
+  <div class="section">
+    <h2>تغييرات هذه السياسة</h2>
+    <p>قد نحدّث سياسة الخصوصية هذه من وقت لآخر. سيتم إخطار المستخدمين بالتغييرات الجوهرية عبر التطبيق.</p>
+  </div>
+  <div class="section">
+    <h2>الاتصال بنا</h2>
+    <p>إذا كانت لديك أسئلة حول سياسة الخصوصية هذه، يرجى فتح مشكلة في <a href="https://github.com/Shadow132245/OtpVault" target="_blank">مستودع GitHub</a> الخاص بنا.</p>
+  </div>
+</div>
+
+<div class="footer">
+  <a href="https://github.com/Shadow132245/OtpVault">OtpVault on GitHub</a> &mdash; Open Source
+</div>
+
+<script>
+function switchLang(lang) {
+  document.getElementById('content-en').classList.toggle('hidden', lang !== 'en');
+  document.getElementById('content-ar').classList.toggle('hidden', lang !== 'ar');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.getElementById('btn-ar').classList.toggle('active', lang === 'ar');
+  document.documentElement.lang = lang;
+  document.getElementById('title').textContent = lang === 'en' ? 'Privacy Policy' : 'سياسة الخصوصية';
+  document.getElementById('subtitle').textContent = lang === 'en' ? 'OtpVault — Secure 2FA Authenticator' : 'OtpVault — مدير رموز التحقق الآمن';
+  document.getElementById('updated').textContent = lang === 'en' ? 'Last updated: June 2026' : 'آخر تحديث: يونيو 2026';
+}
+</script>
+</body>
+</html>

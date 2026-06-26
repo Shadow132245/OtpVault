@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terms of Service - OtpVault</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    line-height: 1.7;
+    padding: 0;
+  }
+  .header {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+    padding: 40px 24px;
+    text-align: center;
+  }
+  .header h1 {
+    color: #fff;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  .header p {
+    color: rgba(255,255,255,0.8);
+    font-size: 14px;
+    margin-top: 8px;
+  }
+  .lang-bar {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .lang-bar button {
+    padding: 6px 16px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .lang-bar button:hover { background: rgba(255,255,255,0.2); }
+  .lang-bar button.active { background: #fff; color: #4f46e5; border-color: #fff; }
+  .content {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+  .section {
+    margin-bottom: 28px;
+  }
+  .section h2 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 8px;
+  }
+  .section p {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.7;
+  }
+  .footer {
+    text-align: center;
+    padding: 24px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+  .footer a { color: #6366f1; text-decoration: none; }
+  .footer a:hover { text-decoration: underline; }
+  .hidden { display: none; }
+  .last-updated {
+    text-align: center;
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1 id="title">Terms of Service</h1>
+  <p id="subtitle">OtpVault — Secure 2FA Authenticator</p>
+  <p class="last-updated" id="updated">Last updated: June 2026</p>
+  <div class="lang-bar">
+    <button id="btn-en" class="active" onclick="switchLang('en')">English</button>
+    <button id="btn-ar" onclick="switchLang('ar')">العربية</button>
+  </div>
+</div>
+
+<div class="content" id="content-en">
+  <div class="section">
+    <h2>Acceptance of Terms</h2>
+    <p>By creating an account and using OtpVault, you agree to these Terms of Service. If you do not agree, do not use the service.</p>
+  </div>
+  <div class="section">
+    <h2>Description of Service</h2>
+    <p>OtpVault is a desktop two-factor authentication (2FA) manager that stores your TOTP secrets in an encrypted local vault with optional cloud backup. The app runs locally on your device.</p>
+  </div>
+  <div class="section">
+    <h2>User Responsibilities</h2>
+    <p>You are responsible for maintaining the confidentiality of your email and password. You are solely responsible for all activities that occur under your account. You must notify us immediately of any unauthorized use of your account.</p>
+  </div>
+  <div class="section">
+    <h2>Security</h2>
+    <p>Your vault is encrypted with a key derived from your password. We cannot recover your vault if you forget your password. It is your responsibility to remember your password.</p>
+  </div>
+  <div class="section">
+    <h2>Limitation of Liability</h2>
+    <p>OtpVault is provided "as is" without warranty of any kind. The authors are not liable for any damages arising from the use of this software, including but not limited to loss of access to accounts.</p>
+  </div>
+  <div class="section">
+    <h2>Open Source</h2>
+    <p>OtpVault is open-source software. The source code is publicly available on GitHub for transparency. You may review, compile, and verify the software yourself.</p>
+  </div>
+  <div class="section">
+    <h2>Changes to Terms</h2>
+    <p>We reserve the right to modify these terms at any time. Continued use of the app after changes constitutes acceptance of the new terms.</p>
+  </div>
+  <div class="section">
+    <h2>Termination</h2>
+    <p>We reserve the right to suspend or terminate your account at any time for violations of these terms or for any other reason.</p>
+  </div>
+</div>
+
+<div class="content hidden" id="content-ar" dir="rtl">
+  <div class="section">
+    <h2>قبول الشروط</h2>
+    <p>بإنشاء حساب واستخدام OtpVault، فإنك توافق على شروط الخدمة هذه. إذا كنت لا توافق، فلا تستخدم الخدمة.</p>
+  </div>
+  <div class="section">
+    <h2>وصف الخدمة</h2>
+    <p>OtpVault هو مدير للتحقق بخطوتين (2FA) لسطح المكتب يخزّن أسرار TOTP الخاصة بك في خزنة مشفرة محلياً مع نسخ احتياطي سحابي اختياري. يعمل التطبيق محلياً على جهازك.</p>
+  </div>
+  <div class="section">
+    <h2>مسؤوليات المستخدم</h2>
+    <p>أنت مسؤول عن الحفاظ على سرية بريدك الإلكتروني وكلمة المرور. أنت المسؤول الوحيد عن جميع الأنشطة التي تحدث تحت حسابك. يجب عليك إخطارنا فوراً بأي استخدام غير مصرح به لحسابك.</p>
+  </div>
+  <div class="section">
+    <h2>الأمان</h2>
+    <p>خزنتك مشفرة بمفتاح مشتق من كلمة المرور الخاصة بك. لا يمكننا استعادة خزنتك إذا نسيت كلمة المرور. من مسؤوليتك تذكر كلمة المرور الخاصة بك.</p>
+  </div>
+  <div class="section">
+    <h2>حدود المسؤولية</h2>
+    <p>OtpVault يُقدّم "كما هو" دون أي ضمان. المؤلفون غير مسؤولين عن أي أضرار ناتجة عن استخدام هذا البرنامج، بما في ذلك على سبيل المثال لا الحصر فقدان الوصول إلى الحسابات.</p>
+  </div>
+  <div class="section">
+    <h2>المصدر المفتوح</h2>
+    <p>OtpVault هو برنامج مفتوح المصدر. كود المصدر متاح للعموم على GitHub للشفافية. يمكنك مراجعة البرنامج وتجميعه والتحقق منه بنفسك.</p>
+  </div>
+  <div class="section">
+    <h2>تغييرات الشروط</h2>
+    <p>نحتفظ بالحق في تعديل هذه الشروط في أي وقت. الاستمرار في استخدام التطبيق بعد التغييرات يعتبر قبولاً للشروط الجديدة.</p>
+  </div>
+  <div class="section">
+    <h2>إنهاء الخدمة</h2>
+    <p>نحتفظ بالحق في تعليق أو إنهاء حسابك في أي وقت بسبب انتهاك هذه الشروط أو لأي سبب آخر.</p>
+  </div>
+</div>
+
+<div class="footer">
+  <a href="https://github.com/Shadow132245/OtpVault">OtpVault on GitHub</a> &mdash; Open Source
+</div>
+
+<script>
+function switchLang(lang) {
+  document.getElementById('content-en').classList.toggle('hidden', lang !== 'en');
+  document.getElementById('content-ar').classList.toggle('hidden', lang !== 'ar');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  document.getElementById('btn-ar').classList.toggle('active', lang === 'ar');
+  document.documentElement.lang = lang;
+  document.getElementById('title').textContent = lang === 'en' ? 'Terms of Service' : 'شروط الخدمة';
+  document.getElementById('subtitle').textContent = lang === 'en' ? 'OtpVault — Secure 2FA Authenticator' : 'OtpVault — مدير رموز التحقق الآمن';
+  document.getElementById('updated').textContent = lang === 'en' ? 'Last updated: June 2026' : 'آخر تحديث: يونيو 2026';
+}
+</script>
+</body>
+</html>
