@@ -40,9 +40,6 @@ jobs:
             mingw-w64-i686-gcc
             mingw-w64-i686-binutils
 
-      - name: Install LLVM Clang
-        run: choco install llvm --no-progress -y
-
       - name: Set default Rust toolchain to GNU + add targets
         run: |
           rustup default stable-x86_64-pc-windows-gnu
@@ -50,9 +47,6 @@ jobs:
 
       - name: Neutralize competing MinGW installations + add MSYS2 to PATH
         run: |
-          # Neutralize any MinGW ld.exe and gcc.exe outside our MSYS2 installation.
-          # Clang auto-detects MinGW toolchains via gcc in PATH; we must prevent it from
-          # picking up the buggy old ld from Strawberry Perl / pre-installed MinGW.
           $badRoots = @("C:\mingw64", "C:\Strawberry")
           foreach ($root in $badRoots) {
             Get-ChildItem -Path "$root" -Filter "ld.exe" -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
