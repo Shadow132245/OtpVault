@@ -1,6 +1,6 @@
 [package]
 name = "otpvault"
-version = "0.1.0"
+version = "0.1.1"
 description = "OtpVault - Secure 2FA Authenticator"
 authors = ["EuroMoscow Developments"]
 edition = "2021"

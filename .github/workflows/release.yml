@@ -45,11 +45,13 @@ jobs:
             ~/.cargo/git
           key: cargo-registry-${{ hashFiles('src-tauri/Cargo.lock') }}
 
-      - name: Get version
+      - name: Get version from tag
         id: version
         run: |
-          $v = (Get-Content src-tauri/tauri.conf.json | ConvertFrom-Json).version
+          $tag = "${{ github.ref_name }}"
+          $v = $tag -replace '^v', ''
           echo "VERSION=$v" >> $env:GITHUB_ENV
+          (Get-Content src-tauri/tauri.conf.json) -replace '"version": ".*"', "`"version`": `"$v`"" | Set-Content src-tauri/tauri.conf.json
 
       - name: Install npm dependencies
         run: npm ci
