@@ -14,18 +14,13 @@ if not "%1"=="" set ARCH=%1
 
 REM Set Rust target based on architecture
 if /I "%ARCH%"=="x86" (
-  set RUST_TARGET=i686-pc-windows-gnu
-  set WI_DIR=x86
+  set RUST_TARGET=i686-pc-windows-msvc
 ) else (
-  set RUST_TARGET=x86_64-pc-windows-gnu
-  set WI_DIR=x64
+  set RUST_TARGET=x86_64-pc-windows-msvc
 )
 
 echo Building for: %ARCH% (%RUST_TARGET%)
 echo.
-
-REM Add MinGW to PATH (x64 for both, x86 packages handle their own)
-set "PATH=C:\msys64\mingw64\bin;%PATH%"
 
 REM Step 1: Install frontend dependencies
 echo [1/5] Installing frontend dependencies...
@@ -51,14 +46,19 @@ call npx tauri build --bundles msi --target %RUST_TARGET%
 if errorlevel 1 exit /b 1
 echo.
 
-REM Step 4: Patch MSI with branding
-echo [4/5] Patching MSI with brand assets...
-powershell -ExecutionPolicy Bypass -File "scripts\patch-installer.ps1" -Arch %ARCH%
+REM Step 4: Copy MSI to project root
+echo [4/5] Copying MSI...
+set "MSI_SRC=src-tauri\target\%RUST_TARGET%\release\bundle\msi\OtpVault_0.1.0_%ARCH%_en-US.msi"
+copy /Y "%MSI_SRC%" "OtpVault_0.1.0_%ARCH%_en-US.msi" >nul
+echo.
+REM Step 5: Brand MSI
+echo [5/5] Branding MSI...
+powershell -ExecutionPolicy Bypass -File "scripts\brand-msi.ps1" -MsiPath "OtpVault_0.1.0_%ARCH%_en-US.msi"
 if errorlevel 1 exit /b 1
 echo.
 
-REM Step 5: Copy branded MSI to dist folder
-echo [5/5] Copying branded MSI...
+REM Step 6: Copy branded MSI to dist folder
+echo [6/6] Copying branded MSI...
 set "DIST_DIR=dist\installer"
 if not exist "%DIST_DIR%" mkdir "%DIST_DIR%"
 copy /Y "OtpVault_0.1.0_%ARCH%_en-US.msi" "%DIST_DIR%\" >nul
