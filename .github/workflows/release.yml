@@ -1,0 +1,90 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        arch: [x64, x86]
+        include:
+          - arch: x64
+            rust-target: x86_64-pc-windows-gnu
+            dlltool: ""
+          - arch: x86
+            rust-target: i686-pc-windows-gnu
+            dlltool: scripts\dlltool-x86.bat
+
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: powershell
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup MSYS2 + MinGW toolchains
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-binutils
+            mingw-w64-i686-gcc
+            mingw-w64-i686-binutils
+
+      - name: Install LLVM Clang
+        run: choco install llvm --no-progress -y
+
+      - name: Install Rust targets
+        run: |
+          rustup target add x86_64-pc-windows-gnu i686-pc-windows-gnu
+
+      - name: Add MinGW to PATH
+        run: echo "C:\msys64\mingw64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: npm-${{ hashFiles('package-lock.json') }}
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: cargo-registry-${{ hashFiles('src-tauri/Cargo.lock') }}
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build Tauri (${{ matrix.arch }})
+        run: |
+          if ("${{ matrix.dlltool }}" -ne "") { $env:DLLTOOL = "${{ matrix.dlltool }}" }
+          npx tauri build --bundles msi --target ${{ matrix.rust-target }}
+
+      - name: Copy MSI to project root
+        run: |
+          $msi = Get-ChildItem -Path "src-tauri\target" -Filter "OtpVault_0.1.0_${{ matrix.arch }}_en-US.msi" -Recurse -ErrorAction Stop | Select-Object -First 1
+          Copy-Item -Path $msi.FullName -Destination "OtpVault_0.1.0_${{ matrix.arch }}_en-US.msi" -Force
+
+      - name: Brand MSI
+        run: pwsh -File scripts\brand-msi.ps1 -MsiPath "OtpVault_0.1.0_${{ matrix.arch }}_en-US.msi"
+
+      - name: Upload MSI to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: OtpVault_0.1.0_${{ matrix.arch }}_en-US.msi
+          asset_name: OtpVault_0.1.0_${{ matrix.arch }}_en-US.msi
+          tag: ${{ github.ref }}
+          overwrite: true

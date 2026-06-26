@@ -1,0 +1,8 @@
+[target.x86_64-pc-windows-gnu]
+linker = "scripts\\linker-x64.bat"
+
+[target.i686-pc-windows-gnu]
+linker = "scripts\\linker-x86.bat"
+
+[build]
+jobs = 1
