@@ -240,7 +240,7 @@
 <!-- Hero -->
 <section class="hero" id="download">
   <div class="container">
-    <div class="hero-badge">✦ v0.1.1 — Open Source</div>
+    <div class="hero-badge" id="version-badge">✦ v0.1.1 — Open Source</div>
     <h1>A secure, zero-knowledge desktop 2FA authenticator</h1>
     <p>Your TOTP secrets encrypted with AES-256-GCM. The key never leaves your device.</p>
     <div class="hero-buttons">
@@ -375,5 +375,12 @@
   </div>
   <p>&copy; 2026 OtpVault. MIT License. Built with Rust &amp; Tauri.</p>
 </footer>
+
+<script>
+fetch('https://api.github.com/repos/Shadow132245/OtpVault/releases/latest')
+  .then(r => r.ok ? r.json() : Promise.reject())
+  .then(d => { document.getElementById('version-badge').textContent = '✦ ' + d.tag_name + ' — Open Source' })
+  .catch(() => {})
+</script>
 </body>
 </html>
