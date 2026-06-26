@@ -40,6 +40,9 @@ jobs:
             mingw-w64-i686-gcc
             mingw-w64-i686-binutils
 
+      - name: Install LLVM Clang
+        run: choco install llvm --no-progress -y
+
       - name: Set default Rust toolchain to GNU + add targets
         run: |
           rustup default stable-x86_64-pc-windows-gnu
