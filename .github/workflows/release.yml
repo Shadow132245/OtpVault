@@ -62,11 +62,11 @@ jobs:
 
       - name: Copy MSI to project root
         run: |
-          $msi = Get-ChildItem -Path "src-tauri\target" -Filter "OtpVault_$env:VERSION_${{ matrix.arch }}_en-US.msi" -Recurse -ErrorAction Stop | Select-Object -First 1
-          Copy-Item -Path $msi.FullName -Destination "OtpVault_$env:VERSION_${{ matrix.arch }}_en-US.msi" -Force
+          $msi = Get-ChildItem -Path "src-tauri\target" -Filter "OtpVault_${env:VERSION}_${{ matrix.arch }}_en-US.msi" -Recurse -ErrorAction Stop | Select-Object -First 1
+          Copy-Item -Path $msi.FullName -Destination "OtpVault_${env:VERSION}_${{ matrix.arch }}_en-US.msi" -Force
 
       - name: Brand MSI
-        run: pwsh -File scripts\brand-msi.ps1 -MsiPath "OtpVault_$env:VERSION_${{ matrix.arch }}_en-US.msi"
+        run: pwsh -File scripts\brand-msi.ps1 -MsiPath "OtpVault_${env:VERSION}_${{ matrix.arch }}_en-US.msi"
 
       - name: Create Release and Upload Asset
         uses: softprops/action-gh-release@v1

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0b0d1a"/>
+      <stop offset="100%" stop-color="#111327"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="shield" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="titleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Top accent bar -->
+  <rect width="1200" height="4" fill="url(#accent)"/>
+
+  <!-- Shield icon -->
+  <g transform="translate(195, 165)">
+    <polygon points="0,-55 55,-22 55,33 0,85 -55,33 -55,-22" fill="url(#shield)"/>
+    <polyline points="-15,0 -5,15 20,-12" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Title -->
+  <text x="280" y="175" font-family="Segoe UI, -apple-system, sans-serif" font-size="56" font-weight="800" fill="url(#titleGrad)">OtpVault</text>
+
+  <!-- Subtitle -->
+  <text x="284" y="225" font-family="Segoe UI, -apple-system, sans-serif" font-size="22" fill="#94a3b8">Secure 2FA Authenticator</text>
+
+  <!-- Tags -->
+  <g transform="translate(284, 280)">
+    <rect x="-12" y="-6" width="148" height="32" rx="6" fill="rgba(99,102,241,0.15)" stroke="rgba(99,102,241,0.25)" stroke-width="1"/>
+    <text x="0" y="16" font-family="Segoe UI, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#818cf8">Zero-Knowledge</text>
+
+    <rect x="148" y="-6" width="210" height="32" rx="6" fill="rgba(99,102,241,0.15)" stroke="rgba(99,102,241,0.25)" stroke-width="1"/>
+    <text x="160" y="16" font-family="Segoe UI, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#818cf8">Encrypted Cloud Backup</text>
+
+    <rect x="370" y="-6" width="132" height="32" rx="6" fill="rgba(99,102,241,0.15)" stroke="rgba(99,102,241,0.25)" stroke-width="1"/>
+    <text x="382" y="16" font-family="Segoe UI, -apple-system, sans-serif" font-size="15" font-weight="600" fill="#818cf8">Open Source</text>
+  </g>
+
+  <!-- URL -->
+  <text x="1060" y="610" font-family="Segoe UI, -apple-system, sans-serif" font-size="13" fill="#475569" text-anchor="end">otpvault1.vercel.app</text>
+</svg>
