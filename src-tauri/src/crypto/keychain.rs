@@ -76,6 +76,7 @@ impl Keychain {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub fn load_email(app: &AppHandle) -> Option<String> {
         let store = app.store("config.json").ok()?;
         store.get(EMAIL_KEY)?.as_str().map(|s| s.to_string())

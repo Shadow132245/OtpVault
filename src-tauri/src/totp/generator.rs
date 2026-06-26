@@ -4,6 +4,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use totp_rs::{Algorithm, Secret, TOTP};
 
 #[derive(Debug, thiserror::Error)]
+#[allow(dead_code)]
 pub enum TotpError {
     #[error("Failed to generate TOTP: {0}")]
     Generation(String),
