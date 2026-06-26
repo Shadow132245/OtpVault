@@ -39,6 +39,12 @@ call npx vite build
 if errorlevel 1 exit /b 1
 echo.
 
+REM Check required env vars
+if "%SUPABASE_URL%"=="" echo WARNING: SUPABASE_URL not set. Build will fail or use placeholder.
+if "%SUPABASE_ANON_KEY%"=="" echo WARNING: SUPABASE_ANON_KEY not set. Build will fail or use placeholder.
+if "%SUPABASE_URL%"=="" if "%SUPABASE_ANON_KEY%"=="" echo ^> Set both before building: $env:SUPABASE_URL="..." ; $env:SUPABASE_ANON_KEY="..."
+echo.
+
 REM Step 3: Build Tauri application
 echo [3/5] Building Tauri application (%ARCH%)...
 call npx tauri build --bundles msi --target %RUST_TARGET%

@@ -9,8 +9,17 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
-const SUPABASE_URL: &str = "https://xhaifmseyhgzrxkwpbcm.supabase.co";
-const SUPABASE_ANON_KEY: &str = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhoYWlmbXNleWhnenJ4a3dwYmNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4ODY1OTksImV4cCI6MjA5NzQ2MjU5OX0.5ux0JFDClqNNYYf3MtAVRoBP4xjjCf5rfa9usg7Z9xk";
+// Build-time env vars: set SUPABASE_URL and SUPABASE_ANON_KEY at compile time.
+// These are public anon keys — security is via RLS, not key secrecy.
+// Hidden from source so others can't reuse your Supabase project.
+const SUPABASE_URL: &str = match option_env!("SUPABASE_URL") {
+    Some(v) => v,
+    None => "https://missing-supabase-url.example.com",
+};
+const SUPABASE_ANON_KEY: &str = match option_env!("SUPABASE_ANON_KEY") {
+    Some(v) => v,
+    None => "MISSING_ANON_KEY",
+};
 
 #[derive(Serialize, Deserialize)]
 struct EmailVaultRow {
