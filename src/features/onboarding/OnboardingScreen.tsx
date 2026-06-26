@@ -1,8 +1,10 @@
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { motion } from 'motion/react'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
+import { LegalModal } from '../../components/legal/LegalModal'
+import { termsOfService, privacyPolicy } from '../../lib/legal'
 
 interface OnboardingScreenProps {
   onSignUp: (email: string, password: string) => Promise<void>
@@ -19,6 +21,8 @@ export function OnboardingScreen({ onSignUp, onSignIn, onError }: OnboardingScre
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(true)
   const [loading, setLoading] = useState(false)
+  const [agreeToTerms, setAgreeToTerms] = useState(false)
+  const [legalView, setLegalView] = useState<'terms' | 'privacy' | null>(null)
 
   const handleLanguageSelect = (lang: string) => {
     i18n.changeLanguage(lang)
@@ -152,6 +156,30 @@ export function OnboardingScreen({ onSignUp, onSignIn, onError }: OnboardingScre
             }
           />
 
+          {tab === 'signup' && (
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <div
+                onClick={() => setAgreeToTerms(!agreeToTerms)}
+                className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all shrink-0 ${
+                  agreeToTerms
+                    ? 'bg-primary-500 border-primary-500'
+                    : 'border-surface-300 dark:border-surface-600 group-hover:border-surface-400'
+                }`}
+              >
+                {agreeToTerms && (
+                  <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                )}
+              </div>
+              <span className="text-xs text-surface-500 dark:text-surface-400 group-hover:text-surface-700 dark:group-hover:text-surface-300 transition-colors">
+                <Trans i18nKey="legal.agree">
+                  I agree to the <button type="button" className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 underline" onClick={() => setLegalView('terms')}>Terms of Service</button> and <button type="button" className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 underline" onClick={() => setLegalView('privacy')}>Privacy Policy</button>
+                </Trans>
+              </span>
+            </label>
+          )}
+
           {tab === 'signin' && (
             <label className="flex items-center gap-2 cursor-pointer group">
               <div
@@ -174,7 +202,7 @@ export function OnboardingScreen({ onSignUp, onSignIn, onError }: OnboardingScre
             </label>
           )}
 
-          <Button size="lg" fullWidth type="submit" disabled={loading || !email || !password}>
+          <Button size="lg" fullWidth type="submit" disabled={loading || !email || !password || (tab === 'signup' && !agreeToTerms)}>
             {loading ? (
               <span className="flex items-center gap-2">
                 <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
@@ -196,6 +224,17 @@ export function OnboardingScreen({ onSignUp, onSignIn, onError }: OnboardingScre
           </button>
         </div>
       </motion.div>
+
+      <LegalModal
+        open={legalView === 'terms'}
+        onClose={() => setLegalView(null)}
+        content={termsOfService[i18n.language] ?? termsOfService.en}
+      />
+      <LegalModal
+        open={legalView === 'privacy'}
+        onClose={() => setLegalView(null)}
+        content={privacyPolicy[i18n.language] ?? privacyPolicy.en}
+      />
     </div>
   )
 }
