@@ -89,8 +89,16 @@ export function AccountList({ accounts, onAdd, onSettings, onHelp, onDelete }: A
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t('accounts.search')}
-          className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-surface-100 placeholder-surface-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all"
+          className="w-full pl-10 pr-11 py-2.5 text-sm rounded-xl bg-white dark:bg-surface-800 border border-surface-200 dark:border-surface-700 text-surface-900 dark:text-surface-100 placeholder-surface-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all"
         />
+        <button
+          onClick={onAdd}
+          className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-primary-500 hover:bg-primary-600 text-white flex items-center justify-center transition-colors"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
       </div>
 
       {totpError && (
@@ -168,22 +176,7 @@ export function AccountList({ accounts, onAdd, onSettings, onHelp, onDelete }: A
         ))}
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="fixed bottom-6 left-1/2 -translate-x-1/2 z-20"
-      >
-        <Button
-          onClick={onAdd}
-          size="lg"
-          className="shadow-elevated shadow-primary-600/25"
-        >
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          {t('accounts.add_account')}
-        </Button>
-      </motion.div>
+
     </AppLayout>
   )
 }
