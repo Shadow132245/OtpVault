@@ -124,7 +124,7 @@ export function SettingsScreen({
           <SettingCard>
             <SettingRow
               label="OtpVault"
-              value={`${t('settings.version')} 0.1.0`}
+              value={`${t('settings.version')} ${__APP_VERSION__}`}
             />
             <SettingRow
               label={t('settings.copyright')}
