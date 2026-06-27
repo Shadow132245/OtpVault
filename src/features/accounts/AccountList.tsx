@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence } from 'motion/react'
 import { AppLayout } from '../../components/layout/AppLayout'
 import { OTPDisplay } from '../../components/ui/OTPDisplay'
 import { Button } from '../../components/ui/Button'
