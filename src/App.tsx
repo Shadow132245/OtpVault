@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
 import { listen } from '@tauri-apps/api/event'
 import { OnboardingScreen } from './features/onboarding/OnboardingScreen'
-import { VaultLockScreen } from './features/vault/VaultLockScreen'
 import { AccountList } from './features/accounts/AccountList'
 import { AddAccountScreen } from './features/add-account/AddAccountScreen'
 import { SettingsScreen } from './features/settings/SettingsScreen'
@@ -28,7 +27,6 @@ import type { AccountEntry, AddAccountPayload } from './types'
 type Screen =
   | 'loading'
   | 'onboarding'
-  | 'lock'
   | 'accounts'
   | 'add-account'
   | 'settings'
@@ -40,6 +38,7 @@ function App() {
   const [accounts, setAccounts] = useState<AccountEntry[]>([])
   const [error, setError] = useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [vaultExists, setVaultExists] = useState(false)
 
   useEffect(() => {
     document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr'
@@ -49,6 +48,7 @@ function App() {
   useEffect(() => {
     const init = async () => {
       const { initialized: exists } = await vault.init()
+      setVaultExists(exists)
       if (exists === false) {
         setScreen('onboarding')
       } else {
@@ -61,9 +61,9 @@ function App() {
               setScreen('accounts')
               return
             }
-          } catch { /* fall through to lock screen */ }
+          } catch { /* fall through to onboarding */ }
         }
-        setScreen('lock')
+        setScreen('onboarding')
       }
     }
     init()
@@ -80,7 +80,7 @@ function App() {
     const unlisten = listen('lock-vault', async () => {
       await lockVaultCmd()
       vault.lock()
-      setScreen('lock')
+      setScreen('onboarding')
     })
     return () => { unlisten.then(fn => fn()) }
   }, [])
@@ -119,10 +119,6 @@ function App() {
     }
   }
 
-  const handleLockScreenSignIn = async (email: string, password: string): Promise<boolean> => {
-    return handleSignIn(email, password, true)
-  }
-
   const handleLogOut = async () => {
     await clearRememberMe()
     await lockVaultCmd()
@@ -152,7 +148,7 @@ function App() {
   const handleLock = async () => {
     await lockVaultCmd()
     vault.lock()
-    setScreen('lock')
+    setScreen('onboarding')
   }
 
   const handleLanguageToggle = () => {
@@ -196,14 +192,7 @@ function App() {
               onSignUp={handleSignUp}
               onSignIn={(email, password) => handleSignIn(email, password, true)}
               onError={(msg) => setError(msg)}
-            />
-          </motion.div>
-        )}
-
-        {screen === 'lock' && (
-          <motion.div key="lock" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <VaultLockScreen
-              onSignIn={handleLockScreenSignIn}
+              defaultTab={vaultExists ? 'signin' : 'signup'}
             />
           </motion.div>
         )}

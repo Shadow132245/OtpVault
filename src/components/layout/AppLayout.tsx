@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
+import { LegalModal } from '../legal/LegalModal'
+import { termsOfService, privacyPolicy } from '../../lib/legal'
 
 interface AppLayoutProps {
   title: string
@@ -10,11 +13,12 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ title, onBack, onSettings, onHelp, children }: AppLayoutProps) {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const isRTL = i18n.language === 'ar'
+  const [legalView, setLegalView] = useState<'terms' | 'privacy' | null>(null)
 
   return (
-    <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-surface-50 dark:bg-surface-950">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-screen bg-surface-50 dark:bg-surface-950 flex flex-col">
       <header className="sticky top-0 z-30 bg-white/80 dark:bg-surface-900/80 backdrop-blur-xl border-b border-surface-200/60 dark:border-surface-800/60">
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -64,7 +68,7 @@ export function AppLayout({ title, onBack, onSettings, onHelp, children }: AppLa
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-5">
+      <main className="max-w-2xl mx-auto px-4 py-5 flex-1">
         <motion.div
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
@@ -73,6 +77,40 @@ export function AppLayout({ title, onBack, onSettings, onHelp, children }: AppLa
           {children}
         </motion.div>
       </main>
+
+      <footer className="border-t border-surface-200/60 dark:border-surface-800/60 py-3">
+        <div className="max-w-2xl mx-auto px-4 flex flex-col items-center gap-2 text-xs">
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => setLegalView('terms')}
+              className="text-surface-400 hover:text-surface-600 dark:hover:text-surface-300 transition-colors"
+            >
+              {t('legal.terms')}
+            </button>
+            <span className="text-surface-300 dark:text-surface-600">|</span>
+            <button
+              type="button"
+              onClick={() => setLegalView('privacy')}
+              className="text-surface-400 hover:text-surface-600 dark:hover:text-surface-300 transition-colors"
+            >
+              {t('legal.privacy')}
+            </button>
+          </div>
+          <p className="text-surface-400 dark:text-surface-500">&copy; 2026 OtpVault. EuroMoscow Developments</p>
+        </div>
+      </footer>
+
+      <LegalModal
+        open={legalView === 'terms'}
+        onClose={() => setLegalView(null)}
+        content={termsOfService[i18n.language] ?? termsOfService.en}
+      />
+      <LegalModal
+        open={legalView === 'privacy'}
+        onClose={() => setLegalView(null)}
+        content={privacyPolicy[i18n.language] ?? privacyPolicy.en}
+      />
     </div>
   )
 }

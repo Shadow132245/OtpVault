@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { AppLayout } from '../../components/layout/AppLayout'
 import { Button } from '../../components/ui/Button'
+import { LegalModal } from '../../components/legal/LegalModal'
+import { termsOfService, privacyPolicy } from '../../lib/legal'
 import { useTheme } from '../../contexts/ThemeContext'
 
 interface SettingsScreenProps {
@@ -45,8 +48,9 @@ export function SettingsScreen({
   onHelp,
   currentLang,
 }: SettingsScreenProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { theme, toggleTheme } = useTheme()
+  const [legalView, setLegalView] = useState<'terms' | 'privacy' | null>(null)
 
   return (
     <AppLayout title={t('settings.title')} onBack={onBack} onHelp={onHelp}>
@@ -130,6 +134,22 @@ export function SettingsScreen({
               label={t('settings.copyright')}
               value="EuroMoscow Developments"
             />
+            <SettingRow
+              label={t('legal.terms')}
+              action={
+                <Button variant="ghost" size="sm" onClick={() => setLegalView('terms')}>
+                  {t('legal.terms')}
+                </Button>
+              }
+            />
+            <SettingRow
+              label={t('legal.privacy')}
+              action={
+                <Button variant="ghost" size="sm" onClick={() => setLegalView('privacy')}>
+                  {t('legal.privacy')}
+                </Button>
+              }
+            />
           </SettingCard>
         </div>
 
@@ -147,6 +167,17 @@ export function SettingsScreen({
           {t('settings.log_out')}
         </Button>
       </div>
+
+      <LegalModal
+        open={legalView === 'terms'}
+        onClose={() => setLegalView(null)}
+        content={termsOfService[i18n.language] ?? termsOfService.en}
+      />
+      <LegalModal
+        open={legalView === 'privacy'}
+        onClose={() => setLegalView(null)}
+        content={privacyPolicy[i18n.language] ?? privacyPolicy.en}
+      />
     </AppLayout>
   )
 }

@@ -10,13 +10,14 @@ interface OnboardingScreenProps {
   onSignUp: (email: string, password: string) => Promise<void>
   onSignIn: (email: string, password: string) => Promise<boolean>
   onError: (message: string) => void
+  defaultTab?: AuthTab
 }
 
 type AuthTab = 'signup' | 'signin'
 
-export function OnboardingScreen({ onSignUp, onSignIn, onError }: OnboardingScreenProps) {
+export function OnboardingScreen({ onSignUp, onSignIn, onError, defaultTab }: OnboardingScreenProps) {
   const { t, i18n } = useTranslation()
-  const [tab, setTab] = useState<AuthTab>('signup')
+  const [tab, setTab] = useState<AuthTab>(defaultTab ?? 'signup')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(true)

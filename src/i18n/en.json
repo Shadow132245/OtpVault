@@ -86,7 +86,7 @@
     "import_desc": "Restore your vault from a file",
     "export_btn": "Export",
     "import_btn": "Import",
-    "copyright": "Copyright"
+    "copyright": "Rights"
   },
   "sync": {
     "title": "Cloud Sync",

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OtpVault — Secure 2FA Authenticator</title>
+<title id="meta-title">OtpVault — Secure 2FA Authenticator</title>
 <meta name="description" content="A secure, zero-knowledge desktop 2FA authenticator. Encrypted vault, cloud backup, open source.">
 <meta property="og:title" content="OtpVault — Secure 2FA Authenticator">
 <meta property="og:description" content="A secure, zero-knowledge desktop 2FA authenticator. Encrypted vault, cloud backup, open source.">
@@ -29,6 +29,18 @@
   a:hover { color: #a5b4fc; }
   .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
 
+  /* Language switcher */
+  .lang-btn {
+    padding: 4px 10px; font-size: 12px; font-weight: 600; cursor: pointer;
+    border-radius: 6px; border: 1px solid rgba(255,255,255,.1);
+    background: transparent; color: #94a3b8; transition: all .2s;
+  }
+  .lang-btn:hover { border-color: rgba(99,102,241,.4); color: #fff; }
+  .lang-btn.active { background: rgba(99,102,241,.2); border-color: #6366f1; color: #818cf8; }
+  .lang-divider { width: 1px; height: 16px; background: rgba(255,255,255,.08); }
+  .legal-link { font-size: 12px !important; color: #64748b !important; }
+  .legal-link:hover { color: #94a3b8 !important; }
+
   /* Nav */
   nav {
     display: flex; align-items: center; justify-content: space-between;
@@ -39,7 +51,7 @@
     font-weight: 700; font-size: 18px; color: #fff;
   }
   nav .logo svg { width: 28px; height: 28px; }
-  nav .links { display: flex; gap: 20px; align-items: center; }
+  nav .links { display: flex; gap: 16px; align-items: center; }
   nav .links a { font-size: 14px; color: #94a3b8; transition: color .2s; }
   nav .links a:hover { color: #fff; }
   .nav-cta {
@@ -239,10 +251,16 @@
     OtpVault
   </div>
   <div class="links">
-    <a href="#features">Features</a>
-    <a href="#how-it-works">How it Works</a>
-    <a href="https://github.com/Shadow132245/OtpVault">GitHub</a>
-    <a href="#download" class="nav-cta">Download</a>
+    <a href="#features" data-i18n="nav.features">Features</a>
+    <a href="#how-it-works" data-i18n="nav.how_it_works">How it Works</a>
+    <a href="https://github.com/Shadow132245/OtpVault" data-i18n="nav.github">GitHub</a>
+    <div class="lang-divider"></div>
+    <button class="lang-btn active" data-lang="en" onclick="switchLanguage('en')">EN</button>
+    <button class="lang-btn" data-lang="ar" onclick="switchLanguage('ar')">AR</button>
+    <div class="lang-divider"></div>
+    <a href="https://shadow132245.github.io/OtpVault/privacy-policy.html" class="legal-link" data-i18n="nav.privacy">Privacy Policy</a>
+    <a href="https://shadow132245.github.io/OtpVault/terms-of-service.html" class="legal-link" data-i18n="nav.terms">Terms of Service</a>
+    <a href="#download" class="nav-cta" data-i18n="nav.download">Download</a>
   </div>
 </nav>
 
@@ -250,14 +268,14 @@
 <section class="hero" id="download">
   <div class="container">
     <div class="hero-badge" id="version-badge">✦ v0.1.1 — Open Source</div>
-    <h1>A secure, zero-knowledge desktop 2FA authenticator</h1>
-    <p>Your TOTP secrets encrypted with AES-256-GCM. The key never leaves your device.</p>
+    <h1 data-i18n="hero.title">A secure, zero-knowledge desktop 2FA authenticator</h1>
+    <p data-i18n="hero.subtitle">Your TOTP secrets encrypted with AES-256-GCM. The key never leaves your device.</p>
     <div class="hero-buttons">
-      <a href="https://github.com/Shadow132245/OtpVault/releases/latest" class="btn-primary">
+      <a href="https://github.com/Shadow132245/OtpVault/releases/latest" class="btn-primary" data-i18n="hero.download_btn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="14" height="14" rx="2"/><path d="M9 2v2"/><path d="M13 2v2"/><path d="M4 13h14"/><path d="M4 17h10"/><path d="M18 10v6"/></svg>
         Download for Windows
       </a>
-      <a href="https://github.com/Shadow132245/OtpVault" class="btn-secondary">
+      <a href="https://github.com/Shadow132245/OtpVault" class="btn-secondary" data-i18n="hero.source_btn">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
         View Source on GitHub
       </a>
@@ -269,11 +287,11 @@
           <div class="mockup-dot"></div>
           <div class="mockup-dot"></div>
           <div class="mockup-dot"></div>
-          <span>OtpVault — My Accounts</span>
+          <span data-i18n="hero.mockup_title">OtpVault — My Accounts</span>
         </div>
         <div class="mockup-body">
           <div class="mockup-sidebar">
-            <div class="search">🔍 Search accounts...</div>
+            <div class="search" data-i18n="hero.search_placeholder">🔍 Search accounts...</div>
             <div class="add-btn">+</div>
           </div>
           <div class="mockup-list">
@@ -303,23 +321,23 @@
 <!-- Features -->
 <section id="features">
   <div class="container">
-    <h2>Built with security in mind</h2>
-    <p class="subtitle">Every layer of OtpVault is designed to keep your secrets safe — from encryption to infrastructure.</p>
+    <h2 data-i18n="features.title">Built with security in mind</h2>
+    <p class="subtitle" data-i18n="features.subtitle">Every layer of OtpVault is designed to keep your secrets safe — from encryption to infrastructure.</p>
     <div class="features-grid">
       <div class="feature-card">
         <div class="feature-icon">🔒</div>
-        <h3>Zero-Knowledge Encryption</h3>
-        <p>Your vault is encrypted with AES-256-GCM before leaving your device. The encryption key is derived from your password using Argon2id and is never transmitted to any server.</p>
+        <h3 data-i18n="features.zero_knowledge.title">Zero-Knowledge Encryption</h3>
+        <p data-i18n="features.zero_knowledge.desc">Your vault is encrypted with AES-256-GCM before leaving your device. The encryption key is derived from your password using Argon2id and is never transmitted to any server.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">☁️</div>
-        <h3>Encrypted Cloud Backup</h3>
-        <p>Your encrypted vault is automatically backed up to the cloud when you sign up or unlock. Sign in with the same email on any device to restore your codes — the server never sees plaintext data.</p>
+        <h3 data-i18n="features.cloud_backup.title">Encrypted Cloud Backup</h3>
+        <p data-i18n="features.cloud_backup.desc">Your encrypted vault is automatically backed up to the cloud when you sign up or unlock. Sign in with the same email on any device to restore your codes — the server never sees plaintext data.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">⚡</div>
-        <h3>Blazing Fast & Lightweight</h3>
-        <p>Built with Rust and Tauri, OtpVault uses a fraction of the RAM of Electron-based apps. It launches instantly, runs efficiently, and stays out of your way.</p>
+        <h3 data-i18n="features.fast.title">Blazing Fast & Lightweight</h3>
+        <p data-i18n="features.fast.desc">Built with Rust and Tauri, OtpVault uses a fraction of the RAM of Electron-based apps. It launches instantly, runs efficiently, and stays out of your way.</p>
       </div>
     </div>
   </div>
@@ -328,25 +346,25 @@
 <!-- How it Works -->
 <section id="how-it-works" style="background: rgba(255,255,255,.02);">
   <div class="container">
-    <h2>How it Works</h2>
-    <p class="subtitle">Get started in three simple steps.</p>
+    <h2 data-i18n="how.title">How it Works</h2>
+    <p class="subtitle" data-i18n="how.subtitle">Get started in three simple steps.</p>
     <div class="steps">
       <div class="step">
         <div class="step-number">1</div>
-        <h3>Create Your Encrypted Vault</h3>
-        <p>Sign up with your email and password. Your password never leaves your device — it's used to derive your encryption key locally.</p>
+        <h3 data-i18n="how.step1.title">Create Your Encrypted Vault</h3>
+        <p data-i18n="how.step1.desc">Sign up with your email and password. Your password never leaves your device — it's used to derive your encryption key locally.</p>
       </div>
       <div class="step-arrow">→</div>
       <div class="step">
         <div class="step-number">2</div>
-        <h3>Add Your Accounts</h3>
-        <p>Scan QR codes using your camera, upload a QR image, or enter the secret key manually. Supports SHA1/SHA256/SHA512, 6-8 digits, and custom step intervals.</p>
+        <h3 data-i18n="how.step2.title">Add Your Accounts</h3>
+        <p data-i18n="how.step2.desc">Scan QR codes using your camera, upload a QR image, or enter the secret key manually. Supports SHA1/SHA256/SHA512, 6-8 digits, and custom step intervals.</p>
       </div>
       <div class="step-arrow">→</div>
       <div class="step">
         <div class="step-number">3</div>
-        <h3>Sync Securely to the Cloud</h3>
-        <p>Your encrypted vault syncs automatically with Supabase. No unencrypted data ever touches the cloud — just seamless access across devices.</p>
+        <h3 data-i18n="how.step3.title">Sync Securely to the Cloud</h3>
+        <p data-i18n="how.step3.desc">Your encrypted vault syncs automatically with Supabase. No unencrypted data ever touches the cloud — just seamless access across devices.</p>
       </div>
     </div>
   </div>
@@ -355,16 +373,16 @@
 <!-- Open Source -->
 <section>
   <div class="container">
-    <h2>100% Open Source</h2>
-    <p class="subtitle">Transparency you can trust. Every line of code is public and auditable.</p>
+    <h2 data-i18n="opensource.title">100% Open Source</h2>
+    <p class="subtitle" data-i18n="opensource.subtitle">Transparency you can trust. Every line of code is public and auditable.</p>
     <div class="trust">
       <div class="stats">
-        <div class="stat"><div class="stat-num">MIT</div><div class="stat-label">License</div></div>
-        <div class="stat"><div class="stat-num">Public</div><div class="stat-label">Source</div></div>
-        <div class="stat"><div class="stat-num">CI/CD</div><div class="stat-label">Transparent Builds</div></div>
+        <div class="stat"><div class="stat-num">MIT</div><div class="stat-label" data-i18n="opensource.license">License</div></div>
+        <div class="stat"><div class="stat-num">Public</div><div class="stat-label" data-i18n="opensource.source">Source</div></div>
+        <div class="stat"><div class="stat-num">CI/CD</div><div class="stat-label" data-i18n="opensource.transparent">Transparent Builds</div></div>
       </div>
-      <p>OtpVault is open-source software under the MIT license. The entire build pipeline runs on GitHub Actions — from source to signed MSI installer. Anyone can verify that the binary matches the published source code, guaranteeing no hidden backdoors or tampering.</p>
-      <a href="https://github.com/Shadow132245/OtpVault" class="btn-primary">
+      <p data-i18n="opensource.desc">OtpVault is open-source software under the MIT license. The entire build pipeline runs on GitHub Actions — from source to signed MSI installer. Anyone can verify that the binary matches the published source code, guaranteeing no hidden backdoors or tampering.</p>
+      <a href="https://github.com/Shadow132245/OtpVault" class="btn-primary" data-i18n="opensource.cta">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
         View on GitHub
       </a>
@@ -375,21 +393,187 @@
 <!-- Footer -->
 <footer>
   <div class="links">
-    <a href="https://github.com/Shadow132245/OtpVault">GitHub</a>
-    <a href="https://github.com/Shadow132245/OtpVault/blob/main/LICENSE">License</a>
-    <a href="https://github.com/Shadow132245/OtpVault/issues/new">Report a Bug</a>
-    <a href="https://github.com/Shadow132245/OtpVault/releases/latest">Download</a>
-    <a href="https://shadow132245.github.io/OtpVault/privacy-policy.html">Privacy Policy</a>
-    <a href="https://shadow132245.github.io/OtpVault/terms-of-service.html">Terms of Service</a>
+    <a href="https://github.com/Shadow132245/OtpVault" data-i18n="footer.github">GitHub</a>
+    <a href="https://github.com/Shadow132245/OtpVault/blob/main/LICENSE" data-i18n="footer.license">License</a>
+    <a href="https://github.com/Shadow132245/OtpVault/issues/new" data-i18n="footer.report_bug">Report a Bug</a>
+    <a href="https://github.com/Shadow132245/OtpVault/releases/latest" data-i18n="footer.download">Download</a>
+    <a href="https://shadow132245.github.io/OtpVault/privacy-policy.html" data-i18n="footer.privacy">Privacy Policy</a>
+    <a href="https://shadow132245.github.io/OtpVault/terms-of-service.html" data-i18n="footer.terms">Terms of Service</a>
   </div>
-  <p>&copy; 2026 OtpVault. MIT License. Built with Rust &amp; Tauri.</p>
+  <p data-i18n="footer.copyright">&copy; 2026 OtpVault. MIT License. Built with Rust &amp; Tauri. EuroMoscow Developments</p>
 </footer>
 
 <script>
+// ---- i18n ----
+const i18n = { en: {}, ar: {} };
+
+i18n.en = {
+  'nav.features': 'Features',
+  'nav.how_it_works': 'How it Works',
+  'nav.github': 'GitHub',
+  'nav.download': 'Download',
+  'nav.privacy': 'Privacy Policy',
+  'nav.terms': 'Terms of Service',
+
+  'hero.title': 'A secure, zero-knowledge desktop 2FA authenticator',
+  'hero.subtitle': 'Your TOTP secrets encrypted with AES-256-GCM. The key never leaves your device.',
+  'hero.download_btn': 'Download for Windows',
+  'hero.source_btn': 'View Source on GitHub',
+  'hero.mockup_title': 'OtpVault — My Accounts',
+  'hero.search_placeholder': '\u{1F50D} Search accounts...',
+
+  'features.title': 'Built with security in mind',
+  'features.subtitle': 'Every layer of OtpVault is designed to keep your secrets safe \u2014 from encryption to infrastructure.',
+  'features.zero_knowledge.title': 'Zero-Knowledge Encryption',
+  'features.zero_knowledge.desc': 'Your vault is encrypted with AES-256-GCM before leaving your device. The encryption key is derived from your password using Argon2id and is never transmitted to any server.',
+  'features.cloud_backup.title': 'Encrypted Cloud Backup',
+  'features.cloud_backup.desc': 'Your encrypted vault is automatically backed up to the cloud when you sign up or unlock. Sign in with the same email on any device to restore your codes \u2014 the server never sees plaintext data.',
+  'features.fast.title': 'Blazing Fast & Lightweight',
+  'features.fast.desc': 'Built with Rust and Tauri, OtpVault uses a fraction of the RAM of Electron-based apps. It launches instantly, runs efficiently, and stays out of your way.',
+
+  'how.title': 'How it Works',
+  'how.subtitle': 'Get started in three simple steps.',
+  'how.step1.title': 'Create Your Encrypted Vault',
+  'how.step1.desc': 'Sign up with your email and password. Your password never leaves your device \u2014 it\'s used to derive your encryption key locally.',
+  'how.step2.title': 'Add Your Accounts',
+  'how.step2.desc': 'Scan QR codes using your camera, upload a QR image, or enter the secret key manually. Supports SHA1/SHA256/SHA512, 6-8 digits, and custom step intervals.',
+  'how.step3.title': 'Sync Securely to the Cloud',
+  'how.step3.desc': 'Your encrypted vault syncs automatically with Supabase. No unencrypted data ever touches the cloud \u2014 just seamless access across devices.',
+
+  'opensource.title': '100% Open Source',
+  'opensource.subtitle': 'Transparency you can trust. Every line of code is public and auditable.',
+  'opensource.license': 'License',
+  'opensource.source': 'Source',
+  'opensource.transparent': 'Transparent Builds',
+  'opensource.desc': 'OtpVault is open-source software under the MIT license. The entire build pipeline runs on GitHub Actions \u2014 from source to signed MSI installer. Anyone can verify that the binary matches the published source code, guaranteeing no hidden backdoors or tampering.',
+  'opensource.cta': 'View on GitHub',
+
+  'footer.github': 'GitHub',
+  'footer.license': 'License',
+  'footer.report_bug': 'Report a Bug',
+  'footer.download': 'Download',
+  'footer.privacy': 'Privacy Policy',
+  'footer.terms': 'Terms of Service',
+  'footer.copyright': '\u00a9 2026 OtpVault. MIT License. Built with Rust & Tauri. EuroMoscow Developments',
+};
+
+i18n.ar = {
+  'nav.features': '\u0627\u0644\u0645\u0645\u064a\u0632\u0627\u062a',
+  'nav.how_it_works': '\u0643\u064a\u0641 \u064a\u0639\u0645\u0644',
+  'nav.github': 'GitHub',
+  'nav.download': '\u062a\u062d\u0645\u064a\u0644',
+  'nav.privacy': '\u0633\u064a\u0627\u0633\u0629 \u0627\u0644\u062e\u0635\u0648\u0635\u064a\u0629',
+  'nav.terms': '\u0634\u0631\u0648\u0637 \u0627\u0644\u062e\u062f\u0645\u0629',
+
+  'hero.title': '\u0645\u062f\u064a\u0631 \u062a\u062d\u0642\u0642 \u0628\u062e\u0637\u0648\u062a\u064a\u0646 \u0622\u0645\u0646 \u0644\u0644\u0643\u0645\u0628\u064a\u0648\u062a\u0631 \u0627\u0644\u0645\u0643\u062a\u0628\u064a',
+  'hero.subtitle': '\u0631\u0645\u0648\u0632 TOTP \u0627\u0644\u062e\u0627\u0635\u0629 \u0628\u0643 \u0645\u0634\u0641\u0631\u0629 \u0628\u0640 AES-256-GCM. \u0627\u0644\u0645\u0641\u062a\u0627\u062d \u0644\u0627 \u064a\u063a\u0627\u062f\u0631 \u062c\u0647\u0627\u0632\u0643 \u0623\u0628\u062f\u0627\u064b.',
+  'hero.download_btn': '\u062a\u062d\u0645\u064a\u0644 \u0644\u0646\u0638\u0627\u0645 Windows',
+  'hero.source_btn': '\u0639\u0631\u0636 \u0627\u0644\u0645\u0635\u062f\u0631 \u0639\u0644\u0649 GitHub',
+  'hero.mockup_title': 'OtpVault \u2014 \u062d\u0633\u0627\u0628\u0627\u062a\u064a',
+  'hero.search_placeholder': '\u{1F50D} \u0628\u062d\u062b \u0641\u064a \u0627\u0644\u062d\u0633\u0627\u0628\u0627\u062a...',
+
+  'features.title': '\u0645\u0628\u0646\u064a \u0645\u0639 \u0623\u0645\u0627\u0646 \u0641\u064a \u0627\u0644\u0627\u0639\u062a\u0628\u0627\u0631',
+  'features.subtitle': '\u0643\u0644 \u0637\u0628\u0642\u0629 \u0645\u0646 OtpVault \u0645\u0635\u0645\u0645\u0629 \u0644\u0644\u062d\u0641\u0627\u0638 \u0639\u0644\u0649 \u0623\u0645\u0627\u0646 \u0623\u0633\u0631\u0627\u0631\u0643 \u2014 \u0645\u0646 \u0627\u0644\u062a\u0634\u0641\u064a\u0631 \u0625\u0644\u0649 \u0627\u0644\u0628\u0646\u064a\u0629 \u0627\u0644\u062a\u062d\u062a\u064a\u0629.',
+  'features.zero_knowledge.title': '\u062a\u0634\u0641\u064a\u0631 \u0628\u062f\u0648\u0646 \u0645\u0639\u0631\u0641\u0629',
+  'features.zero_knowledge.desc': '\u062e\u0632\u0646\u062a\u0643 \u0645\u0634\u0641\u0631\u0629 \u0628\u0640 AES-256-GCM \u0642\u0628\u0644 \u0645\u063a\u0627\u062f\u0631\u0629 \u062c\u0647\u0627\u0632\u0643. \u0645\u0641\u062a\u0627\u062d \u0627\u0644\u062a\u0634\u0641\u064a\u0631 \u0645\u0633\u062a\u0645\u062f \u0645\u0646 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u0627\u0644\u062e\u0627\u0635\u0629 \u0628\u0643 \u0628\u0627\u0633\u062a\u062e\u062f\u0627\u0645 Argon2id \u0648\u0644\u0627 \u064a\u062a\u0645 \u0625\u0631\u0633\u0627\u0644\u0647 \u0625\u0644\u0649 \u0623\u064a \u062e\u0627\u062f\u0645 \u0623\u0628\u062f\u0627\u064b.',
+  'features.cloud_backup.title': '\u0646\u0633\u062e \u0627\u062d\u062a\u064a\u0627\u0637\u064a \u0633\u062d\u0627\u0628\u064a \u0645\u0634\u0641\u0631',
+  'features.cloud_backup.desc': '\u064a\u062a\u0645 \u0646\u0633\u062e \u062e\u0632\u0646\u062a\u0643 \u0627\u0644\u0645\u0634\u0641\u0631\u0629 \u0627\u062d\u062a\u064a\u0627\u0637\u064a\u0627\u064b \u0625\u0644\u0649 \u0627\u0644\u0633\u062d\u0627\u0628\u0629 \u062a\u0644\u0642\u0627\u0626\u064a\u0627\u064b \u0639\u0646\u062f \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u062d\u0633\u0627\u0628 \u0623\u0648 \u0641\u062a\u062d\u0647. \u0633\u062c\u0644 \u0627\u0644\u062f\u062e\u0648\u0644 \u0628\u0646\u0641\u0633 \u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a \u0639\u0644\u0649 \u0623\u064a \u062c\u0647\u0627\u0632 \u0644\u0627\u0633\u062a\u0639\u0627\u062f\u0629 \u0631\u0645\u0648\u0632\u0643 \u2014 \u0627\u0644\u062e\u0627\u062f\u0645 \u0644\u0627 \u064a\u0631\u0649 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u063a\u064a\u0631 \u0627\u0644\u0645\u0634\u0641\u0631\u0629 \u0623\u0628\u062f\u0627\u064b.',
+  'features.fast.title': '\u0633\u0631\u064a\u0639 \u062c\u062f\u0627\u064b \u0648\u062e\u0641\u064a\u0641',
+  'features.fast.desc': '\u0645\u0628\u0646\u064a \u0628\u0627\u0633\u062a\u062e\u062f\u0627\u0645 Rust \u0648 Tauri\u060c OtpVault \u064a\u0633\u062a\u062e\u062f\u0645 \u062c\u0632\u0621\u064b \u0628\u0633\u064a\u0637\u0627\u064b \u0645\u0646 RAM \u0645\u0642\u0627\u0631\u0646\u0629 \u0628\u062a\u0637\u0628\u064a\u0642\u0627\u062a Electron. \u064a\u0634\u062a\u063a\u0644 \u0641\u0648\u0631\u0627\u064b\u060c \u064a\u0639\u0645\u0644 \u0628\u0643\u0641\u0627\u0621\u0629\u060c \u0648\u0644\u0627 \u064a\u0639\u064a\u0642 \u0637\u0631\u064a\u0642\u0643.',
+
+  'how.title': '\u0643\u064a\u0641 \u064a\u0639\u0645\u0644',
+  'how.subtitle': '\u0627\u0628\u062f\u0623 \u0628\u062b\u0644\u0627\u062b \u062e\u0637\u0648\u0627\u062a \u0628\u0633\u064a\u0637\u0629.',
+  'how.step1.title': '\u0623\u0646\u0634\u0626 \u062e\u0632\u0646\u062a\u0643 \u0627\u0644\u0645\u0634\u0641\u0631\u0629',
+  'how.step1.desc': '\u0633\u062c\u0644 \u0628\u0627\u0633\u062a\u062e\u062f\u0627\u0645 \u0628\u0631\u064a\u062f\u0643 \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a \u0648\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631. \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u0644\u0627 \u062a\u063a\u0627\u062f\u0631 \u062c\u0647\u0627\u0632\u0643 \u0623\u0628\u062f\u0627\u064b \u2014 \u062a\u0633\u062a\u062e\u062f\u0645 \u0644\u0627\u0633\u062a\u062e\u0644\u0627\u0635 \u0645\u0641\u062a\u0627\u062d \u0627\u0644\u062a\u0634\u0641\u064a\u0631 \u0645\u062d\u0644\u064a\u0627\u064b.',
+  'how.step2.title': '\u0623\u0636\u0641 \u062d\u0633\u0627\u0628\u0627\u062a\u0643',
+  'how.step2.desc': '\u0627\u0645\u0633\u062d \u0631\u0645\u0648\u0632 QR \u0628\u0627\u0633\u062a\u062e\u062f\u0627\u0645 \u0627\u0644\u0643\u0627\u0645\u064a\u0631\u0627\u060c \u0627\u0631\u0641\u0639 \u0635\u0648\u0631\u0629 QR\u060c \u0623\u0648 \u0623\u062f\u062e\u0644 \u0627\u0644\u0645\u0641\u062a\u0627\u062d \u0627\u0644\u0633\u0631\u064a \u064a\u062f\u0648\u064a\u0627\u064b. \u064a\u062f\u0639\u0645 SHA1/SHA256/SHA512\u060c 6-8 \u0623\u0631\u0642\u0627\u0645\u060c \u0648\u0641\u062a\u0631\u0627\u062a \u0632\u0645\u0646\u064a\u0629 \u0645\u062e\u0635\u0635\u0629.',
+  'how.step3.title': '\u0627\u0644\u0645\u0632\u0627\u0645\u0646\u0629 \u0627\u0644\u0622\u0645\u0646\u0629 \u0645\u0639 \u0627\u0644\u0633\u062d\u0627\u0628\u0629',
+  'how.step3.desc': '\u062e\u0632\u0646\u062a\u0643 \u0627\u0644\u0645\u0634\u0641\u0631\u0629 \u062a\u062a\u0645 \u0645\u0632\u0627\u0645\u0646\u062a\u0647\u0627 \u062a\u0644\u0642\u0627\u0626\u064a\u0627\u064b \u0645\u0639 Supabase. \u0644\u0627 \u062a\u0648\u062c\u062f \u0628\u064a\u0627\u0646\u0627\u062a \u063a\u064a\u0631 \u0645\u0634\u0641\u0631\u0629 \u062a\u0644\u0645\u0633 \u0627\u0644\u0633\u062d\u0627\u0628\u0629 \u0623\u0628\u062f\u0627\u064b \u2014 \u0648\u0635\u0648\u0644 \u0633\u0644\u0633 \u0639\u0628\u0631 \u0627\u0644\u0623\u062c\u0647\u0632\u0629.',
+
+  'opensource.title': '\u0645\u0641\u062a\u0648\u062d \u0627\u0644\u0645\u0635\u062f\u0631 100%',
+  'opensource.subtitle': '\u0634\u0641\u0627\u0641\u064a\u0629 \u064a\u0645\u0643\u0646\u0643 \u0627\u0644\u0648\u062b\u0648\u0642 \u0628\u0647\u0627. \u0643\u0644 \u0633\u0637\u0631 \u0645\u0646 \u0627\u0644\u0643\u0648\u062f \u0639\u0627\u0645 \u0648\u0642\u0627\u0628\u0644 \u0644\u0644\u062a\u062f\u0642\u064a\u0642.',
+  'opensource.license': '\u0627\u0644\u062a\u0631\u062e\u064a\u0635',
+  'opensource.source': '\u0627\u0644\u0645\u0635\u062f\u0631',
+  'opensource.transparent': '\u0628\u0646\u0627\u0621 \u0634\u0641\u0627\u0641',
+  'opensource.desc': 'OtpVault \u0647\u0648 \u0628\u0631\u0646\u0627\u0645\u062c \u0645\u0641\u062a\u0648\u062d \u0627\u0644\u0645\u0635\u062f\u0631 \u062a\u062d\u062a \u0631\u062e\u0635\u0629 MIT. \u062e\u0637 \u0627\u0644\u0628\u0646\u0627\u0621 \u0628\u0623\u0643\u0645\u0644\u0647 \u064a\u0639\u0645\u0644 \u0639\u0644\u0649 GitHub Actions \u2014 \u0645\u0646 \u0627\u0644\u0645\u0635\u062f\u0631 \u0625\u0644\u0649 \u0645\u062b\u0628\u062a MSI \u0627\u0644\u0645\u0648\u0642\u0639. \u064a\u0645\u0643\u0646 \u0644\u0623\u064a \u0634\u062e\u0635 \u0627\u0644\u062a\u062d\u0642\u0642 \u0645\u0646 \u0623\u0646 \u0627\u0644\u0645\u0644\u0641 \u0627\u0644\u062b\u0646\u0627\u0626\u064a \u064a\u0637\u0627\u0628\u0642 \u0643\u0648\u062f \u0627\u0644\u0645\u0635\u062f\u0631 \u0627\u0644\u0645\u0646\u0634\u0648\u0631\u060c \u0645\u0645\u0627 \u064a\u0636\u0645\u0646 \u0639\u062f\u0645 \u0648\u062c\u0648\u062f \u0623\u0628\u0648\u0627\u0628 \u062e\u0644\u0641\u064a\u0629 \u0645\u062e\u0641\u064a\u0629.',
+  'opensource.cta': '\u0639\u0631\u0636 \u0639\u0644\u0649 GitHub',
+
+  'footer.github': 'GitHub',
+  'footer.license': '\u0627\u0644\u062a\u0631\u062e\u064a\u0635',
+  'footer.report_bug': '\u0627\u0644\u0625\u0628\u0644\u0627\u063a \u0639\u0646 \u062e\u0637\u0623',
+  'footer.download': '\u062a\u062d\u0645\u064a\u0644',
+  'footer.privacy': '\u0633\u064a\u0627\u0633\u0629 \u0627\u0644\u062e\u0635\u0648\u0635\u064a\u0629',
+  'footer.terms': '\u0634\u0631\u0648\u0637 \u0627\u0644\u062e\u062f\u0645\u0629',
+  'footer.copyright': '\u00a9 2026 OtpVault. \u0631\u062e\u0635\u0629 MIT. \u0645\u0628\u0646\u064a \u0628\u0627\u0633\u062a\u062e\u062f\u0627\u0645 Rust \u0648 Tauri. EuroMoscow Developments',
+};
+
+function translate(lang) {
+  const dict = i18n[lang];
+  if (!dict) return;
+
+  // Update elements with data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (dict[key]) el.textContent = dict[key];
+  });
+
+  // Update meta tags
+  const metaTitle = document.getElementById('meta-title');
+  if (metaTitle && dict['hero.title']) {
+    metaTitle.textContent = 'OtpVault \u2014 ' + dict['hero.title'];
+  }
+  const updateMeta = (name, key) => {
+    const el = document.querySelector('meta[name="' + name + '"], meta[property="' + name + '"]');
+    if (el && dict[key]) el.setAttribute('content', 'OtpVault \u2014 ' + dict[key]);
+  };
+  updateMeta('description', 'hero.subtitle');
+  updateMeta('og:description', 'hero.subtitle');
+  updateMeta('twitter:description', 'hero.subtitle');
+  updateMeta('og:title', 'hero.title');
+  updateMeta('twitter:title', 'hero.title');
+
+  // Update version badge (preserve dynamic version from GitHub API)
+  const badge = document.getElementById('version-badge');
+  if (badge) {
+    const current = badge.textContent;
+    const match = current.match(/^\u2726\s*v?([\d.]+(-[\w.]+)?)/);
+    const version = match ? match[1] : '0.1.1';
+    const suffix = lang === 'ar' ? '\u0645\u0641\u062a\u0648\u062d \u0627\u0644\u0645\u0635\u062f\u0631' : 'Open Source';
+    badge.textContent = '\u2726 v' + version + ' \u2014 ' + suffix;
+  }
+
+  // Set direction
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.documentElement.lang = lang;
+
+  // Update active lang button
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+  });
+}
+
+let currentLang = localStorage.getItem('landing-lang') || 'en';
+
+function switchLanguage(lang) {
+  currentLang = lang;
+  localStorage.setItem('landing-lang', lang);
+  translate(lang);
+}
+
+// Initial translation
+translate(currentLang);
+
+// GitHub version badge
 fetch('https://api.github.com/repos/Shadow132245/OtpVault/releases/latest')
   .then(r => r.ok ? r.json() : Promise.reject())
-  .then(d => { document.getElementById('version-badge').textContent = '✦ ' + d.tag_name + ' — Open Source' })
-  .catch(() => {})
+  .then(d => {
+    const badge = document.getElementById('version-badge');
+    if (badge) {
+      const suffix = currentLang === 'ar' ? '\u0645\u0641\u062a\u0648\u062d \u0627\u0644\u0645\u0635\u062f\u0631' : 'Open Source';
+      badge.textContent = '\u2726 ' + d.tag_name + ' \u2014 ' + suffix;
+    }
+  })
+  .catch(() => {});
 </script>
 </body>
 </html>
