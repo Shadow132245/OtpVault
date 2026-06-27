@@ -48,7 +48,7 @@ function App() {
   useEffect(() => {
     const init = async () => {
       const { initialized: exists } = await vault.init()
-      setVaultExists(exists)
+      setVaultExists(exists ?? false)
       if (exists === false) {
         setScreen('onboarding')
       } else {
