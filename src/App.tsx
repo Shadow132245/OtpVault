@@ -16,11 +16,9 @@ import {
   exportBackup,
   importBackup,
   lockVault as lockVaultCmd,
-  emailSignUp,
-  emailSignIn,
-  loadRememberMe,
-  saveRememberMe,
-  clearRememberMe,
+  createVault,
+  unlockVault,
+  checkVault,
 } from './lib/tauri'
 import type { AccountEntry, AddAccountPayload } from './types'
 
@@ -47,22 +45,11 @@ function App() {
 
   useEffect(() => {
     const init = async () => {
-      const { initialized: exists } = await vault.init()
-      setVaultExists(exists ?? false)
-      if (exists === false) {
+      const exists = await checkVault()
+      setVaultExists(exists)
+      if (exists) {
         setScreen('onboarding')
       } else {
-        const creds = await loadRememberMe()
-        if (creds) {
-          try {
-            const ok = await emailSignIn(creds[0], creds[1])
-            if (ok) {
-              vault.setUnlocked(true)
-              setScreen('accounts')
-              return
-            }
-          } catch { /* fall through to onboarding */ }
-        }
         setScreen('onboarding')
       }
     }
@@ -94,25 +81,20 @@ function App() {
     }
   }
 
-  const handleSignUp = async (email: string, password: string) => {
+  const handleCreateVault = async (password: string) => {
     try {
-      await emailSignUp(email, password)
-      await saveRememberMe(email, password)
+      await createVault(password)
       vault.setUnlocked(true)
     } catch (e) {
       setError(String(e))
     }
   }
 
-  const handleSignIn = async (email: string, password: string, remember?: boolean): Promise<boolean> => {
+  const handleUnlockVault = async (password: string): Promise<boolean> => {
     try {
-      const ok = await emailSignIn(email, password)
-      if (!ok) return false
-      if (remember !== false) {
-        await saveRememberMe(email, password)
-      }
-      vault.setUnlocked(true)
-      return true
+      const ok = await unlockVault(password)
+      if (ok) vault.setUnlocked(true)
+      return ok
     } catch (e) {
       setError(String(e))
       return false
@@ -120,7 +102,6 @@ function App() {
   }
 
   const handleLogOut = async () => {
-    await clearRememberMe()
     await lockVaultCmd()
     vault.lock()
     setScreen('onboarding')
@@ -189,10 +170,10 @@ function App() {
         {screen === 'onboarding' && (
           <motion.div key="onboarding" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <OnboardingScreen
-              onSignUp={handleSignUp}
-              onSignIn={(email, password) => handleSignIn(email, password, true)}
+              onCreateVault={handleCreateVault}
+              onUnlockVault={handleUnlockVault}
               onError={(msg) => setError(msg)}
-              defaultTab={vaultExists ? 'signin' : 'signup'}
+              defaultTab={vaultExists ? 'unlock' : 'create'}
             />
           </motion.div>
         )}

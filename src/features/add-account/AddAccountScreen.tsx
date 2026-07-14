@@ -119,7 +119,8 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
 
   const handleSave = () => {
     if (!issuer || !secret) return
-    onSave({ issuer, accountName, secret, algorithm, digits, step })
+    const cleanSecret = secret.replace(/\s/g, '')
+    onSave({ issuer, accountName, secret: cleanSecret, algorithm, digits, step })
   }
 
   const handleBack = useCallback(() => {
