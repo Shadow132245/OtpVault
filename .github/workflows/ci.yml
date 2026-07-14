@@ -58,10 +58,7 @@ jobs:
         run: npm ci
 
       - name: Build Tauri (${{ matrix.arch }})
-        run: |
-          $env:SUPABASE_URL = "${{ secrets.SUPABASE_URL }}"
-          $env:SUPABASE_ANON_KEY = "${{ secrets.SUPABASE_ANON_KEY }}"
-          npx tauri build --bundles msi --target ${{ matrix.rust-target }}
+        run: npx tauri build --bundles msi --target ${{ matrix.rust-target }}
 
       - name: Copy MSI to project root
         run: |
