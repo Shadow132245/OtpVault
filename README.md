@@ -24,7 +24,7 @@
 | Feature | Description |
 |---------|-------------|
 | 🔒 **Encrypted Vault** | AES-256-GCM + Argon2id — your keys never leave your device |
-| ☁️ **Cloud Backup** | Encrypted vault syncs to Supabase via email/password |
+| ☁️ **Cloud Sync** | Encrypted vault syncs to Neon (PostgreSQL) via email/password |
 | 📸 **QR Scan** | Add accounts via camera, image upload, or manual entry |
 | 📤 **Export / Import** | Full vault export/import as encrypted JSON |
 | 🌐 **RTL Support** | Arabic + English interface |
@@ -54,12 +54,11 @@ npm install
 npm run tauri dev
 
 # Build production MSI
-$env:SUPABASE_URL="https://your-project.supabase.co"
-$env:SUPABASE_ANON_KEY="your-anon-key"
+$env:DATABASE_URL="postgres://user:pass@ep-xxx.region.aws.neon.tech/dbname"
 npx tauri build --bundles msi --target x86_64-pc-windows-msvc
 ```
 
-> **Note:** `SUPABASE_URL` and `SUPABASE_ANON_KEY` must be set as environment variables at build time.
+> **Note:** `DATABASE_URL` must be set as an environment variable at build time for cloud sync.
 
 ---
 
@@ -70,35 +69,18 @@ npx tauri build --bundles msi --target x86_64-pc-windows-msvc
 | Frontend | React + TypeScript + Vite |
 | Backend | Rust + Tauri v2 |
 | Crypto | Argon2id → AES-256-GCM (Rust only) |
-| Cloud | Supabase (REST API, RLS) |
+| Cloud | Neon (PostgreSQL via tokio-postgres) |
 | Installer | WiX Toolset (branded MSI) |
 | CI/CD | GitHub Actions (x64 + x86) |
 
 ---
 
-## Cloud Backup Setup ☁️
+## Cloud Sync Setup ☁️
 
-1. Create a project at [supabase.com](https://supabase.com)
-2. Run this SQL in the SQL Editor:
-
-```sql
-CREATE TABLE email_vaults (
-  email TEXT PRIMARY KEY,
-  salt TEXT NOT NULL,
-  test_payload TEXT NOT NULL,
-  encrypted_vault TEXT NOT NULL
-);
-
-ALTER TABLE email_vaults ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Anyone can insert" ON email_vaults
-  FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "Anyone can select" ON email_vaults
-  FOR SELECT USING (true);
-```
-
-3. Set `SUPABASE_URL` and `SUPABASE_ANON_KEY` as **GitHub Secrets** and local env vars.
+1. Create a free project at [neon.tech](https://neon.tech)
+2. Get your connection string from the Neon dashboard (copy from "Connection Details")
+3. The table is auto-created on first use — no manual SQL needed
+4. Set `DATABASE_URL` as a **GitHub Secret** (`DATABASE_URL`) and local env var
 
 ---
 
@@ -120,8 +102,7 @@ MIT — see [LICENSE](LICENSE).
 ## Building from Source 🛠️
 
 ```powershell
-$env:SUPABASE_URL = "https://your-project.supabase.co"
-$env:SUPABASE_ANON_KEY = "your-anon-key"
+$env:DATABASE_URL = "postgres://user:pass@ep-xxx.region.aws.neon.tech/dbname"
 
 .\build.bat x64   # 64-bit
 .\build.bat x86   # 32-bit

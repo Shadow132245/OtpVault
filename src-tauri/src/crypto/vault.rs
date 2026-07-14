@@ -124,6 +124,11 @@ impl VaultState {
         Self::encrypt_internal(plaintext, key, salt)
     }
 
+    pub fn encrypt_for_sync(&self, plaintext: &[u8]) -> Result<Vec<u8>, VaultError> {
+        let key = self.key.as_ref().ok_or(VaultError::NotInitialized)?;
+        Self::encrypt_standalone(plaintext, key)
+    }
+
     pub fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, VaultError> {
         let key = self.key.as_ref().ok_or(VaultError::NotInitialized)?;
         if ciphertext.len() < SALT_SIZE + NONCE_SIZE {
@@ -146,6 +151,23 @@ impl VaultState {
 
         let mut result = salt.to_vec();
         result.extend_from_slice(&nonce_bytes);
+        result.extend_from_slice(&ciphertext);
+        Ok(result)
+    }
+
+    fn encrypt_standalone(plaintext: &[u8], key: &[u8]) -> Result<Vec<u8>, VaultError> {
+        let aes_key = Key::<Aes256Gcm>::from_slice(key);
+        let cipher = Aes256Gcm::new(aes_key);
+
+        let mut nonce_bytes = vec![0u8; NONCE_SIZE];
+        rand::thread_rng().fill_bytes(&mut nonce_bytes);
+        let nonce = Nonce::from_slice(&nonce_bytes);
+
+        let ciphertext = cipher
+            .encrypt(nonce, plaintext)
+            .map_err(|e| VaultError::Encrypt(e.to_string()))?;
+
+        let mut result = nonce_bytes;
         result.extend_from_slice(&ciphertext);
         Ok(result)
     }

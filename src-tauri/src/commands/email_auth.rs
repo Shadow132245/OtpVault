@@ -1,41 +1,11 @@
 use crate::commands::auth::VaultManager;
+use crate::commands::neon;
 use crate::crypto::keychain::Keychain;
 use crate::crypto::vault::{self, VaultData};
 use aes_gcm::aead::Aead;
 use aes_gcm::{Aes256Gcm, Key, KeyInit, Nonce};
 use base64::Engine;
-use rand::RngCore;
-use reqwest::Client;
-use serde::{Deserialize, Serialize};
 use tauri::State;
-
-// Build-time env vars: set SUPABASE_URL and SUPABASE_ANON_KEY at compile time.
-// These are public anon keys — security is via RLS, not key secrecy.
-// Hidden from source so others can't reuse your Supabase project.
-const SUPABASE_URL: &str = match option_env!("SUPABASE_URL") {
-    Some(v) => v,
-    None => "https://missing-supabase-url.example.com",
-};
-const SUPABASE_ANON_KEY: &str = match option_env!("SUPABASE_ANON_KEY") {
-    Some(v) => v,
-    None => "MISSING_ANON_KEY",
-};
-
-#[derive(Serialize, Deserialize)]
-struct EmailVaultRow {
-    email: String,
-    salt: String,
-    test_payload: String,
-    encrypted_vault: String,
-}
-
-#[derive(Serialize)]
-struct EmailVaultInsert {
-    email: String,
-    salt: String,
-    test_payload: String,
-    encrypted_vault: String,
-}
 
 fn derive_key(password: &str, salt: &[u8]) -> Result<Vec<u8>, String> {
     let mut key = vec![0u8; 32];
@@ -43,20 +13,6 @@ fn derive_key(password: &str, salt: &[u8]) -> Result<Vec<u8>, String> {
         .hash_password_into(password.as_bytes(), salt, &mut key)
         .map_err(|e| format!("Key derivation failed: {}", e))?;
     Ok(key)
-}
-
-fn encrypt_backup(plaintext: &[u8], key: &[u8]) -> Result<String, String> {
-    let mut nonce_bytes = vec![0u8; 12];
-    rand::thread_rng().fill_bytes(&mut nonce_bytes);
-    let nonce = Nonce::from_slice(&nonce_bytes);
-    let aes_key = Key::<Aes256Gcm>::from_slice(key);
-    let cipher = Aes256Gcm::new(aes_key);
-    let ciphertext = cipher
-        .encrypt(nonce, plaintext)
-        .map_err(|e| format!("Encryption failed: {}", e))?;
-    let mut result = nonce_bytes;
-    result.extend_from_slice(&ciphertext);
-    Ok(base64::engine::general_purpose::STANDARD.encode(&result))
 }
 
 fn decrypt_backup(encrypted_b64: &str, key: &[u8]) -> Result<Vec<u8>, String> {
@@ -99,34 +55,12 @@ pub async fn email_sign_up(
     Keychain::save_email(&app, &email).map_err(|e| e.to_string())?;
     vault::save_vault(&app, &VaultData::empty()).map_err(|e| e.to_string())?;
 
-    let key = derive_key(&password, &salt)?;
-    let vault_json = serde_json::to_vec(&VaultData::empty()).map_err(|e| e.to_string())?;
-    let encrypted_vault = encrypt_backup(&vault_json, &key)?;
-
-    let salt_b64 = base64::engine::general_purpose::STANDARD.encode(&salt);
-    let test_b64 = base64::engine::general_purpose::STANDARD.encode(&test_payload);
-
-    let body = EmailVaultInsert {
-        email: email.clone(),
-        salt: salt_b64,
-        test_payload: test_b64,
-        encrypted_vault,
-    };
-
-    let client = Client::new();
-    let url = format!("{}/rest/v1/email_vaults", SUPABASE_URL);
-    let resp = client
-        .post(&url)
-        .header("apikey", SUPABASE_ANON_KEY)
-        .header("Content-Type", "application/json")
-        .json(&body)
-        .send()
-        .await
-        .map_err(|e| format!("Failed to backup vault: {}", e))?;
-
-    if !resp.status().is_success() {
-        let text = resp.text().await.unwrap_or_default();
-        log::warn!("Supabase backup warning (non-fatal): {}", text);
+    // Sync to Neon (non-fatal if unavailable)
+    if let Err(e) = neon::ensure_table().await {
+        log::warn!("Neon table setup failed (sync disabled): {}", e);
+    }
+    if let Err(e) = neon::upload_vault(&app, &*vault_state, &email).await {
+        log::warn!("Neon upload warning (non-fatal): {}", e);
     }
 
     log::info!("Email sign-up complete for {}", email);
@@ -148,31 +82,9 @@ pub async fn email_sign_in(
             (s, tp)
         }
         Err(_) => {
-            log::info!("No local vault, fetching from Supabase for {}", email);
-            let client = Client::new();
-            let encoded_email: String = url::form_urlencoded::byte_serialize(email.as_bytes()).collect();
-            let url = format!(
-                "{}/rest/v1/email_vaults?email=eq.{}&select=*",
-                SUPABASE_URL,
-                encoded_email
-            );
-            let resp = client
-                .get(&url)
-                .header("apikey", SUPABASE_ANON_KEY)
-                .send()
-                .await
-                .map_err(|e| format!("Failed to fetch vault: {}", e))?;
+            log::info!("No local vault, fetching from Neon for {}", email);
 
-            if !resp.status().is_success() {
-                return Err("No account found with this email".into());
-            }
-
-            let mut rows: Vec<EmailVaultRow> = resp
-                .json()
-                .await
-                .map_err(|e| format!("Failed to parse response: {}", e))?;
-
-            let row = rows.pop().ok_or("No vault found for this email".to_string())?;
+            let row = neon::fetch_vault(&email).await?;
 
             let salt = base64::engine::general_purpose::STANDARD
                 .decode(&row.salt)
@@ -196,7 +108,7 @@ pub async fn email_sign_in(
             Keychain::save_email(&app, &email).map_err(|e| e.to_string())?;
             vault::save_vault(&app, &vault_data).map_err(|e| e.to_string())?;
 
-            log::info!("Vault restored from cloud for {}", email);
+            log::info!("Vault restored from Neon for {}", email);
 
             (salt, test_payload)
         }

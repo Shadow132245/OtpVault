@@ -1,5 +1,7 @@
-use crate::crypto::vault::{AccountEntry, save_vault, load_vault};
 use crate::commands::auth::VaultManager;
+use crate::commands::neon;
+use crate::crypto::keychain::Keychain;
+use crate::crypto::vault::{AccountEntry, save_vault, load_vault};
 use crate::totp::generator::{TotpCode, TotpGenerator};
 use base64::Engine;
 use tauri::State;
@@ -12,7 +14,7 @@ pub fn get_accounts(app: tauri::AppHandle) -> Result<Vec<AccountEntry>, String> 
 }
 
 #[tauri::command]
-pub fn add_account(
+pub async fn add_account(
     app: tauri::AppHandle,
     vault: State<'_, VaultManager>,
     issuer: String,
@@ -23,14 +25,15 @@ pub fn add_account(
     step: u64,
     icon: String,
 ) -> Result<(), String> {
-    let vault_state = vault.0.lock().unwrap();
-    if !vault_state.is_unlocked() {
-        return Err("Vault is locked".into());
-    }
-
-    let secret_encrypted = vault_state
-        .encrypt(secret.as_bytes())
-        .map_err(|e| e.to_string())?;
+    let secret_encrypted = {
+        let vault_state = vault.0.lock().map_err(|e| e.to_string())?;
+        if !vault_state.is_unlocked() {
+            return Err("Vault is locked".into());
+        }
+        vault_state
+            .encrypt(secret.as_bytes())
+            .map_err(|e| e.to_string())?
+    };
     let secret_b64 = base64::engine::general_purpose::STANDARD.encode(&secret_encrypted);
 
     let now = chrono::Utc::now().to_rfc3339();
@@ -46,28 +49,41 @@ pub fn add_account(
         created_at: now.clone(),
         updated_at: now,
     };
-    drop(vault_state);
 
     let mut data = load_vault(&app).map_err(|e| e.to_string())?;
     data.accounts.push(entry);
     save_vault(&app, &data).map_err(|e| e.to_string())?;
+
+    if let Some(email) = Keychain::load_email(&app) {
+        if let Err(e) = neon::upload_vault(&app, &*vault, &email).await {
+            log::warn!("Neon sync warning (non-fatal): {}", e);
+        }
+    }
 
     log::info!("Account added");
     Ok(())
 }
 
 #[tauri::command]
-pub fn delete_account(app: tauri::AppHandle, account_id: String) -> Result<(), String> {
+pub async fn delete_account(app: tauri::AppHandle, vault: State<'_, VaultManager>, account_id: String) -> Result<(), String> {
     let mut data = load_vault(&app).map_err(|e| e.to_string())?;
     data.accounts.retain(|a| a.id != account_id);
     save_vault(&app, &data).map_err(|e| e.to_string())?;
+
+    if let Some(email) = Keychain::load_email(&app) {
+        if let Err(e) = neon::upload_vault(&app, &*vault, &email).await {
+            log::warn!("Neon sync warning (non-fatal): {}", e);
+        }
+    }
+
     log::info!("Account deleted: {}", account_id);
     Ok(())
 }
 
 #[tauri::command]
-pub fn update_account(
+pub async fn update_account(
     app: tauri::AppHandle,
+    vault: State<'_, VaultManager>,
     account_id: String,
     issuer: String,
     account_name: String,
@@ -79,6 +95,13 @@ pub fn update_account(
         account.updated_at = chrono::Utc::now().to_rfc3339();
     }
     save_vault(&app, &data).map_err(|e| e.to_string())?;
+
+    if let Some(email) = Keychain::load_email(&app) {
+        if let Err(e) = neon::upload_vault(&app, &*vault, &email).await {
+            log::warn!("Neon sync warning (non-fatal): {}", e);
+        }
+    }
+
     log::info!("Account updated: {}", account_id);
     Ok(())
 }
@@ -109,7 +132,7 @@ pub fn get_decrypted_secrets(
     app: tauri::AppHandle,
     vault: State<'_, VaultManager>,
 ) -> Result<Vec<String>, String> {
-    let vault_state = vault.0.lock().unwrap();
+    let vault_state = vault.0.lock().map_err(|e| e.to_string())?;
     let data = load_vault(&app).map_err(|e| e.to_string())?;
     let mut secrets = Vec::new();
     for account in &data.accounts {

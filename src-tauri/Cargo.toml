@@ -27,8 +27,9 @@ serde_json = "1"
 totp-rs = { version = "5", features = ["otpauth", "serde_support", "gen_secret"] }
 image = "0.25"
 rqrr = "0.8"
-reqwest = { version = "0.12", features = ["json"] }
 tokio = { version = "1", features = ["full"] }
+tokio-postgres = { version = "0.7", features = ["with-chrono-0_4"] }
+deadpool-postgres = { version = "0.14", features = ["serde"] }
 chrono = "0.4"
 uuid = { version = "1", features = ["v4"] }
 argon2 = "0.5"
