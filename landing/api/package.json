@@ -1,0 +1,10 @@
+{
+  "name": "otpvault-api",
+  "private": true,
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.0"
+  },
+  "devDependencies": {
+    "@vercel/node": "^5.0.0"
+  }
+}
