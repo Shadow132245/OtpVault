@@ -470,16 +470,16 @@
 
     <!-- Mobile CTA -->
     <div class="platform-content" id="platform-mobile" style="display:none">
-      <h1 data-i18n="hero.mobile_title">Mobile 2FA. Install from browser.</h1>
-      <p data-i18n="hero.mobile_sub">Progressive Web App — works offline. No app store needed.</p>
+      <h1 data-i18n="hero.mobile_title">Android APK. Install directly.</h1>
+      <p data-i18n="hero.mobile_sub">Native Android app — low size, full offline, encrypted cloud sync.</p>
       <div class="hero-buttons">
-        <a class="btn-primary" href="https://otpvault1.vercel.app/app/" data-i18n="hero.mobile_btn">
+        <a class="btn-primary" href="OtpVault_v0.1.5.apk" download data-i18n="hero.mobile_btn">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Open Web App
+          Download APK (4.4 MB)
         </a>
-        <a href="#how-it-works" class="btn-outline" data-i18n="hero.mobile_how">How to Install</a>
+        <a href="https://github.com/Shadow132245/OtpVault" class="btn-outline" data-i18n="hero.mobile_how">View on GitHub</a>
       </div>
-      <div class="small-note" data-i18n="hero.mobile_note">No extra software needed. Works on Android & iOS.</div>
+      <div class="small-note" data-i18n="hero.mobile_note">Android 12+. APK download, direct install. No app store.</div>
     </div>
 
     <!-- Showcase -->
@@ -620,15 +620,15 @@
       </div>
       <div class="platform-card reveal">
         <div class="pf-icon" style="background:rgba(34,197,94,.15)">📱</div>
-        <span class="badge badge-mobile" data-i18n="platforms.mobile_badge">Web App (PWA)</span>
-        <h3 data-i18n="platforms.mobile_title">Mobile & Browser PWA</h3>
-        <p data-i18n="platforms.mobile_desc">Install directly from your browser — no app store needed.</p>
+        <span class="badge badge-mobile" data-i18n="platforms.mobile_badge">Android APK</span>
+        <h3 data-i18n="platforms.mobile_title">Native Android App</h3>
+        <p data-i18n="platforms.mobile_desc">Standalone APK — built with Capacitor. No browser needed.</p>
         <ul>
-          <li data-i18n="platforms.mobile_li1">Works on Android & iOS browsers</li>
-          <li data-i18n="platforms.mobile_li2">Install to home screen like a native app</li>
-          <li data-i18n="platforms.mobile_li3">Fully offline — codes generated locally</li>
-          <li data-i18n="platforms.mobile_li4">QR code scanning via upload</li>
-          <li data-i18n="platforms.mobile_li5">Same encrypted cloud sync</li>
+          <li data-i18n="platforms.mobile_li1">Native Android APK (Android 12+)</li>
+          <li data-i18n="platforms.mobile_li2">Full offline — TOTP generated locally</li>
+          <li data-i18n="platforms.mobile_li3">Encrypted cloud sync with Neon DB</li>
+          <li data-i18n="platforms.mobile_li4">Same zero-knowledge encryption</li>
+          <li data-i18n="platforms.mobile_li5">Open source — auditable build</li>
         </ul>
       </div>
     </div>
@@ -775,15 +775,15 @@ i18n.en = {
 
   'hero.desktop_title': 'Desktop 2FA authenticator. Zero knowledge.',
   'hero.desktop_sub': 'Native Windows app built with Rust & Tauri. Encrypted vault with cloud backup.',
-  'hero.mobile_title': 'Mobile 2FA. Install from browser.',
-  'hero.mobile_sub': 'Progressive Web App — works offline. No app store needed.',
+  'hero.mobile_title': 'Android APK. Install directly.',
+  'hero.mobile_sub': 'Native Android app — small size, full offline, encrypted cloud sync.',
   'hero.desktop': 'Desktop',
   'hero.mobile': 'Mobile',
   'hero.download_btn': 'Download for Windows',
   'hero.source_btn': 'View Source',
-  'hero.mobile_btn': 'Open Web App',
-  'hero.mobile_how': 'How to Install',
-  'hero.mobile_note': 'No extra software needed. Works on Android & iOS.',
+  'hero.mobile_btn': 'Download APK (4.4 MB)',
+  'hero.mobile_how': 'View on GitHub',
+  'hero.mobile_note': 'Android 12+. APK download, direct install. No app store.',
   'hero.mockup_title': 'OtpVault — My Accounts',
   'hero.search_placeholder': '\u{1F50D} Search accounts...',
 
@@ -794,7 +794,7 @@ i18n.en = {
   'features.cloud_backup.title': 'Encrypted Cloud Backup',
   'features.cloud_backup.desc': 'Your encrypted vault is automatically backed up to Neon PostgreSQL. Sign in with the same email on any device to restore your codes — the server never sees plaintext data.',
   'features.pwa.title': 'Works on Every Device',
-  'features.pwa.desc': 'Desktop native app (Windows) plus mobile PWA that works offline. One encrypted vault, seamlessly accessible across all your devices through cloud sync.',
+  'features.pwa.desc': 'Desktop native app (Windows) plus standalone Android APK. One encrypted vault, seamlessly accessible across all your devices through cloud sync.',
   'features.fast.title': 'Blazing Fast & Lightweight',
   'features.fast.desc': 'Built with Rust and Tauri on desktop, and React + Vite on mobile. Uses a fraction of the resources of Electron-based apps. Launches instantly.',
   'features.offline.title': 'Works Offline',
@@ -812,14 +812,14 @@ i18n.en = {
   'platforms.desktop_li3': 'Export/import encrypted backups',
   'platforms.desktop_li4': 'Dark/light theme support',
   'platforms.desktop_li5': 'Auto-start with Windows option',
-  'platforms.mobile_badge': 'Web App (PWA)',
-  'platforms.mobile_title': 'Mobile & Browser PWA',
-  'platforms.mobile_desc': 'Install directly from your browser — no app store needed.',
-  'platforms.mobile_li1': 'Works on Android & iOS browsers',
-  'platforms.mobile_li2': 'Install to home screen like a native app',
-  'platforms.mobile_li3': 'Fully offline — codes generated locally',
-  'platforms.mobile_li4': 'QR code scanning via upload',
-  'platforms.mobile_li5': 'Same encrypted cloud sync',
+  'platforms.mobile_badge': 'Android APK',
+  'platforms.mobile_title': 'Native Android App',
+  'platforms.mobile_desc': 'Standalone APK — built with Capacitor. No browser needed.',
+  'platforms.mobile_li1': 'Native Android APK (Android 12+)',
+  'platforms.mobile_li2': 'Full offline — TOTP generated locally',
+  'platforms.mobile_li3': 'Encrypted cloud sync with Neon DB',
+  'platforms.mobile_li4': 'Same zero-knowledge encryption',
+  'platforms.mobile_li5': 'Open source — auditable build',
 
   'how.title': 'How it Works',
   'how.subtitle': 'Get started in three simple steps — same flow on desktop and mobile.',
@@ -858,15 +858,15 @@ i18n.ar = {
 
   'hero.desktop_title': '\u0645\u062f\u064a\u0631 TOTP \u0644\u0644\u0643\u0645\u0628\u064a\u0648\u062a\u0631\u060c \u0622\u0645\u0646 \u0628\u062f\u0648\u0646 \u0645\u0639\u0631\u0641\u0629',
   'hero.desktop_sub': '\u062a\u0637\u0628\u064a\u0642 Windows \u0623\u0635\u0644\u064a \u0645\u0628\u0646\u064a \u0628\u0640 Rust \u0648 Tauri. \u062e\u0632\u0646\u0629 \u0645\u0634\u0641\u0631\u0629 \u0645\u0639 \u0646\u0633\u062e \u0627\u062d\u062a\u064a\u0627\u0637\u064a \u0633\u062d\u0627\u0628\u064a.',
-  'hero.mobile_title': 'TOTP \u0644\u0644\u062c\u0648\u0627\u0644. \u062a\u062b\u0628\u064a\u062a \u0645\u0646 \u0627\u0644\u0645\u062a\u0635\u0641\u062d.',
-  'hero.mobile_sub': '\u062a\u0637\u0628\u064a\u0642 \u0648\u064a\u0628 \u062a\u062f\u0631\u064a\u062c\u064a \u2014 \u064a\u0639\u0645\u0644 \u0628\u062f\u0648\u0646 \u0627\u0646\u062a\u0631\u0646\u062a. \u0644\u0627 \u062d\u0627\u062c\u0629 \u0644\u0645\u062a\u062c\u0631 \u0627\u0644\u062a\u0637\u0628\u064a\u0642\u0627\u062a.',
+  'hero.mobile_title': 'APK \u0623\u0646\u062f\u0631\u0648\u064a\u062f. \u062a\u062b\u0628\u064a\u062a \u0645\u0628\u0627\u0634\u0631.',
+  'hero.mobile_sub': '\u062a\u0637\u0628\u064a\u0642 \u0623\u0646\u062f\u0631\u0648\u064a\u062f \u0623\u0635\u0644\u064a \u2014 \u062d\u062c\u0645 \u0635\u063a\u064a\u0631\u060c \u0639\u0645\u0644 \u0628\u062f\u0648\u0646 \u0627\u0646\u062a\u0631\u0646\u062a\u060c \u0645\u0632\u0627\u0645\u0646\u0629 \u0633\u062d\u0627\u0628\u064a\u0629 \u0645\u0634\u0641\u0631\u0629.',
   'hero.desktop': '\u0643\u0645\u0628\u064a\u0648\u062a\u0631',
   'hero.mobile': '\u062c\u0648\u0627\u0644',
   'hero.download_btn': '\u062a\u062d\u0645\u064a\u0644 \u0644\u0646\u0638\u0627\u0645 Windows',
   'hero.source_btn': '\u0639\u0631\u0636 \u0627\u0644\u0645\u0635\u062f\u0631',
-  'hero.mobile_btn': '\u0641\u062a\u062d \u0627\u0644\u062a\u0637\u0628\u064a\u0642',
-  'hero.mobile_how': '\u0643\u064a\u0641\u064a\u0629 \u0627\u0644\u062a\u062b\u0628\u064a\u062a',
-  'hero.mobile_note': '\u0644\u0627 \u064a\u0644\u0632\u0645 \u0628\u0631\u0627\u0645\u062c \u0625\u0636\u0627\u0641\u064a\u0629. \u064a\u0639\u0645\u0644 \u0639\u0644\u0649 Android \u0648 iOS.',
+  'hero.mobile_btn': '\u062a\u062d\u0645\u064a\u0644 APK (4.4 MB)',
+  'hero.mobile_how': '\u0639\u0631\u0636 \u0639\u0644\u0649 GitHub',
+  'hero.mobile_note': 'Android 12+. \u062a\u062d\u0645\u064a\u0644 APK \u0648\u062a\u062b\u0628\u064a\u062a \u0645\u0628\u0627\u0634\u0631. \u0644\u0627 \u064a\u0648\u062c\u062f \u0645\u062a\u062c\u0631 \u062a\u0637\u0628\u064a\u0642\u0627\u062a.',
   'hero.mockup_title': 'OtpVault \u2014 \u062d\u0633\u0627\u0628\u0627\u062a\u064a',
   'hero.search_placeholder': '\u{1F50D} \u0628\u062d\u062b \u0641\u064a \u0627\u0644\u062d\u0633\u0627\u0628\u0627\u062a...',
 
@@ -895,14 +895,14 @@ i18n.ar = {
   'platforms.desktop_li3': '\u062a\u0635\u062f\u064a\u0631/\u0627\u0633\u062a\u064a\u0631\u0627\u062f \u0646\u0633\u062e \u0627\u062d\u062a\u064a\u0627\u0637\u064a\u0629 \u0645\u0634\u0641\u0631\u0629',
   'platforms.desktop_li4': '\u062f\u0639\u0645 \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u0645\u0638\u0644\u0645/\u0627\u0644\u0641\u0627\u062a\u062d',
   'platforms.desktop_li5': '\u062a\u0634\u063a\u064a\u0644 \u062a\u0644\u0642\u0627\u0626\u064a \u0645\u0639 Windows',
-  'platforms.mobile_badge': '\u062a\u0637\u0628\u064a\u0642 \u0648\u064a\u0628 (PWA)',
-  'platforms.mobile_title': '\u062c\u0648\u0627\u0644 \u0648 \u0645\u062a\u0635\u0641\u062d',
-  'platforms.mobile_desc': '\u062b\u0628\u062a \u0645\u0628\u0627\u0634\u0631\u0629 \u0645\u0646 \u0627\u0644\u0645\u062a\u0635\u0641\u062d.',
-  'platforms.mobile_li1': '\u064a\u0639\u0645\u0644 \u0639\u0644\u0649 Android \u0648 iOS',
-  'platforms.mobile_li2': '\u0627\u0644\u062a\u062b\u0628\u064a\u062a \u0639\u0644\u0649 \u0627\u0644\u0634\u0627\u0634\u0629 \u0627\u0644\u0631\u0626\u064a\u0633\u064a\u0629',
-  'platforms.mobile_li3': '\u0639\u0645\u0644 \u0643\u0627\u0645\u0644 \u0628\u062f\u0648\u0646 \u0627\u0646\u062a\u0631\u0646\u062a',
-  'platforms.mobile_li4': '\u0645\u0633\u062d QR \u0628\u0627\u0644\u0631\u0641\u0639',
-  'platforms.mobile_li5': '\u0646\u0641\u0633 \u0627\u0644\u0645\u0632\u0627\u0645\u0646\u0629 \u0627\u0644\u0633\u062d\u0627\u0628\u064a\u0629 \u0627\u0644\u0645\u0634\u0641\u0631\u0629',
+  'platforms.mobile_badge': 'APK \u0623\u0646\u062f\u0631\u0648\u064a\u062f',
+  'platforms.mobile_title': '\u062a\u0637\u0628\u064a\u0642 \u0623\u0646\u062f\u0631\u0648\u064a\u062f \u0623\u0635\u0644\u064a',
+  'platforms.mobile_desc': 'APK \u0645\u0633\u062a\u0642\u0644 \u2014 \u0645\u0628\u0646\u064a \u0628\u0640 Capacitor. \u0644\u0627 \u062d\u0627\u062c\u0629 \u0644\u0645\u062a\u0635\u0641\u062d.',
+  'platforms.mobile_li1': 'APK \u0623\u0646\u062f\u0631\u0648\u064a\u062f (Android 12+)',
+  'platforms.mobile_li2': '\u0639\u0645\u0644 \u0643\u0627\u0645\u0644 \u0628\u062f\u0648\u0646 \u0627\u0646\u062a\u0631\u0646\u062a',
+  'platforms.mobile_li3': '\u0645\u0632\u0627\u0645\u0646\u0629 \u0633\u062d\u0627\u0628\u064a\u0629 \u0645\u0634\u0641\u0631\u0629 \u0645\u0639 Neon',
+  'platforms.mobile_li4': '\u0646\u0641\u0633 \u062a\u0634\u0641\u064a\u0631 \u0639\u062f\u0645 \u0627\u0644\u0645\u0639\u0631\u0641\u0629',
+  'platforms.mobile_li5': '\u0645\u0641\u062a\u0648\u062d \u0627\u0644\u0645\u0635\u062f\u0631 \u2014 \u0628\u0646\u0627\u0621 \u0642\u0627\u0628\u0644 \u0644\u0644\u062a\u062f\u0642\u064a\u0642',
 
   'how.title': '\u0643\u064a\u0641 \u064a\u0639\u0645\u0644',
   'how.subtitle': '\u0627\u0628\u062f\u0623 \u0628\u062b\u0644\u0627\u062b \u062e\u0637\u0648\u0627\u062a \u0628\u0633\u064a\u0637\u0629.',
