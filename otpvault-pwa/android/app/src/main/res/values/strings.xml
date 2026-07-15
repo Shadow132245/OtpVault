@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">OtpVault</string>
+    <string name="title_activity_main">OtpVault</string>
+    <string name="package_name">com.otpvault.app</string>
+    <string name="custom_url_scheme">com.otpvault.app</string>
+</resources>
