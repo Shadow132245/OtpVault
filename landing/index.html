@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OtpVault — Secure 2FA Authenticator</title>
-<meta name="description" content="A secure, zero-knowledge desktop 2FA authenticator. Encrypted vault, cloud backup, open source.">
+<meta name="description" content="A secure, zero-knowledge desktop 2FA authenticator for Windows. Encrypted vault with Neon cloud backup. Open source.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -18,12 +18,15 @@
   }
   a { color: #818cf8; text-decoration: none; }
   a:hover { color: #a5b4fc; }
-  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  #particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
 
   /* Nav */
   nav {
     display: flex; align-items: center; justify-content: space-between;
     padding: 16px 24px; max-width: 1100px; margin: 0 auto;
+    position: relative; z-index: 10;
   }
   nav .logo {
     display: flex; align-items: center; gap: 10px;
@@ -36,26 +39,28 @@
   .nav-cta {
     padding: 8px 18px; background: #6366f1; color: #fff !important;
     border-radius: 8px; font-size: 13px !important; font-weight: 600;
-    transition: background .2s;
+    transition: background .2s, transform .2s;
   }
-  .nav-cta:hover { background: #4f46e5 !important; }
+  .nav-cta:hover { background: #4f46e5 !important; transform: translateY(-1px); }
 
   /* Hero */
   .hero {
     padding: 80px 24px 100px;
     text-align: center;
-    background: linear-gradient(180deg, #0b0d1a 0%, #111327 50%, #0b0d1a 100%);
     position: relative;
+    overflow: hidden;
   }
-  .hero::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,.15) 0%, transparent 60%);
+  .hero-glow {
+    position: absolute; top: -200px; left: 50%; transform: translateX(-50%);
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(99,102,241,.12) 0%, transparent 60%);
     pointer-events: none;
   }
   .hero-badge {
     display: inline-block; padding: 6px 14px; background: rgba(99,102,241,.15);
     border: 1px solid rgba(99,102,241,.3); border-radius: 20px;
     font-size: 12px; color: #818cf8; font-weight: 500; margin-bottom: 24px;
+    animation: fadeUp .6s ease both;
   }
   .hero h1 {
     font-size: clamp(36px, 6vw, 60px); font-weight: 800;
@@ -63,37 +68,52 @@
     background: linear-gradient(135deg, #fff 30%, #818cf8 100%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text; margin-bottom: 16px;
+    animation: fadeUp .6s .1s ease both;
   }
   .hero p {
     font-size: 18px; color: #94a3b8; max-width: 520px; margin: 0 auto 36px;
+    animation: fadeUp .6s .15s ease both;
   }
-  .hero-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .hero-buttons {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    animation: fadeUp .6s .2s ease both;
+  }
   .btn-primary {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 14px 28px; background: #6366f1; color: #fff !important;
     border-radius: 12px; font-size: 16px; font-weight: 600;
-    transition: all .2s; border: none; cursor: pointer;
+    transition: all .25s; border: none; cursor: pointer;
+    position: relative; overflow: hidden;
   }
-  .btn-primary:hover { background: #4f46e5; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(99,102,241,.3); }
+  .btn-primary::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,.1));
+    pointer-events: none;
+  }
+  .btn-primary:hover { background: #4f46e5; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,.3); }
   .btn-secondary {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 14px 28px; background: rgba(255,255,255,.06); color: #e2e8f0 !important;
     border-radius: 12px; font-size: 16px; font-weight: 500; border: 1px solid rgba(255,255,255,.1);
-    transition: all .2s;
+    transition: all .25s;
   }
-  .btn-secondary:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.2); }
+  .btn-secondary:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.2); transform: translateY(-2px); }
 
-  /* App Mockup */
+  /* Mockup */
   .mockup {
     margin-top: 60px; position: relative;
     display: inline-block; max-width: 100%;
+    animation: fadeUp .6s .25s ease both;
   }
   .mockup-window {
     width: 100%; max-width: 720px; border-radius: 16px;
     border: 1px solid rgba(255,255,255,.08);
-    background: #13152a; overflow: hidden;
+    background: rgba(19,21,42,.8); backdrop-filter: blur(10px);
+    overflow: hidden;
     box-shadow: 0 24px 80px rgba(0,0,0,.5);
+    transition: box-shadow .3s;
   }
+  .mockup-window:hover { box-shadow: 0 24px 80px rgba(99,102,241,.15); }
   .mockup-bar {
     display: flex; align-items: center; gap: 8px; padding: 12px 16px;
     background: rgba(255,255,255,.04); border-bottom: 1px solid rgba(255,255,255,.06);
@@ -102,45 +122,30 @@
   .mockup-dot:nth-child(1) { background: #ef4444; }
   .mockup-dot:nth-child(2) { background: #f59e0b; }
   .mockup-dot:nth-child(3) { background: #22c55e; }
-  .mockup-bar span {
-    font-size: 12px; color: #64748b; margin-left: 8px; font-weight: 500;
-  }
+  .mockup-bar span { font-size: 12px; color: #64748b; margin-left: 8px; font-weight: 500; }
   .mockup-body { padding: 24px; }
-  .mockup-sidebar {
-    display: flex; gap: 12px; margin-bottom: 20px; align-items: center;
-  }
-  .mockup-sidebar .search {
-    flex: 1; padding: 8px 12px; background: rgba(255,255,255,.06);
-    border-radius: 8px; font-size: 12px; color: #64748b;
-  }
-  .mockup-sidebar .add-btn {
-    width: 32px; height: 32px; background: #6366f1; border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; color: #fff; font-weight: 600;
-  }
+  .mockup-sidebar { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; }
+  .mockup-sidebar .search { flex: 1; padding: 8px 12px; background: rgba(255,255,255,.06); border-radius: 8px; font-size: 12px; color: #64748b; }
+  .mockup-sidebar .add-btn { width: 32px; height: 32px; background: #6366f1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; color: #fff; font-weight: 600; }
   .mockup-list { display: flex; flex-direction: column; gap: 10px; }
-  .mockup-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 16px; background: rgba(255,255,255,.04);
-    border-radius: 10px; border: 1px solid rgba(255,255,255,.06);
-  }
+  .mockup-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: rgba(255,255,255,.04); border-radius: 10px; border: 1px solid rgba(255,255,255,.06); transition: border-color .3s, background .3s; }
+  .mockup-item:hover { border-color: rgba(99,102,241,.2); background: rgba(255,255,255,.06); }
   .mockup-item .info { text-align: left; }
   .mockup-item .name { font-size: 13px; font-weight: 600; color: #e2e8f0; }
   .mockup-item .issuer { font-size: 11px; color: #64748b; }
-  .mockup-item .code {
-    font-family: 'SF Mono', 'Fira Code', monospace;
-    font-size: 18px; font-weight: 700; color: #818cf8; letter-spacing: 2px;
-  }
-  .mockup-item .progress {
-    width: 40px; height: 3px; background: rgba(255,255,255,.08);
-    border-radius: 2px; margin-top: 6px; overflow: hidden;
-  }
-  .mockup-item .progress-fill {
-    width: 65%; height: 100%; background: #818cf8; border-radius: 2px;
-  }
+  .mockup-item .code { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 18px; font-weight: 700; color: #818cf8; letter-spacing: 2px; }
+  .mockup-item .progress { width: 40px; height: 3px; background: rgba(255,255,255,.08); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+  .mockup-item .progress-fill { width: 65%; height: 100%; background: #818cf8; border-radius: 2px; }
 
   /* Sections */
-  section { padding: 80px 24px; }
+  section { padding: 100px 24px; position: relative; }
+  .section-bg { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .section-bg::before {
+    content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%;
+    filter: blur(100px); opacity: .04;
+  }
+  section:nth-child(odd) .section-bg::before { background: #6366f1; top: -200px; right: -200px; }
+  section:nth-child(even) .section-bg::before { background: #818cf8; bottom: -200px; left: -200px; }
   section h2 {
     font-size: clamp(28px, 4vw, 40px); font-weight: 700; text-align: center;
     letter-spacing: -1px; margin-bottom: 12px;
@@ -154,46 +159,45 @@
   }
 
   /* Features */
-  .features-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-  }
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
   .feature-card {
     padding: 28px; background: rgba(255,255,255,.03);
     border: 1px solid rgba(255,255,255,.06); border-radius: 14px;
-    transition: all .2s;
+    transition: all .3s; position: relative; overflow: hidden;
   }
-  .feature-card:hover { border-color: rgba(99,102,241,.3); background: rgba(99,102,241,.05); }
-  .feature-icon {
-    width: 44px; height: 44px; background: rgba(99,102,241,.15);
-    border-radius: 12px; display: flex; align-items: center; justify-content: center;
-    font-size: 22px; margin-bottom: 16px;
+  .feature-card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(99,102,241,.4), transparent);
+    opacity: 0; transition: opacity .3s;
   }
+  .feature-card:hover { border-color: rgba(99,102,241,.3); background: rgba(99,102,241,.05); transform: translateY(-3px); }
+  .feature-card:hover::before { opacity: 1; }
+  .feature-icon { width: 44px; height: 44px; background: rgba(99,102,241,.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; margin-bottom: 16px; }
   .feature-card h3 { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 8px; }
   .feature-card p { font-size: 14px; color: #94a3b8; line-height: 1.7; }
 
   /* How it Works */
   .steps { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
-  .step {
-    flex: 1; min-width: 250px; max-width: 320px; text-align: center;
-    padding: 32px 20px;
-  }
-  .step-number {
-    width: 48px; height: 48px; margin: 0 auto 16px;
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    font-size: 18px; font-weight: 700; color: #fff;
-  }
+  .step { flex: 1; min-width: 250px; max-width: 320px; text-align: center; padding: 32px 20px; transition: transform .3s; }
+  .step:hover { transform: translateY(-4px); }
+  .step-number { width: 48px; height: 48px; margin: 0 auto 16px; background: linear-gradient(135deg, #6366f1, #4f46e5); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: #fff; box-shadow: 0 4px 16px rgba(99,102,241,.3); }
   .step h3 { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 8px; }
   .step p { font-size: 14px; color: #94a3b8; }
-  .step-arrow { font-size: 24px; color: #6366f1; display: flex; align-items: center; }
+  .step-arrow { font-size: 24px; color: #6366f1; display: flex; align-items: center; opacity: .6; }
 
   /* Open Source */
   .trust {
     text-align: center; max-width: 600px; margin: 0 auto;
     padding: 40px; background: rgba(255,255,255,.03);
     border: 1px solid rgba(99,102,241,.15); border-radius: 16px;
+    position: relative; overflow: hidden;
   }
+  .trust::before {
+    content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+    background: conic-gradient(from 0deg, transparent, rgba(99,102,241,.03), transparent, rgba(99,102,241,.03), transparent);
+    animation: spin 10s linear infinite;
+  }
+  .trust > * { position: relative; z-index: 1; }
   .trust p { font-size: 15px; color: #94a3b8; margin-bottom: 24px; }
   .trust .stats { display: flex; gap: 32px; justify-content: center; margin-bottom: 24px; }
   .trust .stat { text-align: center; }
@@ -201,24 +205,34 @@
   .trust .stat-label { font-size: 12px; color: #64748b; margin-top: 2px; }
 
   /* Footer */
-  footer {
-    border-top: 1px solid rgba(255,255,255,.06);
-    padding: 40px 24px; text-align: center;
-  }
+  footer { border-top: 1px solid rgba(255,255,255,.06); padding: 40px 24px; text-align: center; position: relative; z-index: 1; }
   footer .links { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
   footer .links a { font-size: 13px; color: #64748b; transition: color .2s; }
   footer .links a:hover { color: #e2e8f0; }
   footer p { font-size: 12px; color: #475569; }
+
+  /* Animations */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .reveal { opacity: 0; transform: translateY(30px); transition: all .7s cubic-bezier(.22,.61,.36,1); }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0b0d1a; }
+  ::-webkit-scrollbar-thumb { background: rgba(99,102,241,.3); border-radius: 3px; }
 
   @media (max-width: 640px) {
     nav .links a:not(.nav-cta) { display: none; }
     .mockup-body { padding: 16px; }
     .mockup-item { flex-direction: column; align-items: flex-start; gap: 8px; }
     .mockup-item .code { font-size: 16px; }
+    .step-arrow { display: none; }
   }
 </style>
 </head>
 <body>
+
+<canvas id="particles"></canvas>
 
 <!-- Nav -->
 <nav>
@@ -239,12 +253,13 @@
 
 <!-- Hero -->
 <section class="hero" id="download">
+  <div class="hero-glow"></div>
   <div class="container">
-    <div class="hero-badge">✦ v0.1.1 — Open Source</div>
+    <div class="hero-badge" id="version-badge">✦ v0.1.6 — Open Source</div>
     <h1>A secure, zero-knowledge desktop 2FA authenticator</h1>
     <p>Your TOTP secrets encrypted with AES-256-GCM. The key never leaves your device.</p>
     <div class="hero-buttons">
-      <a href="https://github.com/Shadow132245/OtpVault/releases/latest" class="btn-primary">
+      <a id="download-link" href="https://github.com/Shadow132245/OtpVault/releases/latest" class="btn-primary">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="14" height="14" rx="2"/><path d="M9 2v2"/><path d="M13 2v2"/><path d="M4 13h14"/><path d="M4 17h10"/><path d="M18 10v6"/></svg>
         Download for Windows
       </a>
@@ -293,21 +308,22 @@
 
 <!-- Features -->
 <section id="features">
+  <div class="section-bg"></div>
   <div class="container">
-    <h2>Built with security in mind</h2>
-    <p class="subtitle">Every layer of OtpVault is designed to keep your secrets safe — from encryption to infrastructure.</p>
+    <h2 class="reveal">Built with security in mind</h2>
+    <p class="subtitle reveal">Every layer of OtpVault is designed to keep your secrets safe — from encryption to infrastructure.</p>
     <div class="features-grid">
-      <div class="feature-card">
+      <div class="feature-card reveal">
         <div class="feature-icon">🔒</div>
         <h3>Zero-Knowledge Encryption</h3>
         <p>Your vault is encrypted with AES-256-GCM before leaving your device. The encryption key is derived from your password using Argon2id and is never transmitted to any server.</p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card reveal">
         <div class="feature-icon">☁️</div>
         <h3>Encrypted Cloud Backup</h3>
-        <p>Your encrypted vault is automatically backed up to the cloud when you sign up or unlock. Sign in with the same email on any device to restore your codes — the server never sees plaintext data.</p>
+        <p>Your encrypted vault is automatically backed up to Neon PostgreSQL. Sign in with the same email on any PC to restore your codes — the server never sees plaintext data.</p>
       </div>
-      <div class="feature-card">
+      <div class="feature-card reveal">
         <div class="feature-icon">⚡</div>
         <h3>Blazing Fast & Lightweight</h3>
         <p>Built with Rust and Tauri, OtpVault uses a fraction of the RAM of Electron-based apps. It launches instantly, runs efficiently, and stays out of your way.</p>
@@ -317,27 +333,28 @@
 </section>
 
 <!-- How it Works -->
-<section id="how-it-works" style="background: rgba(255,255,255,.02);">
+<section id="how-it-works">
+  <div class="section-bg"></div>
   <div class="container">
-    <h2>How it Works</h2>
-    <p class="subtitle">Get started in three simple steps.</p>
+    <h2 class="reveal">How it Works</h2>
+    <p class="subtitle reveal">Get started in three simple steps.</p>
     <div class="steps">
-      <div class="step">
+      <div class="step reveal">
         <div class="step-number">1</div>
         <h3>Create Your Encrypted Vault</h3>
-        <p>Sign up with your email and password. Your password never leaves your device — it's used to derive your encryption key locally.</p>
+        <p>Sign up with your email and password. Your password never leaves your device — it's used to derive your encryption key locally with Argon2id.</p>
       </div>
       <div class="step-arrow">→</div>
-      <div class="step">
+      <div class="step reveal">
         <div class="step-number">2</div>
         <h3>Add Your Accounts</h3>
         <p>Scan QR codes using your camera, upload a QR image, or enter the secret key manually. Supports SHA1/SHA256/SHA512, 6-8 digits, and custom step intervals.</p>
       </div>
       <div class="step-arrow">→</div>
-      <div class="step">
+      <div class="step reveal">
         <div class="step-number">3</div>
         <h3>Sync Securely to the Cloud</h3>
-        <p>Your encrypted vault syncs automatically with Supabase. No unencrypted data ever touches the cloud — just seamless access across devices.</p>
+        <p>Your encrypted vault syncs automatically with Neon PostgreSQL. No unencrypted data ever touches the cloud — just seamless access across any PC.</p>
       </div>
     </div>
   </div>
@@ -346,9 +363,9 @@
 <!-- Open Source -->
 <section>
   <div class="container">
-    <h2>100% Open Source</h2>
-    <p class="subtitle">Transparency you can trust. Every line of code is public and auditable.</p>
-    <div class="trust">
+    <h2 class="reveal">100% Open Source</h2>
+    <p class="subtitle reveal">Transparency you can trust. Every line of code is public and auditable.</p>
+    <div class="trust reveal">
       <div class="stats">
         <div class="stat"><div class="stat-num">MIT</div><div class="stat-label">License</div></div>
         <div class="stat"><div class="stat-num">Public</div><div class="stat-label">Source</div></div>
@@ -369,11 +386,63 @@
     <a href="https://github.com/Shadow132245/OtpVault">GitHub</a>
     <a href="https://github.com/Shadow132245/OtpVault/blob/main/LICENSE">License</a>
     <a href="https://github.com/Shadow132245/OtpVault/issues/new">Report a Bug</a>
-    <a href="https://github.com/Shadow132245/OtpVault/releases/latest">Download</a>
-    <a href="https://github.com/Shadow132245/OtpVault/blob/main/docs/privacy-policy.html">Privacy Policy</a>
-    <a href="https://github.com/Shadow132245/OtpVault/blob/main/docs/terms-of-service.html">Terms of Service</a>
+    <a href="#download">Download</a>
+    <a href="https://shadow132245.github.io/OtpVault/privacy-policy.html">Privacy Policy</a>
+    <a href="https://shadow132245.github.io/OtpVault/terms-of-service.html">Terms of Service</a>
   </div>
-  <p>&copy; 2026 OtpVault. MIT License. Built with Rust &amp; Tauri.</p>
+  <p>&copy; 2026 OtpVault. MIT License. Built with Rust &amp; Tauri. EuroMoscow Developments</p>
 </footer>
+
+<script>
+// Particles
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+let particles = [];
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.size = Math.random() * 2 + .5;
+    this.speedX = (Math.random() - .5) * .3;
+    this.speedY = (Math.random() - .5) * .3;
+    this.opacity = Math.random() * .5 + .1;
+  }
+  update() {
+    this.x += this.speedX; this.y += this.speedY;
+    if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) this.reset();
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(99,102,241,${this.opacity})`;
+    ctx.fill();
+  }
+}
+for (let i = 0; i < 60; i++) particles.push(new Particle());
+function animateParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach(p => { p.update(); p.draw(); }); requestAnimationFrame(animateParticles); }
+animateParticles();
+
+// Scroll Reveal
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+}, { threshold: .1, rootMargin: '0px 0px -50px 0px' });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// GitHub: fetch latest release
+fetch('https://api.github.com/repos/Shadow132245/OtpVault/releases/latest')
+  .then(r => r.ok ? r.json() : Promise.reject())
+  .then(d => {
+    const asset = d.assets.find(a => a.name.endsWith('_x64_en-US.msi'));
+    if (asset) document.getElementById('download-link').href = asset.browser_download_url;
+    const badge = document.getElementById('version-badge');
+    if (badge) badge.textContent = '✦ ' + d.tag_name + ' — Open Source';
+  })
+  .catch(() => {});
+</script>
 </body>
 </html>
