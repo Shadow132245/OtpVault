@@ -42,6 +42,11 @@ pub async fn email_sign_up(
         return Err("Password must be at least 4 characters".into());
     }
 
+    // Check if email already registered in Neon
+    if neon::fetch_vault(&email).await.is_ok() {
+        return Err("Email already registered".into());
+    }
+
     let (salt, test_payload) = vault_state
         .0
         .lock()

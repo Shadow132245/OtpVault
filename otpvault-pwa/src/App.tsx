@@ -109,7 +109,8 @@ function App() {
         return
       }
     } catch {
-      console.warn('Could not check email existence, proceeding with local vault')
+      setError('Could not verify email. Please check your connection and try again.')
+      return
     }
 
     await initializeVault(password)
