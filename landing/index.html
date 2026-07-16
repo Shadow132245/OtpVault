@@ -6,13 +6,13 @@
 <title id="meta-title">OtpVault — Secure 2FA Authenticator</title>
 <meta name="description" content="Zero-knowledge 2FA authenticator for Windows Desktop. AES-256-GCM encrypted vault with Neon cloud sync. Open source.">
 <meta property="og:title" content="OtpVault — Secure 2FA Authenticator">
-<meta property="og:description" content="Zero-knowledge 2FA authenticator for Desktop &amp; Mobile.">
+<meta property="og:description" content="Zero-knowledge 2FA authenticator for Windows Desktop.">
 <meta property="og:image" content="https://otpvault1.vercel.app/og-image.png">
 <meta property="og:url" content="https://otpvault1.vercel.app">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="OtpVault — Secure 2FA Authenticator">
-<meta name="twitter:description" content="Zero-knowledge 2FA authenticator for Desktop &amp; Mobile.">
+<meta name="twitter:description" content="Zero-knowledge 2FA authenticator for Windows Desktop.">
 <meta name="twitter:image" content="https://otpvault1.vercel.app/og-image.png">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>">
 <style>
@@ -212,47 +212,6 @@
     transition: width .5s;
   }
 
-  /* Mobile Mockup */
-  .phone-frame {
-    width: 320px; margin: 0 auto;
-    background: rgba(19,21,42,.8); backdrop-filter: blur(10px);
-    border: 2px solid rgba(255,255,255,.08);
-    border-radius: 40px; padding: 12px;
-    box-shadow: 0 24px 80px rgba(0,0,0,.5);
-  }
-  .phone-screen {
-    border-radius: 28px; overflow: hidden; background: #0f1123;
-  }
-  .phone-notch {
-    height: 28px; background: #0f1123;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .phone-notch span { width: 100px; height: 6px; background: rgba(255,255,255,.1); border-radius: 3px; }
-  .phone-body { padding: 16px; }
-  .phone-header {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
-  }
-  .phone-header h3 { font-size: 16px; font-weight: 600; color: #e2e8f0; }
-  .phone-header .icon {
-    width: 28px; height: 28px; background: #6366f1; border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; color: #fff;
-  }
-  .phone-search {
-    padding: 8px 12px; background: rgba(255,255,255,.06);
-    border-radius: 8px; font-size: 11px; color: #64748b; margin-bottom: 12px; text-align: left;
-  }
-  .phone-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.04);
-  }
-  .phone-item .tag {
-    width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; color: #fff; margin-right: 10px;
-  }
-  .phone-item .pname { font-size: 13px; font-weight: 600; color: #e2e8f0; }
-  .phone-item .pcode { font-family: 'SF Mono', monospace; font-size: 15px; font-weight: 700; color: #818cf8; letter-spacing: 1px; }
-
   /* ---- SECTIONS ---- */
   section { padding: 100px 24px; position: relative; }
   .section-bg { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
@@ -322,7 +281,6 @@
     border-radius: 6px; margin-bottom: 12px;
   }
   .badge-desktop { background: rgba(99,102,241,.15); color: #818cf8; border: 1px solid rgba(99,102,241,.2); }
-  .badge-mobile { background: rgba(34,197,94,.15); color: #22c55e; border: 1px solid rgba(34,197,94,.2); }
   .platform-card ul { list-style: none; text-align: left; font-size: 13px; color: #94a3b8; }
   .platform-card ul li { padding: 6px 0; display: flex; align-items: center; gap: 8px; }
   .platform-card ul li::before { content: '✓'; color: #22c55e; font-weight: 700; }
@@ -400,7 +358,6 @@
 
   @media (max-width: 640px) {
     nav .links a:not(.nav-cta) { display: none; }
-    .phone-frame { width: 280px; }
     .platform-tab { padding: 8px 16px; font-size: 13px; }
     .step-arrow { display: none; }
   }
@@ -455,19 +412,7 @@
       </div>
     </div>
 
-    <!-- Mobile CTA -->
-    <div class="platform-content" id="platform-mobile" style="display:none">
-      <h1 data-i18n="hero.mobile_title">Android APK. Install directly.</h1>
-      <p data-i18n="hero.mobile_sub">Native Android app — low size, full offline, encrypted cloud sync.</p>
-      <div class="hero-buttons">
-        <a class="btn-primary" href="OtpVault_v0.1.5.apk" download data-i18n="hero.mobile_btn">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download APK (4.4 MB)
-        </a>
-        <a href="https://github.com/Shadow132245/OtpVault" class="btn-outline" data-i18n="hero.mobile_how">View on GitHub</a>
-      </div>
-      <div class="small-note" data-i18n="hero.mobile_note">Android 12+. APK download, direct install. No app store.</div>
-    </div>
+
 
     <!-- Showcase -->
     <div class="platform-showcase">
@@ -505,41 +450,7 @@
           </div>
         </div>
       </div>
-      <div class="platform-panel" id="showcase-mobile">
-        <div class="phone-frame">
-          <div class="phone-screen">
-            <div class="phone-notch"><span></span></div>
-            <div class="phone-body">
-              <div class="phone-header">
-                <h3>OtpVault</h3>
-                <div class="icon">+</div>
-              </div>
-              <div class="phone-search">🔍 Search accounts...</div>
-              <div class="phone-item">
-                <div style="display:flex;align-items:center">
-                  <div class="tag" style="background:#24292e">G</div>
-                  <span class="pname">GitHub</span>
-                </div>
-                <span class="pcode">482 139</span>
-              </div>
-              <div class="phone-item">
-                <div style="display:flex;align-items:center">
-                  <div class="tag" style="background:#4285f4">G</div>
-                  <span class="pname">Google</span>
-                </div>
-                <span class="pcode">719 482</span>
-              </div>
-              <div class="phone-item">
-                <div style="display:flex;align-items:center">
-                  <div class="tag" style="background:#00a4ef">M</div>
-                  <span class="pname">Microsoft</span>
-                </div>
-                <span class="pcode">203 847</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+
     </div>
   </div>
 </section>
@@ -562,8 +473,8 @@
         <p data-i18n="features.cloud_backup.desc">Your encrypted vault is automatically backed up to Neon PostgreSQL. Sign in with the same email on any device to restore your codes — the server never sees plaintext data.</p>
       </div>
       <div class="feature-card reveal">
-        <div class="feature-icon">📱</div>
-        <h3 data-i18n="features.pwa.title">Works on Every Device</h3>
+        <div class="feature-icon">🖥️</div>
+        <h3 data-i18n="features.pwa.title">Native Windows App</h3>
         <p data-i18n="features.pwa.desc">Desktop native app (Windows) with full offline support. Your encrypted vault syncs securely to the cloud, accessible from any PC.</p>
       </div>
       <div class="feature-card reveal">
@@ -574,7 +485,7 @@
       <div class="feature-card reveal">
         <div class="feature-icon">🔐</div>
         <h3 data-i18n="features.offline.title">Works Offline</h3>
-        <p data-i18n="features.offline.desc">Both desktop and mobile versions work fully offline. Your 2FA codes are generated locally on your device — no internet connection required for daily use.</p>
+        <p data-i18n="features.offline.desc">The desktop version works fully offline. Your 2FA codes are generated locally on your device — no internet connection required for daily use.</p>
       </div>
       <div class="feature-card reveal">
         <div class="feature-icon">🛡️</div>
@@ -589,8 +500,8 @@
 <section id="platforms" style="background: rgba(255,255,255,.02);">
   <div class="section-bg"></div>
   <div class="container">
-    <h2 class="reveal" data-i18n="platforms.title">Two platforms, one vault</h2>
-    <p class="subtitle reveal" data-i18n="platforms.subtitle">Choose the experience that fits your workflow. Your encrypted vault syncs seamlessly between both.</p>
+    <h2 class="reveal" data-i18n="platforms.title">One platform, your vault</h2>
+    <p class="subtitle reveal" data-i18n="platforms.subtitle">A native Windows app built for security and performance.</p>
     <div class="platform-grid">
       <div class="platform-card reveal">
         <div class="pf-icon" style="background:rgba(99,102,241,.15)">🖥️</div>
@@ -605,19 +516,6 @@
           <li data-i18n="platforms.desktop_li5">Auto-start with Windows option</li>
         </ul>
       </div>
-      <div class="platform-card reveal">
-        <div class="pf-icon" style="background:rgba(34,197,94,.15)">📱</div>
-        <span class="badge badge-mobile" data-i18n="platforms.mobile_badge">Android APK</span>
-        <h3 data-i18n="platforms.mobile_title">Native Android App</h3>
-        <p data-i18n="platforms.mobile_desc">Standalone APK — built with Capacitor. No browser needed.</p>
-        <ul>
-          <li data-i18n="platforms.mobile_li1">Native Android APK (Android 12+)</li>
-          <li data-i18n="platforms.mobile_li2">Full offline — TOTP generated locally</li>
-          <li data-i18n="platforms.mobile_li3">Encrypted cloud sync with Neon DB</li>
-          <li data-i18n="platforms.mobile_li4">Same zero-knowledge encryption</li>
-          <li data-i18n="platforms.mobile_li5">Open source — auditable build</li>
-        </ul>
-      </div>
     </div>
   </div>
 </section>
@@ -627,7 +525,7 @@
   <div class="section-bg"></div>
   <div class="container">
     <h2 class="reveal" data-i18n="how.title">How it Works</h2>
-    <p class="subtitle reveal" data-i18n="how.subtitle">Get started in three simple steps — same flow on desktop and mobile.</p>
+    <p class="subtitle reveal" data-i18n="how.subtitle">Get started in three simple steps.</p>
     <div class="steps">
       <div class="step reveal">
         <div class="step-number">1</div>
@@ -644,7 +542,7 @@
       <div class="step reveal">
         <div class="step-number">3</div>
         <h3 data-i18n="how.step3.title">Sync Across Devices</h3>
-        <p data-i18n="how.step3.desc">Sign in with the same email on desktop or mobile. Your encrypted vault syncs automatically — seamless access everywhere.</p>
+        <p data-i18n="how.step3.desc">Sign in with your email on any PC. Your encrypted vault syncs automatically — seamless access everywhere.</p>
       </div>
     </div>
   </div>
@@ -727,16 +625,6 @@ function animateParticles() {
 }
 animateParticles();
 
-// ---- Platform Tabs ----
-let currentPlatform = 'desktop';
-
-function switchPlatform(platform) {
-  currentPlatform = platform;
-  document.querySelectorAll('.platform-tab').forEach(t => t.classList.toggle('active', t.dataset.platform === platform));
-  document.querySelectorAll('.platform-content').forEach(c => c.style.display = c.id === `platform-${platform}` ? 'block' : 'none');
-  document.querySelectorAll('.platform-panel').forEach(p => p.classList.toggle('active', p.id === `showcase-${platform}`));
-}
-
 // ---- Scroll Reveal ----
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
@@ -762,15 +650,8 @@ i18n.en = {
 
   'hero.desktop_title': 'Desktop 2FA authenticator. Zero knowledge.',
   'hero.desktop_sub': 'Native Windows app built with Rust & Tauri. Encrypted vault with cloud backup.',
-  'hero.mobile_title': 'Android APK. Install directly.',
-  'hero.mobile_sub': 'Native Android app — small size, full offline, encrypted cloud sync.',
-  'hero.desktop': 'Desktop',
-  'hero.mobile': 'Mobile',
   'hero.download_btn': 'Download for Windows',
   'hero.source_btn': 'View Source',
-  'hero.mobile_btn': 'Download APK (4.4 MB)',
-  'hero.mobile_how': 'View on GitHub',
-  'hero.mobile_note': 'Android 12+. APK download, direct install. No app store.',
   'hero.mockup_title': 'OtpVault — My Accounts',
   'hero.search_placeholder': '\u{1F50D} Search accounts...',
 
@@ -780,17 +661,17 @@ i18n.en = {
   'features.zero_knowledge.desc': 'Your vault is encrypted with AES-256-GCM before leaving your device. The encryption key is derived from your password using Argon2id and is never transmitted to any server.',
   'features.cloud_backup.title': 'Encrypted Cloud Backup',
   'features.cloud_backup.desc': 'Your encrypted vault is automatically backed up to Neon PostgreSQL. Sign in with the same email on any device to restore your codes — the server never sees plaintext data.',
-  'features.pwa.title': 'Works on Every Device',
+  'features.pwa.title': 'Native Windows App',
   'features.pwa.desc': 'Desktop native app (Windows) with full offline support. Your encrypted vault syncs securely to the cloud, accessible from any PC.',
   'features.fast.title': 'Blazing Fast & Lightweight',
   'features.fast.desc': 'Built with Rust and Tauri. Uses a fraction of the resources of Electron-based apps. Launches instantly.',
   'features.offline.title': 'Works Offline',
-  'features.offline.desc': 'Both desktop and mobile versions work fully offline. Your 2FA codes are generated locally on your device — no internet connection required for daily use.',
+  'features.offline.desc': 'The desktop version works fully offline. Your 2FA codes are generated locally on your device — no internet connection required for daily use.',
   'features.opensource.title': 'Open Source & Auditable',
   'features.opensource.desc': 'Every line of code is public on GitHub under MIT license. The entire build pipeline is transparent — anyone can verify there are no backdoors.',
 
-  'platforms.title': 'Two platforms, one vault',
-  'platforms.subtitle': 'Choose the experience that fits your workflow. Your encrypted vault syncs seamlessly between both.',
+  'platforms.title': 'One platform, your vault',
+  'platforms.subtitle': 'A native Windows app built for security and performance.',
   'platforms.desktop_badge': 'Desktop App',
   'platforms.desktop_title': 'Windows Native App',
   'platforms.desktop_desc': 'Full-featured desktop experience with native performance.',
@@ -799,23 +680,16 @@ i18n.en = {
   'platforms.desktop_li3': 'Export/import encrypted backups',
   'platforms.desktop_li4': 'Dark/light theme support',
   'platforms.desktop_li5': 'Auto-start with Windows option',
-  'platforms.mobile_badge': 'Android APK',
-  'platforms.mobile_title': 'Native Android App',
-  'platforms.mobile_desc': 'Standalone APK — built with Capacitor. No browser needed.',
-  'platforms.mobile_li1': 'Native Android APK (Android 12+)',
-  'platforms.mobile_li2': 'Full offline — TOTP generated locally',
-  'platforms.mobile_li3': 'Encrypted cloud sync with Neon DB',
-  'platforms.mobile_li4': 'Same zero-knowledge encryption',
-  'platforms.mobile_li5': 'Open source — auditable build',
+
 
   'how.title': 'How it Works',
-  'how.subtitle': 'Get started in three simple steps — same flow on desktop and mobile.',
+  'how.subtitle': 'Get started in three simple steps.',
   'how.step1.title': 'Create Your Encrypted Vault',
   'how.step1.desc': 'Sign up with your email and password. Your password never leaves your device — it\'s used to derive your encryption key locally with Argon2id.',
   'how.step2.title': 'Add Your Accounts',
   'how.step2.desc': 'Scan QR codes using your camera, upload a QR image, or enter the secret key manually. Supports SHA1/SHA256/SHA512, 6-8 digits, and custom step intervals.',
   'how.step3.title': 'Sync Across Devices',
-  'how.step3.desc': 'Sign in with the same email on desktop or mobile. Your encrypted vault syncs automatically — seamless access everywhere.',
+  'how.step3.desc': 'Sign in with your email on any PC. Your encrypted vault syncs automatically — seamless access everywhere.',
 
   'opensource.title': '100% Open Source',
   'opensource.subtitle': 'Transparency you can trust. Every line of code is public and auditable.',
@@ -845,15 +719,8 @@ i18n.ar = {
 
   'hero.desktop_title': '\u0645\u062f\u064a\u0631 TOTP \u0644\u0644\u0643\u0645\u0628\u064a\u0648\u062a\u0631\u060c \u0622\u0645\u0646 \u0628\u062f\u0648\u0646 \u0645\u0639\u0631\u0641\u0629',
   'hero.desktop_sub': '\u062a\u0637\u0628\u064a\u0642 Windows \u0623\u0635\u0644\u064a \u0645\u0628\u0646\u064a \u0628\u0640 Rust \u0648 Tauri. \u062e\u0632\u0646\u0629 \u0645\u0634\u0641\u0631\u0629 \u0645\u0639 \u0646\u0633\u062e \u0627\u062d\u062a\u064a\u0627\u0637\u064a \u0633\u062d\u0627\u0628\u064a.',
-  'hero.mobile_title': 'APK \u0623\u0646\u062f\u0631\u0648\u064a\u062f. \u062a\u062b\u0628\u064a\u062a \u0645\u0628\u0627\u0634\u0631.',
-  'hero.mobile_sub': '\u062a\u0637\u0628\u064a\u0642 \u0623\u0646\u062f\u0631\u0648\u064a\u062f \u0623\u0635\u0644\u064a \u2014 \u062d\u062c\u0645 \u0635\u063a\u064a\u0631\u060c \u0639\u0645\u0644 \u0628\u062f\u0648\u0646 \u0627\u0646\u062a\u0631\u0646\u062a\u060c \u0645\u0632\u0627\u0645\u0646\u0629 \u0633\u062d\u0627\u0628\u064a\u0629 \u0645\u0634\u0641\u0631\u0629.',
-  'hero.desktop': '\u0643\u0645\u0628\u064a\u0648\u062a\u0631',
-  'hero.mobile': '\u062c\u0648\u0627\u0644',
   'hero.download_btn': '\u062a\u062d\u0645\u064a\u0644 \u0644\u0646\u0638\u0627\u0645 Windows',
   'hero.source_btn': '\u0639\u0631\u0636 \u0627\u0644\u0645\u0635\u062f\u0631',
-  'hero.mobile_btn': '\u062a\u062d\u0645\u064a\u0644 APK (4.4 MB)',
-  'hero.mobile_how': '\u0639\u0631\u0636 \u0639\u0644\u0649 GitHub',
-  'hero.mobile_note': 'Android 12+. \u062a\u062d\u0645\u064a\u0644 APK \u0648\u062a\u062b\u0628\u064a\u062a \u0645\u0628\u0627\u0634\u0631. \u0644\u0627 \u064a\u0648\u062c\u062f \u0645\u062a\u062c\u0631 \u062a\u0637\u0628\u064a\u0642\u0627\u062a.',
   'hero.mockup_title': 'OtpVault \u2014 \u062d\u0633\u0627\u0628\u0627\u062a\u064a',
   'hero.search_placeholder': '\u{1F50D} \u0628\u062d\u062b \u0641\u064a \u0627\u0644\u062d\u0633\u0627\u0628\u0627\u062a...',
 
@@ -863,17 +730,17 @@ i18n.ar = {
   'features.zero_knowledge.desc': '\u062e\u0632\u0646\u062a\u0643 \u0645\u0634\u0641\u0631\u0629 \u0628\u0640 AES-256-GCM \u0642\u0628\u0644 \u0645\u063a\u0627\u062f\u0631\u0629 \u062c\u0647\u0627\u0632\u0643. \u0645\u0641\u062a\u0627\u062d \u0627\u0644\u062a\u0634\u0641\u064a\u0631 \u0645\u0633\u062a\u0645\u062f \u0645\u0646 \u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u0628\u0627\u0633\u062a\u062e\u062f\u0627\u0645 Argon2id \u0648\u0644\u0627 \u064a\u062a\u0645 \u0625\u0631\u0633\u0627\u0644\u0647 \u0644\u0623\u064a \u062e\u0627\u062f\u0645.',
   'features.cloud_backup.title': '\u0646\u0633\u062e \u0627\u062d\u062a\u064a\u0627\u0637\u064a \u0633\u062d\u0627\u0628\u064a \u0645\u0634\u0641\u0631',
   'features.cloud_backup.desc': '\u062a\u062a\u0645 \u0645\u0632\u0627\u0645\u0646\u0629 \u062e\u0632\u0646\u062a\u0643 \u0627\u0644\u0645\u0634\u0641\u0631\u0629 \u062a\u0644\u0642\u0627\u0626\u064a\u0627\u064b \u0645\u0639 Neon PostgreSQL. \u0627\u0644\u062e\u0627\u062f\u0645 \u0644\u0627 \u064a\u0631\u0649 \u0627\u0644\u0628\u064a\u0627\u0646\u0627\u062a \u063a\u064a\u0631 \u0627\u0644\u0645\u0634\u0641\u0631\u0629.',
-  'features.pwa.title': '\u064a\u0639\u0645\u0644 \u0639\u0644\u0649 \u0643\u0644 \u062c\u0647\u0627\u0632',
+  'features.pwa.title': '\u062a\u0637\u0628\u064a\u0642 Windows \u0623\u0635\u0644\u064a',
   'features.pwa.desc': '\u062a\u0637\u0628\u064a\u0642 \u0633\u0637\u062d \u0645\u0643\u062a\u0628 (Windows) \u0645\u0639 \u062f\u0639\u0645 \u0643\u0627\u0645\u0644 \u0644\u0644\u0639\u0645\u0644 \u0628\u062f\u0648\u0646 \u0625\u0646\u062a\u0631\u0646\u062a. \u062e\u0632\u0646\u062a\u0643 \u0627\u0644\u0645\u0634\u0641\u0631\u0629 \u062a\u062a\u0632\u0627\u0645\u0646 \u0645\u0639 \u0627\u0644\u0633\u062d\u0627\u0628\u0629 \u0628\u0634\u0643\u0644 \u0622\u0645\u0646.',
   'features.fast.title': '\u0633\u0631\u064a\u0639 \u0648\u062e\u0641\u064a\u0641',
   'features.fast.desc': '\u0645\u0628\u0646\u064a \u0628\u0640 Rust \u0648 Tauri. \u0623\u0633\u0631\u0639 \u0648\u0623\u062e\u0641 \u0645\u0646 \u062a\u0637\u0628\u064a\u0642\u0627\u062a Electron.',
   'features.offline.title': '\u064a\u0639\u0645\u0644 \u0628\u062f\u0648\u0646 \u0627\u0646\u062a\u0631\u0646\u062a',
-  'features.offline.desc': '\u0643\u0644\u0627 \u0627\u0644\u0625\u0635\u062f\u0627\u0631\u064a\u0646 \u064a\u0639\u0645\u0644\u0627\u0646 \u0628\u062f\u0648\u0646 \u0627\u062a\u0635\u0627\u0644 \u0628\u0627\u0644\u0627\u0646\u062a\u0631\u0646\u062a. \u0631\u0645\u0648\u0632\u0643 \u062a\u062a\u0648\u0644\u062f \u0645\u062d\u0644\u064a\u0627\u064b.',
+  'features.offline.desc': '\u0625\u0635\u062f\u0627\u0631 \u0633\u0637\u062d \u0627\u0644\u0645\u0643\u062a\u0628 \u064a\u0639\u0645\u0644 \u0628\u062f\u0648\u0646 \u0627\u0646\u062a\u0631\u0646\u062a \u0628\u0627\u0644\u0643\u0627\u0645\u0644. \u0631\u0645\u0648\u0632\u0643 \u062a\u062a\u0648\u0644\u062f \u0645\u062d\u0644\u064a\u0627\u064b.',
   'features.opensource.title': '\u0645\u0641\u062a\u0648\u062d \u0627\u0644\u0645\u0635\u062f\u0631',
   'features.opensource.desc': '\u0643\u0644 \u0633\u0637\u0631 \u0645\u0646 \u0627\u0644\u0643\u0648\u062f \u0639\u0627\u0645 \u0639\u0644\u0649 GitHub \u062a\u062d\u062a \u0631\u062e\u0635\u0629 MIT.',
 
-  'platforms.title': '\u0645\u0646\u0635\u062a\u0627\u0646\u060c \u062e\u0632\u0646\u0629 \u0648\u0627\u062d\u062f\u0629',
-  'platforms.subtitle': '\u0627\u062e\u062a\u0631 \u0627\u0644\u062a\u062c\u0631\u0628\u0629 \u0627\u0644\u062a\u064a \u062a\u0646\u0627\u0633\u0628 \u0639\u0645\u0644\u064a\u062a\u0643. \u062e\u0632\u0646\u062a\u0643 \u0627\u0644\u0645\u0634\u0641\u0631\u0629 \u062a\u062a\u0632\u0627\u0645\u0646 \u0628\u064a\u0646\u0647\u0645\u0627.',
+  'platforms.title': '\u0645\u0646\u0635\u0629 \u0648\u0627\u062d\u062f\u0629\u060c \u062e\u0632\u0646\u062a\u0643',
+  'platforms.subtitle': '\u062a\u0637\u0628\u064a\u0642 Windows \u0623\u0635\u0644\u064a \u0645\u0628\u0646\u064a \u0644\u0644\u0623\u0645\u0627\u0646 \u0648\u0627\u0644\u0623\u062f\u0627\u0621.',
   'platforms.desktop_badge': '\u062a\u0637\u0628\u064a\u0642 \u0643\u0645\u0628\u064a\u0648\u062a\u0631',
   'platforms.desktop_title': '\u062a\u0637\u0628\u064a\u0642 Windows \u0623\u0635\u0644\u064a',
   'platforms.desktop_desc': '\u062a\u062c\u0631\u0628\u0629 \u0643\u0627\u0645\u0644\u0629 \u0645\u0639 \u0623\u062f\u0627\u0621 \u0623\u0635\u0644\u064a.',
@@ -882,14 +749,7 @@ i18n.ar = {
   'platforms.desktop_li3': '\u062a\u0635\u062f\u064a\u0631/\u0627\u0633\u062a\u064a\u0631\u0627\u062f \u0646\u0633\u062e \u0627\u062d\u062a\u064a\u0627\u0637\u064a\u0629 \u0645\u0634\u0641\u0631\u0629',
   'platforms.desktop_li4': '\u062f\u0639\u0645 \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u0645\u0638\u0644\u0645/\u0627\u0644\u0641\u0627\u062a\u062d',
   'platforms.desktop_li5': '\u062a\u0634\u063a\u064a\u0644 \u062a\u0644\u0642\u0627\u0626\u064a \u0645\u0639 Windows',
-  'platforms.mobile_badge': 'APK \u0623\u0646\u062f\u0631\u0648\u064a\u062f',
-  'platforms.mobile_title': '\u062a\u0637\u0628\u064a\u0642 \u0623\u0646\u062f\u0631\u0648\u064a\u062f \u0623\u0635\u0644\u064a',
-  'platforms.mobile_desc': 'APK \u0645\u0633\u062a\u0642\u0644 \u2014 \u0645\u0628\u0646\u064a \u0628\u0640 Capacitor. \u0644\u0627 \u062d\u0627\u062c\u0629 \u0644\u0645\u062a\u0635\u0641\u062d.',
-  'platforms.mobile_li1': 'APK \u0623\u0646\u062f\u0631\u0648\u064a\u062f (Android 12+)',
-  'platforms.mobile_li2': '\u0639\u0645\u0644 \u0643\u0627\u0645\u0644 \u0628\u062f\u0648\u0646 \u0627\u0646\u062a\u0631\u0646\u062a',
-  'platforms.mobile_li3': '\u0645\u0632\u0627\u0645\u0646\u0629 \u0633\u062d\u0627\u0628\u064a\u0629 \u0645\u0634\u0641\u0631\u0629 \u0645\u0639 Neon',
-  'platforms.mobile_li4': '\u0646\u0641\u0633 \u062a\u0634\u0641\u064a\u0631 \u0639\u062f\u0645 \u0627\u0644\u0645\u0639\u0631\u0641\u0629',
-  'platforms.mobile_li5': '\u0645\u0641\u062a\u0648\u062d \u0627\u0644\u0645\u0635\u062f\u0631 \u2014 \u0628\u0646\u0627\u0621 \u0642\u0627\u0628\u0644 \u0644\u0644\u062a\u062f\u0642\u064a\u0642',
+
 
   'how.title': '\u0643\u064a\u0641 \u064a\u0639\u0645\u0644',
   'how.subtitle': '\u0627\u0628\u062f\u0623 \u0628\u062b\u0644\u0627\u062b \u062e\u0637\u0648\u0627\u062a \u0628\u0633\u064a\u0637\u0629.',
