@@ -38,16 +38,41 @@ pub async fn email_sign_up(
     email: String,
     password: String,
 ) -> Result<(), String> {
+    let email = email.trim().to_lowercase();
+
     if email.is_empty() || password.len() < 4 {
         return Err("Password must be at least 4 characters".into());
     }
 
-    // Prevent sign-up if email is already registered (Neon check)
+    // Prevent sign-up if email is already registered locally (works offline)
+    match Keychain::load_email(&app) {
+        Some(local_email) => {
+            if local_email.to_lowercase() == email {
+                log::warn!("Duplicate sign-up blocked (local): {}", email);
+                return Err("This email is already registered on this device. Please sign in instead.".into());
+            }
+            // A different email is already stored locally — cannot register a new one
+            log::warn!("Sign-up blocked: device already has account for {}", local_email);
+            return Err("A different account is already set up on this device. Please sign out or use that account.".into());
+        }
+        None => {
+            // No email stored — still check if vault exists (shouldn't happen, but be safe)
+            if Keychain::is_initialized(&app) {
+                log::error!("Vault initialized but no email found (store corruption?)");
+                return Err("Vault data corrupted. Please reinstall or contact support.".into());
+            }
+        }
+    }
+
+    // Prevent sign-up if email is already registered on Neon (cross-device)
     match neon::check_email_exists(&email).await {
-        Ok(true) => return Err("This email is already registered. Please sign in instead.".into()),
+        Ok(true) => {
+            log::warn!("Duplicate sign-up blocked (Neon): {}", email);
+            return Err("This email is already registered. Please sign in instead.".into());
+        }
         Ok(false) => {}
-        Err(_) => {
-            log::warn!("Neon unavailable during sign-up check, proceeding with local-only sign-up");
+        Err(e) => {
+            log::warn!("Neon unavailable during sign-up check, proceeding with local-only sign-up: {}", e);
         }
     }
 
