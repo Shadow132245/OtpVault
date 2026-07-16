@@ -112,6 +112,16 @@ pub async fn upload_vault(
     Ok(())
 }
 
+pub async fn check_email_exists(email: &str) -> Result<bool, String> {
+    let pool = init_pool().await?;
+    let client = pool.get().await.map_err(|e| format!("Failed to get connection: {}", e))?;
+    let row = client
+        .query_opt("SELECT 1 FROM email_vaults WHERE email = $1", &[&email])
+        .await
+        .map_err(|e| format!("Failed to query email: {}", e))?;
+    Ok(row.is_some())
+}
+
 pub async fn fetch_vault(email: &str) -> Result<EmailVaultRow, String> {
     let pool = init_pool().await?;
     let client = pool.get().await.map_err(|e| format!("Failed to get connection: {}", e))?;

@@ -42,6 +42,15 @@ pub async fn email_sign_up(
         return Err("Password must be at least 4 characters".into());
     }
 
+    // Prevent sign-up if email is already registered (Neon check)
+    match neon::check_email_exists(&email).await {
+        Ok(true) => return Err("This email is already registered. Please sign in instead.".into()),
+        Ok(false) => {}
+        Err(_) => {
+            log::warn!("Neon unavailable during sign-up check, proceeding with local-only sign-up");
+        }
+    }
+
     let (salt, test_payload) = vault_state
         .0
         .lock()
