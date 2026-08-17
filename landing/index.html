@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b0d1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
 <title id="meta-title">OtpVault — Secure 2FA Authenticator</title>
 <meta name="description" content="A secure, zero-knowledge desktop 2FA authenticator for Windows. Encrypted vault with Neon cloud backup. Open source.">
 <meta property="og:title" content="OtpVault — Secure 2FA Authenticator">
@@ -551,6 +558,10 @@ fetch('https://api.github.com/repos/Shadow132245/OtpVault/releases/latest')
     }
   })
   .catch(() => {});
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
