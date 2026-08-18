@@ -55,7 +55,7 @@ jobs:
           echo "tauri.android.versionName=0.1.6" >> src-tauri/gen/android/app/tauri.properties
 
       - name: Build Tauri Android APK
-        run: npx tauri android build -- --apk
+        run: npx tauri android build
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
