@@ -57,10 +57,18 @@ jobs:
       - name: Build Tauri Android APK
         run: npx tauri android build
 
+      - name: Find APK
+        id: find-apk
+        run: |
+          echo "=== Looking for APK files ==="
+          find src-tauri/gen/android -name "*.apk" -type f 2>/dev/null || echo "No APK found"
+          find src-tauri/gen/android -name "*.aab" -type f 2>/dev/null || echo "No AAB found"
+          echo "=== Build outputs ==="
+          ls -la src-tauri/gen/android/app/build/outputs/ 2>/dev/null || echo "No outputs dir"
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: OtpVault-APK
-          path: |
-            src-tauri/gen/android/app/build/outputs/apk/**/*.apk
+          path: src-tauri/gen/android/app/build/outputs/**/*.apk
           if-no-files-found: error
