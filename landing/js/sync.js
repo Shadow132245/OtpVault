@@ -11,13 +11,27 @@ window.SyncService = {
     return Array.from(map.values());
   },
 
-  async syncUpload(email, password, accounts) {
-    const salt = StorageService.loadSalt() || '';
-    const vaultJson = JSON.stringify({ version: 1, accounts });
-    const encrypted = await CryptoService.encryptVault(vaultJson, password, salt);
-    StorageService.saveVaultData(encrypted);
-    await NeonAPI.uploadVault(email, salt, encrypted.substring(0, 100), encrypted);
-    return accounts;
+  async syncFull(email, password, localAccounts) {
+    const salt = StorageService.loadSalt();
+    if (!salt) return localAccounts;
+
+    const remote = await this.syncDownload(email, password);
+    if (!remote) {
+      const vaultJson = JSON.stringify({ version: 1, accounts: localAccounts });
+      const encrypted = await CryptoService.encryptVault(vaultJson, password, salt);
+      StorageService.saveVaultData(encrypted);
+      const testPayload = await CryptoService.generateTestPayload(password, salt);
+      try { await NeonAPI.uploadVault(email, salt, testPayload, encrypted); } catch {}
+      return localAccounts;
+    }
+
+    const merged = this.mergeAccounts(localAccounts, remote);
+    const mergedJson = JSON.stringify({ version: 1, accounts: merged });
+    const mergedEncrypted = await CryptoService.encryptVault(mergedJson, password, salt);
+    StorageService.saveVaultData(mergedEncrypted);
+    const testPayload = await CryptoService.generateTestPayload(password, salt);
+    try { await NeonAPI.uploadVault(email, salt, testPayload, mergedEncrypted); } catch {}
+    return merged;
   },
 
   async syncDownload(email, password) {
@@ -29,25 +43,5 @@ window.SyncService = {
     } catch {
       return null;
     }
-  },
-
-  async syncFull(email, password, localAccounts) {
-    const salt = StorageService.loadSalt() || '';
-    const localJson = JSON.stringify({ version: 1, accounts: localAccounts });
-    const localEncrypted = await CryptoService.encryptVault(localJson, password, salt);
-    StorageService.saveVaultData(localEncrypted);
-
-    const remote = await this.syncDownload(email, password);
-    if (!remote) {
-      await NeonAPI.uploadVault(email, salt, localEncrypted.substring(0, 100), localEncrypted);
-      return localAccounts;
-    }
-
-    const merged = this.mergeAccounts(localAccounts, remote);
-    const mergedJson = JSON.stringify({ version: 1, accounts: merged });
-    const mergedEncrypted = await CryptoService.encryptVault(mergedJson, password, salt);
-    StorageService.saveVaultData(mergedEncrypted);
-    await NeonAPI.uploadVault(email, salt, mergedEncrypted.substring(0, 100), mergedEncrypted);
-    return merged;
   }
 };
