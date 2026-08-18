@@ -3,8 +3,26 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  max: 1,
+  max: 3,
 })
+
+let tableCreated = false
+
+async function ensureTable() {
+  if (tableCreated) return
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS email_vaults (
+      id SERIAL PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      salt TEXT NOT NULL,
+      test_payload TEXT NOT NULL,
+      encrypted_vault TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    )
+  `)
+  tableCreated = true
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -17,17 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS email_vaults (
-        id SERIAL PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
-        salt TEXT NOT NULL,
-        test_payload TEXT NOT NULL,
-        encrypted_vault TEXT NOT NULL,
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        updated_at TIMESTAMPTZ DEFAULT NOW()
-      )
-    `)
+    await ensureTable()
 
     if (req.method === 'GET') {
       const { email } = req.query
@@ -71,7 +79,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     res.status(405).json({ error: 'Method not allowed' })
   } catch (err) {
-    console.error(err)
-    res.status(500).json({ error: String(err) })
+    console.error('Vault API error:', err)
+    res.status(500).json({ error: 'Internal server error' })
   }
 }
