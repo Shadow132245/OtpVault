@@ -6,6 +6,12 @@ function uuid() {
     });
 }
 
+function esc(s) {
+  const el = document.createElement('div');
+  el.textContent = s;
+  return el.innerHTML;
+}
+
 const ISSUER_COLORS = {
   github: 'bg-gray-900', google: 'bg-blue-500', microsoft: 'bg-blue-600',
   twitter: 'bg-sky-500', facebook: 'bg-blue-800', amazon: 'bg-amber-500',
