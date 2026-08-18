@@ -42,9 +42,9 @@ pub fn run() {
             qr_scanner::scan_qr_file,
             qr_scanner::scan_qr_bytes,
         ])
-        .setup(|app| {
+        .setup(|_app| {
             #[cfg(desktop)]
-            tray::setup_tray(app.handle()).ok();
+            tray::setup_tray(_app.handle()).ok();
             log::info!("OtpVault started");
             Ok(())
         })
