@@ -4,10 +4,14 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
 
     steps:
       - name: Checkout repository
@@ -35,13 +39,27 @@ jobs:
       - name: Setup Android NDK
         uses: nttld/setup-ndk@v1
         with:
-          ndk-version: r26b # النسخة المتوافقة مع Tauri
+          ndk-version: r26b
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Clean and Initialize Tauri Android
+        run: |
+          rm -rf src-tauri/gen/android
+          npx tauri android init
+
+      - name: Set Android Version Info
+        run: |
+          echo "tauri.android.versionCode=1" > src-tauri/gen/android/app/tauri.properties
+          echo "tauri.android.versionName=0.1.6" >> src-tauri/gen/android/app/tauri.properties
 
       - name: Build Tauri Android APK
-        run: npm run tauri android build -- --apk
-        
+        run: npx tauri android build -- --apk
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: OtpVault-APK
           path: src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk
+          if-no-files-found: warn
