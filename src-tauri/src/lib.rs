@@ -3,6 +3,7 @@ mod crypto;
 mod logging;
 mod qr_scanner;
 mod totp;
+#[cfg(desktop)]
 mod tray;
 
 use commands::auth::VaultManager;
@@ -42,6 +43,7 @@ pub fn run() {
             qr_scanner::scan_qr_bytes,
         ])
         .setup(|app| {
+            #[cfg(desktop)]
             tray::setup_tray(app.handle()).ok();
             log::info!("OtpVault started");
             Ok(())
