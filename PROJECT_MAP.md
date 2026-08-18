@@ -22,12 +22,6 @@
 | Build Tools | Vite + TypeScript 5.8 | latest | Frontend bundler + type checking |
 | Bundler | Tauri Bundler | 2.11.2 | MSI (Win), deb/AppImage (Linux) |
 | Theme | Tailwind darkMode class + React context | — | Dark/Light toggle, RTL-aware |
-| **PWA Framework** | **Vanilla JS + Tailwind CDN** | — | **Landing page + full PWA on Vercel** |
-| **PWA TOTP Engine** | **Web Crypto (HMAC-SHA1)** | — | **Browser-native TOTP generation** |
-| **PWA Encryption** | **hash-wasm (Argon2id) + Web Crypto (AES-256-GCM)** | — | **Cross-platform vault encryption** |
-| **PWA QR Scanner** | **jsQR** | 1.4.0 | **Browser QR decode (camera + file)** |
-| **PWA Hosting** | **Vercel** | — | **Serverless API + static hosting** |
-| **PWA Cloud** | **Neon PostgreSQL** | — | **Same DB as desktop** |
 
 ## [SYSTEM_FLOW]
 
@@ -150,70 +144,6 @@
 └───────────────────────────────────────────────────────┘
 ```
 
-## [PWA ARCHITECTURE]
-
-```
-┌───────────────────────────────────────────────────────┐
-│                  PWA (landing/)                        │
-│            Vanilla JS + Tailwind CDN                   │
-│                                                        │
-│  ┌──────────┐  ┌──────────┐  ┌──────────────────────┐│
-│  │Onboarding│  │  Vault   │  │     App Shell         ││
-│  │(Sign Up  │  │  Lock    │  │ ┌────┐ ┌────┐ ┌───┐ ││
-│  │ /Log In) │  │          │  │ │Acct│ │Add │ │Set│ ││
-│  └──────────┘  └──────────┘  │ │List│ │    │ │   │ ││
-│                               │ └────┘ └────┘ └───┘ ││
-│  ┌────────────────────────┐  └──────────────────────┘│
-│  │  Services:             │                           │
-│  │  CryptoService         │  ┌──────────────────────┐│
-│  │  (Argon2id + PBKDF2)  │  │  NeonAPI (fetch)     ││
-│  │  TOTP (Web Crypto)    │  │  GET/POST /api/vault  ││
-│  │  StorageService (LS)  │  └──────────────────────┘│
-│  │  QRScanner (jsQR)     │  ┌──────────────────────┐│
-│  │  SyncService           │  │  Service Worker       ││
-│  └────────────────────────┘  │  (network-first)     ││
-│                               └──────────────────────┘│
-└────────────────────────┬───────────────────────────────┘
-                         │ HTTP (fetch)
-                         ▼
-┌───────────────────────────────────────────────────────┐
-│              Vercel Serverless API                      │
-│           landing/api/vault.ts                          │
-│              │                                          │
-│              ▼                                          │
-│         Neon PostgreSQL                                 │
-│         (email_vaults table)                            │
-│         Same DB as desktop                              │
-└───────────────────────────────────────────────────────┘
-```
-
-## [PWA SYSTEM FLOW]
-
-```
-[PWA Launch]
-    │
-    ▼
-[Check Remember Me (localStorage)]
-    │
-    ├── Found ──► [Auto unlock with stored credentials]
-    │               ├── Success → [Account List]
-    │               └── Failure → [Onboarding]
-    │
-    └── Not found ──► [Onboarding]
-                        ├── Tab: Sign Up | Log In
-                        ├── Sign Up:
-                        │   ├── Check Neon DB: email exists?
-                        │   │   ├── Yes → Error: "already registered"
-                        │   │   ├── No → Create vault locally + upload
-                        │   │   └── Server error → Local-only signup
-                        │   └── Argon2id(password, salt) → AES-256-GCM key
-                        └── Log In:
-                            ├── Fetch vault from Neon DB
-                            ├── Verify test_payload (Argon2id → decrypt → "OTPVAULT_INIT")
-                            ├── Decrypt encrypted_vault → accounts JSON
-                            └── Save locally + optional remember_me
-```
-
 ## [EMAIL AUTH FLOW]
 
 ```
@@ -321,13 +251,3 @@
 | i18n updates | ✅ DONE | New keys: `auth.*` (sign_up_tab, log_in_tab, remember_me, no_account, have_account), `settings.log_out`, `settings.log_out_confirm`, `help.*` (title, add_account, backup, cloud, lock, settings sections) — both en.json and ar.json |
 | E2E tests | ❌ PENDING | Needs Tauri test harness |
 | Linux packaging (deb/AppImage) | ✅ CONFIGURED | `tauri.conf.json` has Linux bundle config |
-| **PWA (landing/)** | ✅ DONE | Vanilla JS PWA on Vercel (`otpvault1.vercel.app`), Tailwind CDN, same Neon DB as desktop |
-| PWA auth (Sign Up + Log In) | ✅ DONE | Combined tabbed auth, duplicate email check against Neon DB, Argon2id via hash-wasm + PBKDF2 fallback |
-| PWA vault (TOTP display) | ✅ DONE | Live TOTP codes with countdown ring + progress bar, grouped by issuer letter, search, click-to-copy, delete |
-| PWA add account | ✅ DONE | QR scan (jsQR CDN), manual entry (issuer/secret/algo/digits/step), otpauth:// URI import |
-| PWA settings | ✅ DONE | Language toggle, export/import backup, lock vault, log out — matching desktop design |
-| PWA cloud sync | ✅ DONE | Same Neon DB (`/api/vault`), Argon2id encryption, test_payload verification, upload on save |
-| PWA offline support | ✅ DONE | Service worker (network-first), manifest.json, PWA meta tags, installable |
-| PWA design | ✅ DONE | Tailwind CDN with desktop-matched colors (surface-950, primary-500), Inter/JetBrains Mono fonts, card-hover shadows |
-| Android build fixes | ✅ DONE | `#[cfg(desktop)]` on tray module, `cdylib` crate-type, unused var fix |
-| **Mobile (React Native)** | ⏳ IN PROGRESS | `mobile/` directory scaffolded with Expo, pending implementation |
