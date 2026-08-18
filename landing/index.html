@@ -20,7 +20,28 @@
 <meta name="twitter:title" content="OtpVault — Secure 2FA Authenticator">
 <meta name="twitter:description" content="A secure, zero-knowledge desktop 2FA authenticator for Windows.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%236366f1'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/></svg>">
-<link rel="stylesheet" href="/css/app.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        primary: { 50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3',900:'#312e81',950:'#1e1b4b' },
+        surface: { 50:'#fafafa',100:'#f5f5f5',200:'#e5e5e5',300:'#d4d4d4',400:'#a3a3a3',500:'#737373',600:'#525252',700:'#404040',800:'#262626',900:'#171717',950:'#0a0a0a' },
+      },
+      fontFamily: {
+        sans: ['Inter','-apple-system','BlinkMacSystemFont','Segoe UI','sans-serif'],
+        mono: ['JetBrains Mono','Fira Code','monospace'],
+      },
+      boxShadow: {
+        'card': '0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.06)',
+        'card-hover': '0 4px 12px 0 rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06)',
+      },
+    },
+  },
+}
+</script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html { scroll-behavior: smooth; }
@@ -424,21 +445,26 @@
 </div><!-- end landing-page -->
 
 <!-- App Shell (hidden by default) -->
-<div class="app-shell" id="app-shell">
-  <div id="auth-screen"></div>
-  <header class="app-header" id="app-header" style="display:none">
-    <div class="app-header-inner" id="app-header-inner"></div>
-  </header>
-  <div class="app-main" id="app-main">
-    <div id="app-body"></div>
+<div id="app-shell" class="hidden">
+  <!-- Onboarding Screen -->
+  <div id="auth-screen" class="hidden min-h-screen bg-surface-950 flex items-center justify-center p-4"></div>
+  <!-- App Shell (header + main + footer) -->
+  <div id="app-layout" class="hidden min-h-screen bg-surface-950 flex flex-col">
+    <header class="sticky top-0 z-30 bg-surface-900/80 backdrop-blur-xl border-b border-surface-800/60">
+      <div class="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between" id="app-header-inner"></div>
+    </header>
+    <main class="max-w-2xl mx-auto px-4 py-5 flex-1 w-full" id="app-main"></main>
+    <footer class="border-t border-surface-800/60 py-3">
+      <div class="max-w-2xl mx-auto px-4 flex flex-col items-center gap-2 text-xs">
+        <div class="flex items-center gap-4">
+          <a href="https://shadow132245.github.io/OtpVault/terms-of-service.html" class="text-surface-400 hover:text-surface-300 transition-colors">Terms of Service</a>
+          <span class="text-surface-600">|</span>
+          <a href="https://shadow132245.github.io/OtpVault/privacy-policy.html" class="text-surface-400 hover:text-surface-300 transition-colors">Privacy Policy</a>
+        </div>
+        <p class="text-surface-500">&copy; 2026 OtpVault. EuroMoscow Developments</p>
+      </div>
+    </footer>
   </div>
-  <footer class="app-footer" id="app-footer" style="display:none">
-    <div class="app-footer-links">
-      <a href="https://shadow132245.github.io/OtpVault/terms-of-service.html">Terms of Service</a>
-      <a href="https://shadow132245.github.io/OtpVault/privacy-policy.html">Privacy Policy</a>
-    </div>
-    <p>&copy; 2026 OtpVault. EuroMoscow Developments</p>
-  </footer>
 </div>
 
 <script>

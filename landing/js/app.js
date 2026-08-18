@@ -6,58 +6,53 @@ function uuid() {
     });
 }
 
-function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-
-const AVATAR_COLORS = {
-  github: '#1f2937', google: '#3b82f6', microsoft: '#2563eb', twitter: '#0ea5e9',
-  facebook: '#1e40af', amazon: '#f59e0b', discord: '#4f46e5', slack: '#9333ea',
-  dropbox: '#3b82f6', gitlab: '#ea580c', spotify: '#16a34a', netflix: '#dc2626',
-  steam: '#1b2838', reddit: '#f97316', apple: '#525252',
+const ISSUER_COLORS = {
+  github: 'bg-gray-900', google: 'bg-blue-500', microsoft: 'bg-blue-600',
+  twitter: 'bg-sky-500', facebook: 'bg-blue-800', amazon: 'bg-amber-500',
+  discord: 'bg-indigo-600', slack: 'bg-purple-600', dropbox: 'bg-blue-500',
+  gitlab: 'bg-orange-600',
 };
-function avatarColor(issuer) {
-  const k = (issuer || '').toLowerCase();
-  for (const [key, val] of Object.entries(AVATAR_COLORS)) { if (k.includes(key)) return val; }
-  let h = 0; for (const c of k) h = ((h << 5) - h + c.charCodeAt(0)) | 0;
-  return ['#6366f1','#8b5cf6','#ec4899','#14b8a6','#f59e0b','#ef4444'][Math.abs(h) % 6];
+function issuerColor(issuer) {
+  const k = (issuer || '').toLowerCase().trim();
+  return ISSUER_COLORS[k] || 'bg-primary-500';
 }
 
 const SVG = {
-  shield: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>`,
-  back: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`,
-  plus: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`,
-  settings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>`,
-  help: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17h.01"/></svg>`,
-  search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>`,
-  copy: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>`,
-  check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`,
-  lock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`,
-  mail: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 7l-10 6L2 7"/></svg>`,
-  qr: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/><line x1="21" y1="14" x2="21" y2="14.01"/><line x1="14" y1="21" x2="14" y2="21.01"/><line x1="21" y1="21" x2="21" y2="21.01"/></svg>`,
-  keyboard: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><line x1="6" y1="8" x2="6" y2="8.01"/><line x1="10" y1="8" x2="10" y2="8.01"/><line x1="14" y1="8" x2="14" y2="8.01"/><line x1="18" y1="8" x2="18" y2="8.01"/><line x1="8" y1="12" x2="8" y2="12.01"/><line x1="12" y1="12" x2="12" y2="12.01"/><line x1="16" y1="12" x2="16" y2="12.01"/><line x1="7" y1="16" x2="17" y2="16"/></svg>`,
-  upload: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>`,
-  download: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>`,
-  logout: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>`,
-  x: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
-  camera: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
+  shield: `<svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>`,
+  back: `<svg class="w-[18px] h-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
+  plus: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+  settings: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+  help: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+  search: `<svg class="w-4 h-4 text-surface-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  copy: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`,
+  check: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary-500"><polyline points="20 6 9 17 4 12"/></svg>`,
+  lock: `<svg class="w-8 h-8 text-surface-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`,
+  mail: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>`,
+  qr: `<svg class="w-6 h-6 text-primary-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>`,
+  pencil: `<svg class="w-6 h-6 text-surface-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`,
+  camera: `<svg class="w-6 h-6 text-primary-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>`,
+  upload: `<svg class="w-6 h-6 text-surface-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>`,
+  save: `<svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>`,
+  logout: `<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`,
+  x: `<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+  spinner: `<svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>`,
 };
 
 window.App = {
   screen: 'landing',
-  authTab: 'signin',
+  authTab: 'signup',
   email: '',
   password: '',
   accounts: [],
-  vaultExistsOnServer: false,
   _timer: null,
 
   init() {
+    document.documentElement.classList.add('dark');
     const remember = StorageService.loadRememberMe();
     if (remember && StorageService.isInitialized()) {
       this.email = remember.email;
       this.password = remember.password;
-      this._loadLocalVault().then(() => {
-        this.navigate('accounts');
-      });
+      this._loadLocalVault().then(() => this.navigate('accounts'));
     }
     this._startTOTPUpdater();
   },
@@ -67,17 +62,13 @@ window.App = {
     const landing = document.getElementById('landing-page');
     const shell = document.getElementById('app-shell');
     const auth = document.getElementById('auth-screen');
-    const main = document.getElementById('app-main');
-    const header = document.getElementById('app-header');
-    const footer = document.getElementById('app-footer');
-
+    const layout = document.getElementById('app-layout');
     const isLanding = screen === 'landing';
+
     landing.style.display = isLanding ? '' : 'none';
-    shell.style.display = isLanding ? 'none' : '';
-    auth.className = screen === 'onboarding' ? 'visible' : '';
-    main.className = (screen !== 'onboarding' && !isLanding) ? 'app-main visible' : 'app-main';
-    header.style.display = (isLanding || screen === 'onboarding') ? 'none' : '';
-    footer.style.display = (isLanding || screen === 'onboarding') ? 'none' : '';
+    shell.className = isLanding ? 'hidden' : '';
+    auth.className = screen === 'onboarding' ? 'min-h-screen bg-surface-950 flex items-center justify-center p-4' : 'hidden';
+    layout.className = (screen !== 'onboarding' && !isLanding) ? 'min-h-screen bg-surface-950 flex flex-col' : 'hidden';
 
     if (screen === 'onboarding') this._renderAuth();
     else if (screen === 'accounts') this._renderAccounts();
@@ -89,43 +80,92 @@ window.App = {
   _renderAuth() {
     const isSignup = this.authTab === 'signup';
     document.getElementById('auth-screen').innerHTML = `
-      <div class="auth-card">
-        <div class="auth-logo">${SVG.shield}</div>
-        <h2 class="auth-title">Welcome to OtpVault</h2>
-        <p class="auth-subtitle">Your secure 2FA code manager</p>
-        <div class="auth-tabs">
-          <button class="auth-tab ${isSignup ? 'active' : ''}" onclick="App.authTab='signup';App._renderAuth()">Sign Up</button>
-          <button class="auth-tab ${!isSignup ? 'active' : ''}" onclick="App.authTab='signin';App._renderAuth()">Log In</button>
+      <div class="w-full max-w-sm animate-fade-in">
+        <div class="text-center mb-8">
+          <div class="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-primary-500/25">
+            ${SVG.shield}
+          </div>
+          <h1 class="text-2xl font-bold text-surface-100 mb-1">Welcome to OtpVault</h1>
+          <p class="text-surface-400 text-sm">Your secure 2FA code manager</p>
+          <div class="flex items-center justify-center gap-2 mt-4">
+            <button onclick="App.authTab='signup';App._renderAuth()" class="px-3 py-1 text-xs font-medium rounded-lg transition-all ${isSignup ? 'bg-primary-500 text-white shadow-sm' : 'bg-surface-700 text-surface-400 hover:bg-surface-600'}">English</button>
+            <button onclick="App.authTab='signup';App._renderAuth()" class="px-3 py-1 text-xs font-medium rounded-lg transition-all bg-surface-700 text-surface-400 hover:bg-surface-600">العربية</button>
+          </div>
         </div>
-        <form class="auth-form" onsubmit="event.preventDefault();App._submitAuth()">
-          <div class="input-wrap">
-            ${SVG.mail}
-            <input type="email" id="auth-email" placeholder="Email address" value="${esc(this.email)}" required>
+
+        <div class="flex mb-6 bg-surface-800 rounded-xl p-1">
+          <button onclick="App.authTab='signup';App._renderAuth()" class="flex-1 py-2 text-sm font-medium rounded-lg transition-all ${isSignup ? 'bg-surface-700 text-surface-100 shadow-sm' : 'text-surface-400 hover:text-surface-300'}">Sign Up</button>
+          <button onclick="App.authTab='signin';App._renderAuth()" class="flex-1 py-2 text-sm font-medium rounded-lg transition-all ${!isSignup ? 'bg-surface-700 text-surface-100 shadow-sm' : 'text-surface-400 hover:text-surface-300'}">Log In</button>
+        </div>
+
+        <form onsubmit="event.preventDefault();App._submitAuth()" class="flex flex-col gap-4">
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500 pointer-events-none">${SVG.mail}</span>
+            <input type="email" id="auth-email" placeholder="Email address" value="${(this.email||'').replace(/"/g,'&quot;')}" autofocus
+              class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl bg-surface-800 border border-surface-700 text-surface-100 placeholder-surface-500 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
           </div>
-          <div class="input-wrap">
-            ${SVG.lock}
-            <input type="password" id="auth-password" placeholder="Password (min 4 characters)" required autocomplete="${isSignup ? 'new-password' : 'current-password'}">
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500 pointer-events-none">${SVG.lock.replace('w-8 h-8','w-4 h-4').replace('text-surface-400','text-surface-500')}</span>
+            <input type="password" id="auth-password" placeholder="Password (min 4 characters)"
+              class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl bg-surface-800 border border-surface-700 text-surface-100 placeholder-surface-500 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
           </div>
+
           ${isSignup ? `
-            <label class="checkbox-wrap">
-              <input type="checkbox" id="auth-terms"> I agree to the Terms of Service
+            <label class="flex items-center gap-2 cursor-pointer group" onclick="App._toggleTerms()">
+              <div id="terms-check" class="w-4 h-4 rounded border-2 flex items-center justify-center transition-all shrink-0 border-surface-600 group-hover:border-surface-400"></div>
+              <span class="text-xs text-surface-400 group-hover:text-surface-300 transition-colors">I agree to the <span class="text-primary-500 hover:text-primary-400 underline">Terms of Service</span></span>
             </label>
           ` : `
-            <label class="checkbox-wrap">
-              <input type="checkbox" id="auth-remember" checked> Remember me
+            <label class="flex items-center gap-2 cursor-pointer group" onclick="App._toggleRemember()">
+              <div id="remember-check" class="w-4 h-4 rounded border-2 flex items-center justify-center transition-all bg-primary-500 border-primary-500">
+                <svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <span class="text-xs text-surface-400 group-hover:text-surface-300 transition-colors">Remember me</span>
             </label>
           `}
-          <div class="auth-error" id="auth-error"></div>
-          <button type="submit" class="btn-primary" id="auth-submit" style="margin-top:4px">
-            ${isSignup ? 'Create Account' : 'Log In'}
+
+          <div class="text-red-500 text-xs text-center min-h-[16px]" id="auth-error"></div>
+
+          <button type="submit" id="auth-submit" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-xl transition-all duration-150 bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-sm shadow-primary-600/20 disabled:opacity-40 disabled:cursor-not-allowed select-none">
+            ${isSignup ? 'Create Vault' : 'Unlock Vault'}
           </button>
         </form>
-        <div class="auth-switch">
-          <button onclick="App.authTab=App.authTab==='signin'?'signup':'signin';App._renderAuth()">
+
+        <div class="text-center mt-6">
+          <button onclick="App.authTab=App.authTab==='signin'?'signup':'signin';App._renderAuth()" class="text-xs text-primary-500 hover:text-primary-400 transition-colors">
             ${isSignup ? 'Already have an account?' : "Don't have an account?"}
           </button>
         </div>
       </div>`;
+    this._agreeToTerms = false;
+    this._rememberMe = true;
+  },
+
+  _agreeToTerms: false,
+  _rememberMe: true,
+
+  _toggleTerms() {
+    this._agreeToTerms = !this._agreeToTerms;
+    const el = document.getElementById('terms-check');
+    if (this._agreeToTerms) {
+      el.className = 'w-4 h-4 rounded border-2 flex items-center justify-center transition-all shrink-0 bg-primary-500 border-primary-500';
+      el.innerHTML = '<svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    } else {
+      el.className = 'w-4 h-4 rounded border-2 flex items-center justify-center transition-all shrink-0 border-surface-600 group-hover:border-surface-400';
+      el.innerHTML = '';
+    }
+  },
+
+  _toggleRemember() {
+    this._rememberMe = !this._rememberMe;
+    const el = document.getElementById('remember-check');
+    if (this._rememberMe) {
+      el.className = 'w-4 h-4 rounded border-2 flex items-center justify-center transition-all bg-primary-500 border-primary-500';
+      el.innerHTML = '<svg class="w-3 h-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+    } else {
+      el.className = 'w-4 h-4 rounded border-2 flex items-center justify-center transition-all border-surface-600 group-hover:border-surface-400';
+      el.innerHTML = '';
+    }
   },
 
   async _submitAuth() {
@@ -136,19 +176,15 @@ window.App = {
     if (!email || !pw) { errEl.textContent = 'Please fill all fields'; return; }
     if (pw.length < 4) { errEl.textContent = 'Password must be at least 4 characters'; return; }
 
-    btn.disabled = true;
-    btn.innerHTML = `<span style="width:18px;height:18px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;display:inline-block"></span> ${this.authTab === 'signup' ? 'Creating...' : 'Unlocking...'}`;
-    errEl.textContent = '';
-
     this.email = email;
     this.password = pw;
 
+    btn.disabled = true;
+    btn.innerHTML = `${SVG.spinner} ${this.authTab === 'signup' ? 'Creating...' : 'Unlocking...'}`;
+    errEl.textContent = '';
+
     if (this.authTab === 'signup') {
-      if (!document.getElementById('auth-terms').checked) {
-        errEl.textContent = 'Please agree to the Terms of Service';
-        btn.disabled = false; btn.textContent = 'Create Account';
-        return;
-      }
+      if (!this._agreeToTerms) { errEl.textContent = 'Please agree to the Terms of Service'; btn.disabled = false; btn.innerHTML = 'Create Vault'; return; }
       await this._doSignup();
     } else {
       await this._doSignin();
@@ -161,13 +197,17 @@ window.App = {
     try {
       const row = await NeonAPI.fetchVault(this.email);
       if (row) {
-        errEl.textContent = 'An account with this email already exists. Try logging in.';
-        btn.disabled = false; btn.textContent = 'Create Account';
+        errEl.textContent = 'This email is already registered. Please sign in instead.';
+        btn.disabled = false; btn.innerHTML = 'Create Vault';
         return;
       }
     } catch (e) {
       if (!e.message.includes('404') && !e.message.includes('Not found')) {
-        // Server error - proceed with local-only vault
+        if (!e.message.includes('Failed to fetch') && !e.message.includes('NetworkError')) {
+          errEl.textContent = 'Server error. Please try again.';
+          btn.disabled = false; btn.innerHTML = 'Create Vault';
+          return;
+        }
       }
     }
     await this._createVault();
@@ -182,8 +222,8 @@ window.App = {
       const salt = row.salt;
       const valid = await CryptoService.verifyTestPayload(testPayload, this.password, salt);
       if (!valid) {
-        errEl.textContent = 'Wrong password';
-        btn.disabled = false; btn.textContent = 'Log In';
+        errEl.textContent = 'Wrong email or password';
+        btn.disabled = false; btn.innerHTML = 'Unlock Vault';
         return;
       }
       const decrypted = await CryptoService.decryptVault(row.encrypted_vault, this.password, salt);
@@ -193,23 +233,20 @@ window.App = {
         StorageService.saveTestPayload(testPayload);
         StorageService.saveVaultData(row.encrypted_vault);
         StorageService.saveEmail(this.email);
-        StorageService.saveVaultType('password');
         this.accounts = data.accounts;
-        if (document.getElementById('auth-remember')?.checked) {
-          StorageService.saveRememberMe(this.email, this.password);
-        }
+        if (this._rememberMe) StorageService.saveRememberMe(this.email, this.password);
         this.navigate('accounts');
         return;
       }
     } catch (e) {
       if (e.message.includes('404') || e.message.includes('Not found')) {
-        errEl.textContent = 'No account found. Create one instead?';
-        btn.disabled = false; btn.textContent = 'Log In';
+        errEl.textContent = 'No account found with this email';
+        btn.disabled = false; btn.innerHTML = 'Unlock Vault';
         return;
       }
     }
-    errEl.textContent = 'Wrong password or corrupted vault';
-    btn.disabled = false; btn.textContent = 'Log In';
+    errEl.textContent = 'Wrong email or password';
+    btn.disabled = false; btn.innerHTML = 'Unlock Vault';
   },
 
   async _createVault() {
@@ -220,7 +257,6 @@ window.App = {
 
     StorageService.saveSalt(salt);
     StorageService.saveTestPayload(testPayload);
-    StorageService.saveVaultType('password');
     StorageService.saveEmail(this.email);
     StorageService.saveVaultData(encrypted);
     StorageService.saveRememberMe(this.email, this.password);
@@ -231,15 +267,14 @@ window.App = {
     this.navigate('accounts');
   },
 
-  // ===== ACCOUNTS =====
+  // ===== LOCAL VAULT =====
   async _loadLocalVault() {
     try {
       const encrypted = StorageService.loadVaultData();
       const salt = StorageService.loadSalt();
       if (!encrypted || !salt) { this.accounts = []; return; }
       const json = await CryptoService.decryptVault(encrypted, this.password, salt);
-      const data = JSON.parse(json);
-      this.accounts = data.accounts || [];
+      this.accounts = JSON.parse(json).accounts || [];
     } catch { this.accounts = []; }
   },
 
@@ -251,109 +286,117 @@ window.App = {
     try { await NeonAPI.uploadVault(this.email, salt, StorageService.loadTestPayload() || '', encrypted); } catch {}
   },
 
+  // ===== ACCOUNTS SCREEN =====
   _renderAccounts() {
-    const header = document.getElementById('app-header-inner');
-    header.innerHTML = `
-      <div class="app-header-left">
-        <button class="app-header-btn" onclick="App.navigate('settings')">${SVG.settings}</button>
-        <h1>OtpVault</h1>
+    document.getElementById('app-header-inner').innerHTML = `
+      <div class="flex items-center gap-2">
+        <h1 class="text-base font-semibold text-surface-100">My Accounts</h1>
       </div>
-      <div class="app-header-right">
-        <button class="app-header-btn" onclick="App.navigate('add-account')">${SVG.plus}</button>
+      <div class="flex items-center gap-1">
+        <button onclick="App.navigate('settings')" class="w-9 h-9 flex items-center justify-center rounded-xl transition-colors duration-150 text-surface-500 hover:text-surface-300 hover:bg-surface-700">${SVG.settings}</button>
       </div>`;
 
-    const body = document.getElementById('app-body');
-    if (this.accounts.length === 0) {
-      body.innerHTML = `
-        <div class="search-wrap">
-          ${SVG.search}
-          <input class="search-input" placeholder="Search accounts..." id="search-input" oninput="App._filterAccounts()">
-          <button class="add-btn" onclick="App.navigate('add-account')">+</button>
+    const main = document.getElementById('app-main');
+    if (this.accounts.length === 0 && !this._searchQuery) {
+      main.innerHTML = `
+        <div class="relative mb-5">
+          <span class="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">${SVG.search}</span>
+          <input type="text" placeholder="Search accounts..." oninput="App._searchQuery=this.value;App._renderAccounts()"
+            class="w-full pl-10 pr-11 py-2.5 text-sm rounded-xl bg-surface-800 border border-surface-700 text-surface-100 placeholder-surface-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
+          <button onclick="App.navigate('add-account')" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-primary-500 hover:bg-primary-600 text-white flex items-center justify-center transition-colors">${SVG.plus}</button>
         </div>
-        <div class="empty-state">
-          <div class="empty-icon">${SVG.lock}</div>
-          <h3>No accounts yet</h3>
-          <p>Add your first 2FA account to get started</p>
-          <button class="btn-primary" style="max-width:200px;margin:0 auto" onclick="App.navigate('add-account')">
-            ${SVG.plus} Add Account
+        <div class="text-center py-16">
+          <div class="w-16 h-16 rounded-2xl bg-surface-800 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-surface-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <p class="text-surface-400 text-sm mb-4">No accounts yet</p>
+          <button onclick="App.navigate('add-account')" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-150 bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-sm shadow-primary-600/20">
+            ${SVG.plus} Add your first account
           </button>
         </div>`;
       return;
     }
 
     const filtered = this._getFiltered();
-    const grouped = this._groupByIssuer(filtered);
+    const grouped = {};
+    for (const a of filtered) {
+      const k = (a.issuer || '?')[0].toUpperCase();
+      if (!grouped[k]) grouped[k] = [];
+      grouped[k].push(a);
+    }
+    const sortedKeys = Object.keys(grouped).sort();
 
     let html = `
-      <div class="search-wrap">
-        ${SVG.search}
-        <input class="search-input" placeholder="Search accounts..." id="search-input" oninput="App._filterAccounts()">
-        <button class="add-btn" onclick="App.navigate('add-account')">+</button>
-      </div>`;
+      <div class="relative mb-5">
+        <span class="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">${SVG.search}</span>
+        <input type="text" placeholder="Search accounts..." value="${(this._searchQuery||'').replace(/"/g,'&quot;')}" oninput="App._searchQuery=this.value;App._renderAccounts()"
+          class="w-full pl-10 pr-11 py-2.5 text-sm rounded-xl bg-surface-800 border border-surface-700 text-surface-100 placeholder-surface-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
+        <button onclick="App.navigate('add-account')" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-primary-500 hover:bg-primary-600 text-white flex items-center justify-center transition-colors">${SVG.plus}</button>
+      </div>
+      <div class="flex flex-col gap-5">`;
 
-    for (const [letter, accounts] of Object.entries(grouped)) {
-      html += `<div class="vault-group-label">${esc(letter)}</div><div class="vault-group">`;
-      for (const a of accounts) {
-        const idx = this.accounts.indexOf(a);
-        html += this._renderOTPCard(a, idx);
+    for (const letter of sortedKeys) {
+      if (sortedKeys.length > 1) {
+        html += `<div class="flex items-center gap-3 mb-3"><span class="text-xs font-semibold tracking-wider text-surface-500">${letter}</span><div class="flex-1 h-px bg-surface-700/50"></div></div>`;
       }
-      html += `</div>`;
+      html += '<div class="flex flex-col gap-2">';
+      for (const a of grouped[letter]) {
+        const idx = this.accounts.indexOf(a);
+        html += this._renderOTP(a, idx);
+      }
+      html += '</div>';
     }
-    body.innerHTML = html;
+    html += '</div>';
+    main.innerHTML = html;
     this._updateCodes();
   },
 
-  _renderOTPCard(a, idx) {
-    const color = avatarColor(a.issuer);
-    const letter = (a.issuer || '?')[0].toUpperCase();
+  _searchQuery: '',
+
+  _renderOTP(a, idx) {
+    const color = issuerColor(a.issuer);
+    const initial = (a.issuer || '?')[0].toUpperCase();
     const circumference = 2 * Math.PI * 13;
     return `
-      <div class="otp-card" onclick="App.copyCode(${idx})" data-idx="${idx}">
-        <div class="otp-avatar" style="background:${color}">${letter}</div>
-        <div class="otp-info">
-          <div class="otp-issuer">${esc(a.issuer || 'Unknown')}</div>
-          <div class="otp-account">${esc(a.accountName || '')}</div>
-        </div>
-        <div class="otp-right">
-          <div class="otp-code" id="code-${idx}">------</div>
-          <div class="otp-timer-wrap">
-            <svg class="otp-timer-svg" viewBox="0 0 36 36">
-              <circle class="otp-timer-bg" cx="18" cy="18" r="13"/>
-              <circle class="otp-timer-progress" id="ring-${idx}" cx="18" cy="18" r="13"
-                stroke-dasharray="${circumference}" stroke-dashoffset="0"/>
-            </svg>
-            <div class="otp-timer-text" id="timer-${idx}">30</div>
+      <div class="relative group">
+        <div class="card-hover select-none relative overflow-hidden cursor-pointer transition-all duration-200 bg-surface-800 rounded-2xl border border-surface-700 shadow-card hover:shadow-card-hover hover:border-primary-800" onclick="App.copyCode(${idx})">
+          <div class="flex items-center gap-4 p-4">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm ${color}">${initial}</div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-surface-100 truncate text-sm">${esc(a.issuer||'Unknown')}</p>
+              <p class="text-xs text-surface-500 truncate mt-0.5">${esc(a.accountName||'')}</p>
+            </div>
+            <div class="flex items-center gap-4">
+              <span class="font-mono font-bold text-xl tracking-[0.15em] text-surface-100 tabular-nums" id="code-${idx}">------</span>
+              <div class="relative w-9 h-9 flex items-center justify-center">
+                <svg width="36" height="36" viewBox="0 0 36 36" class="transform -rotate-90">
+                  <circle cx="18" cy="18" r="13" fill="none" stroke-width="3" class="stroke-surface-700"/>
+                  <circle cx="18" cy="18" r="13" fill="none" stroke-width="3" stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="0" id="ring-${idx}" class="stroke-primary-500" style="transition: stroke-dashoffset .5s linear, stroke .2s;"/>
+                </svg>
+                <span class="absolute text-[10px] font-mono font-medium text-surface-500" id="timer-${idx}">30</span>
+              </div>
+              <div class="w-8 h-8 flex items-center justify-center rounded-lg text-surface-500 hover:text-primary-500 hover:bg-primary-950 transition-colors" id="copy-${idx}" onclick="event.stopPropagation();App.copyCode(${idx})">
+                ${SVG.copy}
+              </div>
+            </div>
           </div>
-          <button class="otp-copy-btn" id="copy-${idx}" onclick="event.stopPropagation();App.copyCode(${idx})">
-            ${SVG.copy}
-          </button>
+          <div class="h-0.5 bg-surface-700/50">
+            <div class="h-full bg-primary-500 rounded-full" id="bar-${idx}" style="width:100%;transition:width .5s linear,background .2s;"></div>
+          </div>
         </div>
-        <button class="otp-delete-btn" onclick="event.stopPropagation();App.deleteAccount(${idx})">&times;</button>
-        <div class="otp-progress-bar"><div class="otp-progress-fill" id="bar-${idx}"></div></div>
+        <button onclick="event.stopPropagation();App.deleteAccount(${idx})" class="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-surface-700 border border-surface-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-950 group">
+          <svg class="w-3 h-3 text-red-400 group-hover:text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>`;
   },
 
   _getFiltered() {
-    const q = (document.getElementById('search-input')?.value || '').toLowerCase();
+    const q = (this._searchQuery || '').toLowerCase();
     if (!q) return this.accounts;
     return this.accounts.filter(a =>
       (a.issuer || '').toLowerCase().includes(q) || (a.accountName || '').toLowerCase().includes(q)
     );
   },
-
-  _groupByIssuer(accounts) {
-    const groups = {};
-    for (const a of accounts) {
-      const letter = (a.issuer || '?')[0].toUpperCase();
-      if (!groups[letter]) groups[letter] = [];
-      groups[letter].push(a);
-    }
-    const sorted = {};
-    for (const k of Object.keys(groups).sort()) sorted[k] = groups[k];
-    return sorted;
-  },
-
-  _filterAccounts() { this._renderAccounts(); },
 
   _startTOTPUpdater() {
     if (this._timer) clearInterval(this._timer);
@@ -376,12 +419,14 @@ window.App = {
         if (ringEl) ringEl.style.strokeDashoffset = String(circumference * (1 - pct));
         if (timerEl) {
           timerEl.textContent = result.remaining;
-          timerEl.style.color = result.remaining <= 5 ? '#ef4444' : '';
+          timerEl.className = `absolute text-[10px] font-mono font-medium ${result.remaining <= 5 ? 'text-red-500' : 'text-surface-500'}`;
         }
         if (barEl) {
           barEl.style.width = (pct * 100) + '%';
-          barEl.style.background = result.remaining <= 5 ? '#ef4444' : '';
+          barEl.className = `h-full rounded-full ${result.remaining <= 5 ? 'bg-red-500' : 'bg-primary-500'}`;
+          barEl.style.transition = 'width .5s linear, background .2s';
         }
+        if (ringEl) ringEl.setAttribute('class', `stroke-${result.remaining <= 5 ? 'red-500' : 'primary-500'}`);
       } catch { codeEl.textContent = '------'; }
     }
   },
@@ -391,11 +436,11 @@ window.App = {
     try {
       const result = await TOTP.generate(a.secret, a.digits || 6, a.step || 30);
       await navigator.clipboard.writeText(result.code);
-      const btn = document.getElementById(`copy-${idx}`);
-      if (btn) { btn.classList.add('copied'); btn.innerHTML = SVG.check; }
-      App._toast('Copied!', 'success');
-      setTimeout(() => { if (btn) { btn.classList.remove('copied'); btn.innerHTML = SVG.copy; } }, 2000);
-    } catch { App._toast('Failed to copy', 'error'); }
+      const el = document.getElementById(`copy-${idx}`);
+      if (el) el.innerHTML = SVG.check;
+      this._toast('Copied!', 'success');
+      setTimeout(() => { if (el) el.innerHTML = SVG.copy; }, 2000);
+    } catch { this._toast('Failed to copy', 'error'); }
   },
 
   async deleteAccount(idx) {
@@ -407,30 +452,23 @@ window.App = {
 
   // ===== ADD ACCOUNT =====
   _renderAddAccount() {
-    const header = document.getElementById('app-header-inner');
-    header.innerHTML = `
-      <div class="app-header-left">
-        <button class="app-header-btn" onclick="App.navigate('accounts')">${SVG.back}</button>
-        <h1>Add Account</h1>
+    document.getElementById('app-header-inner').innerHTML = `
+      <div class="flex items-center gap-2">
+        <button onclick="App.navigate('accounts')" class="btn-icon -ml-1.5 w-9 h-9 flex items-center justify-center rounded-xl transition-colors duration-150 text-surface-500 hover:text-surface-300 hover:bg-surface-700">${SVG.back}</button>
+        <h1 class="text-base font-semibold text-surface-100">Add Account</h1>
       </div>
-      <div class="app-header-right"></div>`;
+      <div class="flex items-center gap-1"></div>`;
 
-    document.getElementById('app-body').innerHTML = `
-      <div class="fade-in">
-        <div class="add-option" onclick="App._showAddMode('qr')">
-          <div class="add-option-icon primary">${SVG.qr}</div>
-          <div class="add-option-text"><h3>Scan QR Code</h3><p>Use your camera to scan a QR code</p></div>
-        </div>
-        <div class="add-option" onclick="App._showAddMode('manual')">
-          <div class="add-option-icon surface">${SVG.keyboard}</div>
-          <div class="add-option-text"><h3>Manual Entry</h3><p>Enter your secret key manually</p></div>
-        </div>
-        <div class="form-card card" id="add-uri-card" style="margin-top:16px">
-          <div class="input-wrap">
-            <input type="text" id="add-uri" class="no-icon" placeholder="Or paste otpauth:// URI here">
-          </div>
-          <button class="btn-primary" style="margin-top:12px" onclick="App._addFromURI()">Import URI</button>
-        </div>
+    document.getElementById('app-main').innerHTML = `
+      <div class="flex flex-col gap-3 pt-4 animate-fade-in">
+        <button onclick="App._showAddMode('qr')" class="card-hover p-4 flex items-center gap-4 cursor-pointer transition-all duration-200 bg-surface-800 rounded-2xl border border-surface-700 shadow-card hover:shadow-card-hover hover:border-primary-800">
+          <div class="w-12 h-12 rounded-xl bg-primary-950 flex items-center justify-center shrink-0">${SVG.qr}</div>
+          <div class="text-left"><p class="font-medium text-surface-100 text-sm">Scan QR Code</p><p class="text-xs text-surface-400 mt-0.5">Use your camera to scan a QR code</p></div>
+        </button>
+        <button onclick="App._showAddMode('manual')" class="card-hover p-4 flex items-center gap-4 cursor-pointer transition-all duration-200 bg-surface-800 rounded-2xl border border-surface-700 shadow-card hover:shadow-card-hover hover:border-primary-800">
+          <div class="w-12 h-12 rounded-xl bg-surface-800 flex items-center justify-center shrink-0">${SVG.pencil}</div>
+          <div class="text-left"><p class="font-medium text-surface-100 text-sm">Manual Entry</p><p class="text-xs text-surface-400 mt-0.5">Enter your secret key manually</p></div>
+        </button>
         <div id="add-form-container"></div>
       </div>`;
   },
@@ -439,37 +477,73 @@ window.App = {
     const container = document.getElementById('add-form-container');
     if (mode === 'qr') {
       container.innerHTML = `
-        <div class="form-card card fade-in" style="margin-top:16px">
-          <h3>Scan QR Code</h3>
-          <div id="qr-camera-wrap" style="display:none">
-            <div class="qr-video-wrap">
-              <video id="qr-video" playsinline></video>
-              <div class="qr-overlay"><div class="qr-overlay-border"></div></div>
+        <div class="flex flex-col gap-3 pt-4 animate-fade-in">
+          <button onclick="App._startQRScan()" class="card-hover p-4 flex items-center gap-4 cursor-pointer transition-all duration-200 bg-surface-800 rounded-2xl border border-surface-700 shadow-card hover:shadow-card-hover hover:border-primary-800">
+            <div class="w-12 h-12 rounded-xl bg-primary-950 flex items-center justify-center shrink-0">${SVG.camera}</div>
+            <div class="text-left"><p class="font-medium text-surface-100 text-sm">Use Camera</p><p class="text-xs text-surface-400 mt-0.5">Point camera at QR code</p></div>
+          </button>
+          <button onclick="document.getElementById('qr-file-input').click()" class="card-hover p-4 flex items-center gap-4 cursor-pointer transition-all duration-200 bg-surface-800 rounded-2xl border border-surface-700 shadow-card hover:shadow-card-hover hover:border-primary-800">
+            <div class="w-12 h-12 rounded-xl bg-surface-800 flex items-center justify-center shrink-0">${SVG.upload}</div>
+            <div class="text-left"><p class="font-medium text-surface-100 text-sm">Upload QR Image</p><p class="text-xs text-surface-400 mt-0.5">Select a QR code image file</p></div>
+          </button>
+          <input type="file" id="qr-file-input" accept="image/*" class="hidden" onchange="App._handleQRFile(this)">
+          <div id="qr-camera-wrap" class="hidden">
+            <div class="relative w-full max-w-sm aspect-square rounded-2xl overflow-hidden bg-surface-900 mx-auto">
+              <video id="qr-video" playsinline class="absolute inset-0 w-full h-full object-cover"></video>
+              <div class="absolute inset-0 border-[3px] border-primary-400/60 rounded-2xl m-8 pointer-events-none"></div>
             </div>
-            <button class="btn-secondary" style="width:100%;margin-top:12px" onclick="QRScanner.stop();document.getElementById('qr-camera-wrap').style.display='none'">Stop Camera</button>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
-            <button class="btn-primary" onclick="App._startQRScan()">Use Camera</button>
-            <button class="btn-secondary" onclick="document.getElementById('qr-file-input').click()">Upload QR Image</button>
-            <input type="file" id="qr-file-input" accept="image/*" style="display:none" onchange="App._handleQRFile(this)">
+            <canvas id="qr-canvas" class="hidden"></canvas>
+            <button onclick="QRScanner.stop();document.getElementById('qr-camera-wrap').classList.add('hidden')" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-xl transition-all duration-150 bg-primary-600 text-white hover:bg-primary-700 shadow-sm shadow-primary-600/20 mt-3">Capture</button>
           </div>
         </div>`;
     } else {
       container.innerHTML = `
-        <div class="form-card card fade-in" style="margin-top:16px">
-          <h3>Manual Entry</h3>
-          <div class="form-group">
-            <input type="text" id="add-issuer" class="no-icon" placeholder="Issuer (e.g. GitHub)" style="width:100%;padding:10px 12px;background:var(--surface-800);border:1px solid var(--surface-600);border-radius:12px;color:var(--surface-100);font-size:13px;font-family:inherit;outline:none">
-            <input type="text" id="add-account-name" class="no-icon" placeholder="Account name (e.g. user@email.com)" style="width:100%;padding:10px 12px;background:var(--surface-800);border:1px solid var(--surface-600);border-radius:12px;color:var(--surface-100);font-size:13px;font-family:inherit;outline:none">
-            <input type="text" id="add-secret" class="no-icon" placeholder="Secret key (base32)" style="width:100%;padding:10px 12px;background:var(--surface-800);border:1px solid var(--surface-600);border-radius:12px;color:var(--surface-100);font-size:13px;font-family:inherit;outline:none;text-transform:uppercase">
+        <div class="flex flex-col gap-5 pt-4 animate-fade-in">
+          <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card p-5">
+            <div class="flex flex-col gap-4">
+              <div>
+                <label class="text-xs font-medium text-surface-400 block mb-1.5">Issuer</label>
+                <input type="text" id="add-issuer" placeholder="GitHub"
+                  class="w-full px-3 py-2.5 rounded-xl border border-surface-600 bg-surface-800 text-surface-100 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
+              </div>
+              <div>
+                <label class="text-xs font-medium text-surface-400 block mb-1.5">Account Name</label>
+                <input type="text" id="add-account-name" placeholder="user@email.com"
+                  class="w-full px-3 py-2.5 rounded-xl border border-surface-600 bg-surface-800 text-surface-100 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
+              </div>
+              <div>
+                <label class="text-xs font-medium text-surface-400 block mb-1.5">Secret Key</label>
+                <input type="text" id="add-secret" placeholder="JBSWY3DPEHPK3PXP"
+                  class="w-full px-3 py-2.5 rounded-xl border border-surface-600 bg-surface-800 text-surface-100 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all uppercase">
+              </div>
+            </div>
           </div>
-          <div class="section-label" style="margin-bottom:8px">Advanced Settings</div>
-          <div class="form-row">
-            <select id="add-algo"><option value="SHA1">SHA1</option><option value="SHA256">SHA256</option><option value="SHA512">SHA512</option></select>
-            <select id="add-digits"><option value="6">6 digits</option><option value="7">7 digits</option><option value="8">8 digits</option></select>
-            <select id="add-step"><option value="30">30s</option><option value="60">60s</option></select>
+          <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card p-5">
+            <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 mb-4">Advanced Settings</p>
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="text-xs font-medium text-surface-400 block mb-1.5">Algorithm</label>
+                <select id="add-algo" class="w-full px-3 py-2.5 rounded-xl border border-surface-600 bg-surface-800 text-surface-100 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
+                  <option value="SHA1">SHA1</option><option value="SHA256">SHA256</option><option value="SHA512">SHA512</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs font-medium text-surface-400 block mb-1.5">Digits</label>
+                <select id="add-digits" class="w-full px-3 py-2.5 rounded-xl border border-surface-600 bg-surface-800 text-surface-100 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
+                  <option value="6">6</option><option value="7">7</option><option value="8">8</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs font-medium text-surface-400 block mb-1.5">Step</label>
+                <select id="add-step" class="w-full px-3 py-2.5 rounded-xl border border-surface-600 bg-surface-800 text-surface-100 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
+                  <option value="30">30s</option><option value="60">60s</option>
+                </select>
+              </div>
+            </div>
           </div>
-          <button class="btn-primary" style="margin-top:16px" onclick="App._addManual()">Save Account</button>
+          <button onclick="App._addManual()" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-xl transition-all duration-150 bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-sm shadow-primary-600/20 disabled:opacity-40 disabled:cursor-not-allowed select-none">
+            ${SVG.save} Save Account
+          </button>
         </div>`;
     }
   },
@@ -478,7 +552,7 @@ window.App = {
     const issuer = document.getElementById('add-issuer').value.trim();
     const accountName = document.getElementById('add-account-name').value.trim();
     const secret = document.getElementById('add-secret').value.trim().toUpperCase().replace(/\s/g, '');
-    if (!secret) return App._toast('Secret key is required', 'error');
+    if (!secret) return this._toast('Secret key is required', 'error');
 
     this.accounts.push({
       id: uuid(), issuer: issuer || 'Unknown', accountName, secret,
@@ -488,12 +562,12 @@ window.App = {
       icon: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     });
     this._saveVault();
-    App._toast('Account added!', 'success');
+    this._toast('Account added!', 'success');
     this.navigate('accounts');
   },
 
   async _startQRScan() {
-    document.getElementById('qr-camera-wrap').style.display = 'block';
+    document.getElementById('qr-camera-wrap').classList.remove('hidden');
     try {
       await QRScanner.scanFromCamera((data) => {
         const parsed = TOTP.parseURI(data);
@@ -505,13 +579,13 @@ window.App = {
             icon: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
           });
           this._saveVault();
-          App._toast('Account added!', 'success');
+          this._toast('Account added!', 'success');
           this.navigate('accounts');
-        } else { App._toast('Not a valid otpauth:// QR code', 'error'); }
+        } else { this._toast('Not a valid otpauth:// QR code', 'error'); }
       }, document.getElementById('qr-video'));
     } catch {
-      App._toast('Camera access denied', 'error');
-      document.getElementById('qr-camera-wrap').style.display = 'none';
+      this._toast('Camera access denied', 'error');
+      document.getElementById('qr-camera-wrap').classList.add('hidden');
     }
   },
 
@@ -527,99 +601,71 @@ window.App = {
           icon: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
         });
         this._saveVault();
-        App._toast('Account added!', 'success');
+        this._toast('Account added!', 'success');
         this.navigate('accounts');
-      } else { App._toast('Not a valid otpauth:// QR code', 'error'); }
+      } else { this._toast('Not a valid otpauth:// QR code', 'error'); }
     });
     input.value = '';
   },
 
-  _addFromURI() {
-    const uri = document.getElementById('add-uri').value.trim();
-    if (!uri) return App._toast('Please paste an otpauth:// URI', 'error');
-    const parsed = TOTP.parseURI(uri);
-    if (!parsed) return App._toast('Invalid otpauth:// URI', 'error');
-    this.accounts.push({
-      id: uuid(), issuer: parsed.issuer || 'Unknown', accountName: parsed.accountName || '',
-      secret: parsed.secret, algorithm: parsed.algorithm || 'SHA1',
-      digits: parsed.digits || 6, step: parsed.period || 30,
-      icon: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
-    });
-    this._saveVault();
-    App._toast('Account imported!', 'success');
-    this.navigate('accounts');
-  },
-
   // ===== SETTINGS =====
   _renderSettings() {
-    const header = document.getElementById('app-header-inner');
-    header.innerHTML = `
-      <div class="app-header-left">
-        <button class="app-header-btn" onclick="App.navigate('accounts')">${SVG.back}</button>
-        <h1>Settings</h1>
+    document.getElementById('app-header-inner').innerHTML = `
+      <div class="flex items-center gap-2">
+        <button onclick="App.navigate('accounts')" class="btn-icon -ml-1.5 w-9 h-9 flex items-center justify-center rounded-xl transition-colors duration-150 text-surface-500 hover:text-surface-300 hover:bg-surface-700">${SVG.back}</button>
+        <h1 class="text-base font-semibold text-surface-100">Settings</h1>
       </div>
-      <div class="app-header-right"></div>`;
+      <div class="flex items-center gap-1"></div>`;
 
-    document.getElementById('app-body').innerHTML = `
-      <div class="fade-in">
-        <div class="settings-section">
-          <div class="section-label" style="padding:0 4px;margin-bottom:8px">Preferences</div>
-          <div class="settings-card">
-            <div class="settings-row">
-              <div><div class="settings-label">Language</div></div>
-              <div class="lang-toggle">
-                <button class="${currentLang === 'en' ? 'active' : ''}" onclick="switchLanguage('en')">English</button>
-                <button class="${currentLang === 'ar' ? 'active' : ''}" onclick="switchLanguage('ar')">AR</button>
+    document.getElementById('app-main').innerHTML = `
+      <div class="flex flex-col gap-6 animate-fade-in">
+        <div>
+          <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 px-1 mb-3">Preferences</p>
+          <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card divide-y divide-surface-700/50 overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-3.5">
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">Language</span></div>
+              <div class="flex items-center gap-2 shrink-0">
+                <button class="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary-600 text-white shadow-sm" onclick="switchLanguage('en')">EN</button>
+                <button class="px-3 py-1.5 text-xs font-medium rounded-lg text-surface-400 hover:text-surface-200 hover:bg-surface-700" onclick="switchLanguage('ar')">AR</button>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="settings-section">
-          <div class="section-label" style="padding:0 4px;margin-bottom:8px">Backup</div>
-          <div class="settings-card">
-            <div class="settings-row">
-              <div><div class="settings-label">Export Backup</div><div class="settings-value">Download encrypted vault</div></div>
-              <div class="settings-action"><button class="btn-secondary" onclick="App.exportBackup()">Export</button></div>
+        <div>
+          <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 px-1 mb-3">Backup</p>
+          <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card divide-y divide-surface-700/50 overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-3.5">
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">Export Backup</span><span class="text-xs text-surface-400 mt-0.5">Download encrypted vault</span></div>
+              <div class="flex items-center gap-2 shrink-0"><button onclick="App.exportBackup()" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-100 text-surface-700 hover:bg-surface-200 dark:bg-surface-700 dark:text-surface-200 dark:hover:bg-surface-600">Export</button></div>
             </div>
-            <div class="settings-row">
-              <div><div class="settings-label">Import Backup</div><div class="settings-value">Restore from backup file</div></div>
-              <div class="settings-action"><button class="btn-secondary" onclick="App.importBackup()">Import</button></div>
-            </div>
-            <div class="settings-row">
-              <div><div class="settings-label">Sync Now</div><div class="settings-value">Sync with cloud</div></div>
-              <div class="settings-action"><button class="btn-secondary" onclick="App.syncNow()">Sync</button></div>
+            <div class="flex items-center justify-between px-4 py-3.5">
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">Import Backup</span><span class="text-xs text-surface-400 mt-0.5">Restore from backup file</span></div>
+              <div class="flex items-center gap-2 shrink-0"><button onclick="App.importBackup()" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-100 text-surface-700 hover:bg-surface-200 dark:bg-surface-700 dark:text-surface-200 dark:hover:bg-surface-600">Import</button></div>
             </div>
           </div>
         </div>
 
-        <div class="settings-section">
-          <div class="section-label" style="padding:0 4px;margin-bottom:8px">About</div>
-          <div class="settings-card">
-            <div class="settings-row">
-              <div><div class="settings-label">OtpVault</div><div class="settings-value">v0.1.6</div></div>
+        <div>
+          <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 px-1 mb-3">About</p>
+          <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card divide-y divide-surface-700/50 overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-3.5">
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">OtpVault</span><span class="text-xs text-surface-400 mt-0.5">v0.1.6</span></div>
             </div>
-            <div class="settings-row">
-              <div><div class="settings-label">Copyright</div><div class="settings-value">2026 OtpVault. EuroMoscow Developments</div></div>
+            <div class="flex items-center justify-between px-4 py-3.5">
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">Copyright</span><span class="text-xs text-surface-400 mt-0.5">EuroMoscow Developments</span></div>
             </div>
           </div>
         </div>
 
-        <button class="btn-danger" style="margin-top:8px" onclick="App._lockVault()">
-          ${SVG.lock} Lock Vault
+        <button onclick="App._lockVault()" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-xl transition-all duration-150 bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-sm shadow-red-600/20 disabled:opacity-40 disabled:cursor-not-allowed select-none">
+          ${SVG.lock.replace('w-8 h-8','w-4 h-4').replace('text-surface-400','text-white')} Lock Vault
         </button>
-        <button class="btn-ghost" style="margin-top:8px" onclick="App.logout()">
+
+        <button onclick="App.logout()" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-xl transition-all duration-150 text-surface-400 hover:text-red-500 hover:bg-red-950/30 select-none">
           ${SVG.logout} Log Out
         </button>
       </div>`;
-  },
-
-  async syncNow() {
-    try {
-      this.accounts = await SyncService.syncFull(this.email, this.password, this.accounts);
-      App._toast('Sync complete!', 'success');
-    } catch (e) { App._toast('Sync failed: ' + e.message, 'error'); }
-    this.navigate('accounts');
   },
 
   exportBackup() {
@@ -627,13 +673,13 @@ window.App = {
       const salt = StorageService.loadSalt();
       const testPayload = StorageService.loadTestPayload();
       const encryptedVault = StorageService.loadVaultData();
-      if (!salt || !encryptedVault) return App._toast('No vault to export', 'error');
+      if (!salt || !encryptedVault) return this._toast('No vault to export', 'error');
       const blob = new Blob([JSON.stringify({ version: 1, salt, testPayload: testPayload || '', encryptedVault }, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = 'otpvault-backup.json'; a.click();
       URL.revokeObjectURL(url);
-      App._toast('Backup exported!', 'success');
-    } catch (e) { App._toast('Export failed: ' + e.message, 'error'); }
+      this._toast('Backup exported!', 'success');
+    } catch (e) { this._toast('Export failed: ' + e.message, 'error'); }
   },
 
   importBackup() {
@@ -644,23 +690,23 @@ window.App = {
       try {
         const text = await file.text();
         const backup = JSON.parse(text);
-        if (!backup.salt || !backup.encryptedVault) return App._toast('Invalid backup file', 'error');
+        if (!backup.salt || !backup.encryptedVault) return this._toast('Invalid backup file', 'error');
         const pw = prompt('Enter the password for this backup:');
         if (!pw) return;
         const valid = await CryptoService.verifyTestPayload(backup.testPayload || '', pw, backup.salt);
-        if (!valid) return App._toast('Wrong password', 'error');
+        if (!valid) return this._toast('Wrong password', 'error');
         const decrypted = await CryptoService.decryptVault(backup.encryptedVault, pw, backup.salt);
         const data = JSON.parse(decrypted);
-        if (!data.accounts) return App._toast('Invalid vault data', 'error');
+        if (!data.accounts) return this._toast('Invalid vault data', 'error');
         StorageService.saveSalt(backup.salt);
         StorageService.saveTestPayload(backup.testPayload || '');
         StorageService.saveVaultData(backup.encryptedVault);
         this.accounts = data.accounts;
         this.password = pw;
         await this._saveVault();
-        App._toast('Backup imported!', 'success');
+        this._toast('Backup imported!', 'success');
         this.navigate('accounts');
-      } catch { App._toast('Failed to import. Wrong password?', 'error'); }
+      } catch { this._toast('Failed to import. Wrong password?', 'error'); }
     };
     input.click();
   },
@@ -680,7 +726,6 @@ window.App = {
     this.navigate('landing');
   },
 
-  // ===== TOAST =====
   _toast(msg, type = 'info') {
     const existing = document.querySelector('.toast');
     if (existing) existing.remove();
