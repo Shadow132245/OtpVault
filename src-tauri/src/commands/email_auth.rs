@@ -155,6 +155,12 @@ pub async fn email_sign_in(
         .unlock(&password, &salt, &test_payload)
         .map_err(|e| e.to_string())?;
 
+    if ok {
+        if let Err(e) = neon::upload_vault(&app, &*vault_state, &email).await {
+            log::warn!("Cloud sync after sign-in failed (non-fatal): {}", e);
+        }
+    }
+
     log::info!("Email sign-in complete for {} (success={})", email, ok);
     Ok(ok)
 }
