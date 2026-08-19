@@ -49,6 +49,9 @@ jobs:
           rm -rf src-tauri/gen/android
           npx tauri android init
 
+      - name: Patch Android Permissions
+        run: python3 scripts/patch-android-permissions.py src-tauri/gen/android/app/src/main/AndroidManifest.xml
+
       - name: Set Android Version Info
         run: |
           echo "tauri.android.versionCode=1" > src-tauri/gen/android/app/tauri.properties

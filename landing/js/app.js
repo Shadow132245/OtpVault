@@ -1,4 +1,4 @@
-function uuid() {
+﻿function uuid() {
   return crypto.randomUUID ? crypto.randomUUID() :
     'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
       const r = Math.random() * 16 | 0;
@@ -52,6 +52,84 @@ window.App = {
   accounts: [],
   _timer: null,
 
+  _strings: {
+    en: {
+      myAccounts: 'My Accounts', addAccount: 'Add Account', settings: 'Settings',
+      search: 'Search accounts...', noAccounts: 'No accounts yet',
+      addFirst: 'Add your first account', scanQR: 'Scan QR Code',
+      scanQRDesc: 'Use your camera to scan a QR code', manualEntry: 'Manual Entry',
+      manualDesc: 'Enter your secret key manually', useCamera: 'Use Camera',
+      useCameraDesc: 'Point camera at QR code', uploadQR: 'Upload QR Image',
+      uploadQRDesc: 'Select a QR code image file', capture: 'Capture',
+      issuer: 'Issuer', accountName: 'Account Name', secretKey: 'Secret Key',
+      advanced: 'Advanced Settings', algorithm: 'Algorithm', digits: 'Digits',
+      step: 'Step', saveAccount: 'Save Account', exportBackup: 'Export Backup',
+      exportDesc: 'Download encrypted vault', importBackup: 'Import Backup',
+      importDesc: 'Restore from backup file', export: 'Export', import: 'Import',
+      language: 'Language', about: 'About', copyright: 'Copyright',
+      lockVault: 'Lock Vault', logOut: 'Log Out', welcome: 'Welcome to OtpVault',
+      secureManager: 'Your secure 2FA code manager', signUp: 'Sign Up',
+      logIn: 'Log In', createVault: 'Create Vault', unlockVault: 'Unlock Vault',
+      emailAddr: 'Email address', password: 'Password (min 4 characters)',
+      rememberMe: 'Remember me', alreadyHave: 'Already have an account?',
+      dontHave: "Don't have an account?", fillAll: 'Please fill all fields',
+      minLength: 'Password must be at least 4 characters', agreeTerms: 'Please agree to the Terms of Service',
+      copied: 'Copied!', copyFailed: 'Failed to copy', deleted: 'Account deleted',
+      accountAdded: 'Account added!', notValid: 'Not a valid otpauth:// QR code',
+      secretRequired: 'Secret key is required', cameraDenied: 'Could not access camera. Please allow camera permission or use file upload.',
+      noVault: 'No vault found. Please sign up first.', wrongPass: 'Wrong password',
+      backupExported: 'Backup exported!', exportFailed: 'Export failed',
+      noVaultExport: 'No vault to export', invalidBackup: 'Invalid backup file',
+      wrongBackupPass: 'Wrong password', backupImported: 'Backup imported!',
+      importFailed: 'Failed to import. Wrong password?', invalidVault: 'Invalid vault data',
+    },
+    ar: {
+      myAccounts: '\u062d\u0633\u0627\u0628\u0627\u062a\u064a', addAccount: '\u0625\u0636\u0627\u0641\u0629 \u062d\u0633\u0627\u0628', settings: '\u0627\u0644\u0625\u0639\u062f\u0627\u062f\u0627\u062a',
+      search: '\u0628\u062d\u062b \u0639\u0646 \u0627\u0644\u062d\u0633\u0627\u0628\u0627\u062a...', noAccounts: '\u0644\u0627 \u062a\u0648\u062c\u062f \u062d\u0633\u0627\u0628\u0627\u062a \u0628\u0639\u062f',
+      addFirst: '\u0625\u0636\u0627\u0641\u0629 \u0623\u0648\u0644 \u062d\u0633\u0627\u0628\u0629 \u0644\u0643', scanQR: '\u0645\u0636\u0637\u0627\u062d \u0631\u0645\u0632 QR',
+      scanQRDesc: '\u0627\u0633\u062a\u062e\u062f\u0645 \u0627\u0644\u0643\u0627\u0645\u064a\u0631\u0627 \u0644\u0645\u0636\u0637\u062d \u0631\u0645\u0632 QR', manualEntry: '\u0625\u062f\u062e\u0627\u0644 \u064a\u0648\u0636\u0639\u064a',
+      manualDesc: '\u0623\u062f\u062e\u0644 \u0645\u0641\u062a\u0627\u062d \u0627\u0644\u0633\u0631 \u0628\u063a\u0636\u062f', useCamera: '\u0627\u0633\u062a\u062e\u062f\u0645 \u0627\u0644\u0643\u0627\u0645\u064a\u0631\u0627',
+      useCameraDesc: '\u0635\u0648\u0631 \u0627\u0644\u0643\u0627\u0645\u064a\u0631\u0627 \u0639\u0644\u0649 \u0631\u0645\u0632 QR', uploadQR: '\u0631\u0641\u0639 \u0635\u0648\u0631\u0629 QR',
+      uploadQRDesc: '\u062d\u062f\u062f \u0645\u0644\u0641 \u0635\u0648\u0631\u0629 QR', capture: '\u0644\u062d\u0638',
+      issuer: '\u0627\u0644\u0645\u0635\u062f\u0631', accountName: '\u0627\u0633\u0645 \u0627\u0644\u062d\u0633\u0627\u0628', secretKey: '\u0645\u0641\u062a\u0627\u062d \u0627\u0644\u0633\u0631',
+      advanced: '\u0627\u0644\u0625\u0639\u062f\u0627\u062f\u0627\u062a \u0627\u0644\u0645\u062a\u0642\u062f\u0645\u0629', algorithm: '\u062e\u0637\u0629', digits: '\u0627\u0644\u0623\u0631\u0642\u0627\u0645',
+      step: '\u0627\u0644\u062e\u0637\u0648\u0629', saveAccount: '\u062d\u0641\u0638 \u0627\u0644\u062d\u0633\u0627\u0628',       exportBackup: '\u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u0646\u0633\u062e\u0629 \u0627\u0644\u0627\u062d\u062a\u064a\u0627\u0637\u064a\u0629',
+      exportDesc: '\u062a\u062d\u0645\u064a\u0644 \u0627\u0644\u062e\u0632\u0646 \u0627\u0644\u0645\u0634\u0641\u0648\u0639', importBackup: '\u0627\u0633\u062a\u0639\u0645\u0627\u0644 \u0646\u0633\u062e\u0629 \u0627\u0644\u0627\u062d\u062a\u064a\u0627\u0637\u064a\u0629',
+      importDesc: '\u0627\u0633\u062a\u0639\u0627\u062f\u0629 \u0645\u0646 \u0645\u0644\u0641 \u0627\u0644\u0646\u0633\u062e\u0629', export: '\u062a\u0635\u062f\u064a\u0631', import: '\u0627\u0633\u062a\u0639\u0645\u0627\u0644',
+      language: '\u0627\u0644\u0644\u063a\u0629', about: '\u062d\u0648\u0644', copyright: '\u0627\u0644\u062d\u0642\u0648\u0642',
+      lockVault: '\u0642\u0641\u0644 \u0627\u0644\u062e\u0632\u0646', logOut: '\u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062e\u0631\u0648\u062c',
+      welcome: '\u0645\u0631\u062d\u0628\u064b\u0627 \u0628\u0643 \u0641\u064a OtpVault',
+      secureManager: '\u0645\u062f\u064a\u0631 \u0623\u0645\u0648\u0627\u0646 \u0627\u0644u062a\u062d\u0642\u0642 2FA \u0627\u0644u0623u0645u0646',
+      signUp: '\u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062d\u0633\u0627\u0628', logIn: '\u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644',
+      createVault: '\u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u062e\u0632\u0646', unlockVault: '\u0641\u062a\u062d \u0627\u0644\u062e\u0632\u0646',
+      emailAddr: '\u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a',
+      password: '\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 (\u062d\u062f \u0623\u0642\u0644 4 \u0623\u062d\u0631\u0641)',
+      rememberMe: '\u062a\u0630\u0643\u0631\u0646\u064a', alreadyHave: '\u0644\u062f\u064a\u0643 \u062d\u0633\u0627\u0628 \u0628\u0627\u0644\u0641\u0639\u0644\u061f',
+      dontHave: '\u0644\u064a\u0633 \u0644\u062f\u064a\u0643 \u062d\u0633\u0627\u0628\u061f',
+      fillAll: '\u064a\u0631\u062c\u0649 \u0645\u0644\u0621 \u0627\u0644\u062d\u0642\u0648\u0644',
+      minLength: '\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u0644\u0627 \u0628\u062f\u0621 \u0639\u0646 4 \u0623\u062d\u0631\u0641',
+      agreeTerms: '\u064a\u0631\u062c\u0649 \u0627\u0644\u0645\u0648\u0627\u0641\u0642\u0629 \u0639\u0644\u0649 \u0634\u0631\u0648\u0637 \u0627\u0644\u062e\u062f\u0645\u0629',
+      copied: '\u062a\u0645 \u0627\u0644\u0646\u0633\u062e!', copyFailed: '\u0641\u0634\u0644 \u0627\u0644\u0646\u0633\u062e', deleted: '\u062a\u0645 \u062d\u0630\u0641 \u0627\u0644\u062d\u0633\u0627\u0628',
+      accountAdded: '\u062a\u0645\u062a \u0625\u0636\u0627\u0641\u0629 \u0627\u0644\u062d\u0633\u0627\u0628!', notValid: '\u0631\u0645\u0632 QR \u063a\u064a\u0631 \u0635\u0627\u0644\u062d',
+      secretRequired: '\u0645\u0641\u062a\u0627\u062d \u0627\u0644\u0633\u0631 \u0645\u0637\u0644\u0648\u0628',
+      cameraDenied: '\u0644\u0645 \u064a\u0639\u0645\u0644 \u0627\u0644\u0648\u0635\u0644 \u0628\u0627\u0644\u0643\u0627\u0645\u064a\u0631\u0627. \u062a\u0643\u0631\u0645 \u0627\u0644\u0639\u062a\u0645\u0627\u062f \u0623\u0648 \u0627\u0633\u062a\u062e\u062f\u0645 \u0631\u0641\u0639 \u0627\u0644\u0645\u0644\u0641.',
+      noVault: '\u0644\u064a\u0633 \u0647\u0646\u0627\u0643 \u062e\u0632\u0646. \u062a\u0643\u0631\u0645 \u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062d\u0633\u0627\u0628 \u0623\u0648\u0644\u0627\u064b.',
+      wrongPass: '\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u063a\u064a\u0631 \u0635\u0627\u0644\u062d\u0629',
+      backupExported: '\u062a\u0645 \u062a\u0635\u062f\u064a\u0631 \u0627\u0644\u0646\u0633\u062e\u0629!', exportFailed: '\u0641\u0634\u0644 \u0627\u0644\u062a\u0635\u062f\u064a\u0631',
+      noVaultExport: '\u0644\u0627 \u062a\u0648\u062c\u062f \u0646\u0633\u062e\u0629 \u0644\u0644\u062a\u0635\u062f\u064a\u0631',
+      invalidBackup: '\u0645\u0644\u0641 \u0627\u0644\u0646\u0633\u062e\u0629 \u063a\u064a\u0631 \u0635\u0627\u0644\u062d',
+      wrongBackupPass: '\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u063a\u064a\u0631 \u0635\u0627\u0644\u062d\u0629',
+      backupImported: '\u062a\u0645 \u0627\u0633\u062a\u0639\u0645\u0627\u0644 \u0627\u0644\u0646\u0633\u062e\u0629!',
+      importFailed: '\u0641\u0634\u0644 \u0627\u0644\u0627\u0633\u062a\u0639\u0645\u0627\u0644. \u0643\u0644\u0645\u0629 \u0645\u0631\u0648\u0631 \u063a\u064a\u0631 \u0635\u0627\u0644\u062d\u0629\u061f',
+      invalidVault: '\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u062e\u0632\u0646 \u063a\u064a\u0631 \u0635\u0627\u0644\u062d\u0629',
+    }
+  },
+
+  _t(key) {
+    const lang = localStorage.getItem('landing-lang') || 'en';
+    return (this._strings[lang] && this._strings[lang][key]) || this._strings.en[key] || key;
+  },
+
   init() {
     document.documentElement.classList.add('dark');
     const remember = StorageService.loadRememberMe();
@@ -76,6 +154,11 @@ window.App = {
     auth.className = screen === 'onboarding' ? 'min-h-screen bg-surface-950 flex items-center justify-center p-4' : 'hidden';
     layout.className = (screen !== 'onboarding' && !isLanding) ? 'min-h-screen bg-surface-950 flex flex-col' : 'hidden';
 
+    if (!isLanding) {
+      const lang = localStorage.getItem('landing-lang') || 'en';
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    }
+
     if (screen === 'onboarding') this._renderAuth();
     else if (screen === 'accounts') this._renderAccounts();
     else if (screen === 'add-account') this._renderAddAccount();
@@ -91,8 +174,8 @@ window.App = {
           <div class="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-primary-500/25">
             ${SVG.shield}
           </div>
-          <h1 class="text-2xl font-bold text-surface-100 mb-1">Welcome to OtpVault</h1>
-          <p class="text-surface-400 text-sm">Your secure 2FA code manager</p>
+          <h1 class="text-2xl font-bold text-surface-100 mb-1">${this._t('welcome')}</h1>
+          <p class="text-surface-400 text-sm">${this._t('secureManager')}</p>
           <div class="flex items-center justify-center gap-2 mt-4">
             <button onclick="App.authTab='signup';App._renderAuth()" class="px-3 py-1 text-xs font-medium rounded-lg transition-all ${isSignup ? 'bg-primary-500 text-white shadow-sm' : 'bg-surface-700 text-surface-400 hover:bg-surface-600'}">English</button>
             <button onclick="App.authTab='signup';App._renderAuth()" class="px-3 py-1 text-xs font-medium rounded-lg transition-all bg-surface-700 text-surface-400 hover:bg-surface-600">العربية</button>
@@ -100,19 +183,19 @@ window.App = {
         </div>
 
         <div class="flex mb-6 bg-surface-800 rounded-xl p-1">
-          <button onclick="App.authTab='signup';App._renderAuth()" class="flex-1 py-2 text-sm font-medium rounded-lg transition-all ${isSignup ? 'bg-surface-700 text-surface-100 shadow-sm' : 'text-surface-400 hover:text-surface-300'}">Sign Up</button>
-          <button onclick="App.authTab='signin';App._renderAuth()" class="flex-1 py-2 text-sm font-medium rounded-lg transition-all ${!isSignup ? 'bg-surface-700 text-surface-100 shadow-sm' : 'text-surface-400 hover:text-surface-300'}">Log In</button>
+          <button onclick="App.authTab='signup';App._renderAuth()" class="flex-1 py-2 text-sm font-medium rounded-lg transition-all ${isSignup ? 'bg-surface-700 text-surface-100 shadow-sm' : 'text-surface-400 hover:text-surface-300'}">${this._t('signUp')}</button>
+          <button onclick="App.authTab='signin';App._renderAuth()" class="flex-1 py-2 text-sm font-medium rounded-lg transition-all ${!isSignup ? 'bg-surface-700 text-surface-100 shadow-sm' : 'text-surface-400 hover:text-surface-300'}">${this._t('logIn')}</button>
         </div>
 
         <form onsubmit="event.preventDefault();App._submitAuth()" class="flex flex-col gap-4">
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500 pointer-events-none">${SVG.mail}</span>
-            <input type="email" id="auth-email" placeholder="Email address" value="${(this.email||'').replace(/"/g,'&quot;')}" autofocus
+            <input type="email" id="auth-email" placeholder="${this._t('emailAddr')}" value="${(this.email||'').replace(/"/g,'&quot;')}" autofocus oninput="document.getElementById('auth-error').textContent=''"
               class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl bg-surface-800 border border-surface-700 text-surface-100 placeholder-surface-500 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
           </div>
           <div class="relative">
             <span class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-surface-500 pointer-events-none">${SVG.lock.replace('w-8 h-8','w-4 h-4').replace('text-surface-400','text-surface-500')}</span>
-            <input type="password" id="auth-password" placeholder="Password (min 4 characters)"
+            <input type="password" id="auth-password" placeholder="${this._t('password')}" oninput="document.getElementById('auth-error').textContent=''"
               class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl bg-surface-800 border border-surface-700 text-surface-100 placeholder-surface-500 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
           </div>
 
@@ -133,7 +216,7 @@ window.App = {
           <div class="text-red-500 text-xs text-center min-h-[16px]" id="auth-error"></div>
 
           <button type="submit" id="auth-submit" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-xl transition-all duration-150 bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-sm shadow-primary-600/20 disabled:opacity-40 disabled:cursor-not-allowed select-none">
-            ${isSignup ? 'Create Vault' : 'Unlock Vault'}
+            ${isSignup ? this._t('createVault') : this._t('unlockVault')}
           </button>
         </form>
 
@@ -179,18 +262,18 @@ window.App = {
     const pw = document.getElementById('auth-password').value;
     const errEl = document.getElementById('auth-error');
     const btn = document.getElementById('auth-submit');
-    if (!email || !pw) { errEl.textContent = 'Please fill all fields'; return; }
-    if (pw.length < 4) { errEl.textContent = 'Password must be at least 4 characters'; return; }
+    if (!email || !pw) { errEl.textContent = this._t('fillAll'); return; }
+    if (pw.length < 4) { errEl.textContent = this._t('minLength'); return; }
 
     this.email = email;
     this.password = pw;
 
     btn.disabled = true;
-    btn.innerHTML = `${SVG.spinner} ${this.authTab === 'signup' ? 'Creating...' : 'Unlocking...'}`;
+    btn.innerHTML = `${SVG.spinner} ${this.authTab === 'signup' ? 'Creating...' : this._t('unlockVault')}...`;
     errEl.textContent = '';
 
     if (this.authTab === 'signup') {
-      if (!this._agreeToTerms) { errEl.textContent = 'Please agree to the Terms of Service'; btn.disabled = false; btn.innerHTML = 'Create Vault'; return; }
+      if (!this._agreeToTerms) { errEl.textContent = this._t('agreeTerms'); btn.disabled = false; btn.innerHTML = this._t('createVault'); return; }
       await this._doSignup();
     } else {
       await this._doSignin();
@@ -222,14 +305,48 @@ window.App = {
   async _doSignin() {
     const errEl = document.getElementById('auth-error');
     const btn = document.getElementById('auth-submit');
+
+    const isAndroid = /Android/i.test(navigator.userAgent);
+
+    if (isAndroid) {
+      try {
+        const encrypted = StorageService.loadVaultData();
+        const salt = StorageService.loadSalt();
+        const testPayload = StorageService.loadTestPayload();
+        if (encrypted && salt) {
+          const valid = await CryptoService.verifyTestPayload(testPayload || '', this.password, salt);
+          if (!valid) {
+            errEl.textContent = this._t('wrongPass');
+            btn.disabled = false; btn.innerHTML = this._t('unlockVault');
+            return;
+          }
+          const decrypted = await CryptoService.decryptVault(encrypted, this.password, salt);
+          const data = JSON.parse(decrypted);
+          if (data.accounts) {
+            this.accounts = data.accounts;
+            if (this._rememberMe) StorageService.saveRememberMe(this.email, this.password);
+            this.navigate('accounts');
+            return;
+          }
+        }
+        errEl.textContent = this._t('noVault');
+        btn.disabled = false; btn.innerHTML = this._t('unlockVault');
+        return;
+      } catch (e) {
+        errEl.textContent = this._t('wrongPass');
+        btn.disabled = false; btn.innerHTML = this._t('unlockVault');
+        return;
+      }
+    }
+
     try {
       const row = await NeonAPI.fetchVault(this.email);
       const testPayload = row.test_payload || row.testPayload || '';
       const salt = row.salt;
       const valid = await CryptoService.verifyTestPayload(testPayload, this.password, salt);
       if (!valid) {
-        errEl.textContent = 'Wrong email or password';
-        btn.disabled = false; btn.innerHTML = 'Unlock Vault';
+        errEl.textContent = this._t('wrongPass');
+        btn.disabled = false; btn.innerHTML = this._t('unlockVault');
         return;
       }
       const decrypted = await CryptoService.decryptVault(row.encrypted_vault, this.password, salt);
@@ -251,8 +368,8 @@ window.App = {
         return;
       }
     }
-    errEl.textContent = 'Wrong email or password';
-    btn.disabled = false; btn.innerHTML = 'Unlock Vault';
+    errEl.textContent = this._t('wrongPass');
+    btn.disabled = false; btn.innerHTML = this._t('unlockVault');
   },
 
   async _createVault() {
@@ -267,7 +384,10 @@ window.App = {
     StorageService.saveVaultData(encrypted);
     StorageService.saveRememberMe(this.email, this.password);
 
-    try { await NeonAPI.uploadVault(this.email, salt, testPayload, encrypted); } catch {}
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    if (!isAndroid) {
+      try { await NeonAPI.uploadVault(this.email, salt, testPayload, encrypted); } catch {}
+    }
 
     this.accounts = [];
     this.navigate('accounts');
@@ -289,14 +409,17 @@ window.App = {
     const vaultJson = JSON.stringify({ version: 1, accounts: this.accounts });
     const encrypted = await CryptoService.encryptVault(vaultJson, this.password, salt);
     StorageService.saveVaultData(encrypted);
-    try { await NeonAPI.uploadVault(this.email, salt, StorageService.loadTestPayload() || '', encrypted); } catch {}
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    if (!isAndroid) {
+      try { await NeonAPI.uploadVault(this.email, salt, StorageService.loadTestPayload() || '', encrypted); } catch {}
+    }
   },
 
   // ===== ACCOUNTS SCREEN =====
   _renderAccounts() {
     document.getElementById('app-header-inner').innerHTML = `
       <div class="flex items-center gap-2">
-        <h1 class="text-base font-semibold text-surface-100">My Accounts</h1>
+        <h1 class="text-base font-semibold text-surface-100">${this._t('myAccounts')}</h1>
       </div>
       <div class="flex items-center gap-1">
         <button onclick="App.navigate('settings')" class="w-9 h-9 flex items-center justify-center rounded-xl transition-colors duration-150 text-surface-500 hover:text-surface-300 hover:bg-surface-700">${SVG.settings}</button>
@@ -307,7 +430,7 @@ window.App = {
       main.innerHTML = `
         <div class="relative mb-5">
           <span class="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">${SVG.search}</span>
-          <input type="text" placeholder="Search accounts..." oninput="App._searchQuery=this.value;App._renderAccounts()"
+          <input type="text" placeholder="${this._t('search')}" oninput="App._searchQuery=this.value;App._renderAccounts()"
             class="w-full pl-10 pr-11 py-2.5 text-sm rounded-xl bg-surface-800 border border-surface-700 text-surface-100 placeholder-surface-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
           <button onclick="App.navigate('add-account')" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-primary-500 hover:bg-primary-600 text-white flex items-center justify-center transition-colors">${SVG.plus}</button>
         </div>
@@ -315,9 +438,9 @@ window.App = {
           <div class="w-16 h-16 rounded-2xl bg-surface-800 flex items-center justify-center mx-auto mb-4">
             <svg class="w-8 h-8 text-surface-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           </div>
-          <p class="text-surface-400 text-sm mb-4">No accounts yet</p>
+          <p class="text-surface-400 text-sm mb-4">${this._t('noAccounts')}</p>
           <button onclick="App.navigate('add-account')" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-150 bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-sm shadow-primary-600/20">
-            ${SVG.plus} Add your first account
+            ${SVG.plus} ${this._t('addFirst')}
           </button>
         </div>`;
       return;
@@ -335,7 +458,7 @@ window.App = {
     let html = `
       <div class="relative mb-5">
         <span class="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">${SVG.search}</span>
-        <input type="text" placeholder="Search accounts..." value="${(this._searchQuery||'').replace(/"/g,'&quot;')}" oninput="App._searchQuery=this.value;App._renderAccounts()"
+        <input type="text" placeholder="${this._t('search')}" value="${(this._searchQuery||'').replace(/"/g,'&quot;')}" oninput="App._searchQuery=this.value;App._renderAccounts()"
           class="w-full pl-10 pr-11 py-2.5 text-sm rounded-xl bg-surface-800 border border-surface-700 text-surface-100 placeholder-surface-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
         <button onclick="App.navigate('add-account')" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-primary-500 hover:bg-primary-600 text-white flex items-center justify-center transition-colors">${SVG.plus}</button>
       </div>
@@ -444,9 +567,9 @@ window.App = {
       await navigator.clipboard.writeText(result.code);
       const el = document.getElementById(`copy-${idx}`);
       if (el) el.innerHTML = SVG.check;
-      this._toast('Copied!', 'success');
+      this._toast(this._t('copied'), 'success');
       setTimeout(() => { if (el) el.innerHTML = SVG.copy; }, 2000);
-    } catch { this._toast('Failed to copy', 'error'); }
+    } catch { this._toast(this._t('copyFailed'), 'error'); }
   },
 
   async deleteAccount(idx) {
@@ -461,7 +584,7 @@ window.App = {
     document.getElementById('app-header-inner').innerHTML = `
       <div class="flex items-center gap-2">
         <button onclick="App.navigate('accounts')" class="btn-icon -ml-1.5 w-9 h-9 flex items-center justify-center rounded-xl transition-colors duration-150 text-surface-500 hover:text-surface-300 hover:bg-surface-700">${SVG.back}</button>
-        <h1 class="text-base font-semibold text-surface-100">Add Account</h1>
+        <h1 class="text-base font-semibold text-surface-100">${this._t('addAccount')}</h1>
       </div>
       <div class="flex items-center gap-1"></div>`;
 
@@ -469,11 +592,11 @@ window.App = {
       <div class="flex flex-col gap-3 pt-4 animate-fade-in">
         <button onclick="App._showAddMode('qr')" class="card-hover p-4 flex items-center gap-4 cursor-pointer transition-all duration-200 bg-surface-800 rounded-2xl border border-surface-700 shadow-card hover:shadow-card-hover hover:border-primary-800">
           <div class="w-12 h-12 rounded-xl bg-primary-950 flex items-center justify-center shrink-0">${SVG.qr}</div>
-          <div class="text-left"><p class="font-medium text-surface-100 text-sm">Scan QR Code</p><p class="text-xs text-surface-400 mt-0.5">Use your camera to scan a QR code</p></div>
+          <div class="text-left"><p class="font-medium text-surface-100 text-sm">${this._t('scanQR')}</p><p class="text-xs text-surface-400 mt-0.5">${this._t('scanQRDesc')}</p></div>
         </button>
         <button onclick="App._showAddMode('manual')" class="card-hover p-4 flex items-center gap-4 cursor-pointer transition-all duration-200 bg-surface-800 rounded-2xl border border-surface-700 shadow-card hover:shadow-card-hover hover:border-primary-800">
           <div class="w-12 h-12 rounded-xl bg-surface-800 flex items-center justify-center shrink-0">${SVG.pencil}</div>
-          <div class="text-left"><p class="font-medium text-surface-100 text-sm">Manual Entry</p><p class="text-xs text-surface-400 mt-0.5">Enter your secret key manually</p></div>
+          <div class="text-left"><p class="font-medium text-surface-100 text-sm">${this._t('manualEntry')}</p><p class="text-xs text-surface-400 mt-0.5">${this._t('manualDesc')}</p></div>
         </button>
         <div id="add-form-container"></div>
       </div>`;
@@ -486,11 +609,11 @@ window.App = {
         <div class="flex flex-col gap-3 pt-4 animate-fade-in">
           <button onclick="App._startQRScan()" class="card-hover p-4 flex items-center gap-4 cursor-pointer transition-all duration-200 bg-surface-800 rounded-2xl border border-surface-700 shadow-card hover:shadow-card-hover hover:border-primary-800">
             <div class="w-12 h-12 rounded-xl bg-primary-950 flex items-center justify-center shrink-0">${SVG.camera}</div>
-            <div class="text-left"><p class="font-medium text-surface-100 text-sm">Use Camera</p><p class="text-xs text-surface-400 mt-0.5">Point camera at QR code</p></div>
+            <div class="text-left"><p class="font-medium text-surface-100 text-sm">${this._t('useCamera')}</p><p class="text-xs text-surface-400 mt-0.5">${this._t('useCameraDesc')}</p></div>
           </button>
           <button onclick="document.getElementById('qr-file-input').click()" class="card-hover p-4 flex items-center gap-4 cursor-pointer transition-all duration-200 bg-surface-800 rounded-2xl border border-surface-700 shadow-card hover:shadow-card-hover hover:border-primary-800">
             <div class="w-12 h-12 rounded-xl bg-surface-800 flex items-center justify-center shrink-0">${SVG.upload}</div>
-            <div class="text-left"><p class="font-medium text-surface-100 text-sm">Upload QR Image</p><p class="text-xs text-surface-400 mt-0.5">Select a QR code image file</p></div>
+            <div class="text-left"><p class="font-medium text-surface-100 text-sm">${this._t('uploadQR')}</p><p class="text-xs text-surface-400 mt-0.5">${this._t('uploadQRDesc')}</p></div>
           </button>
           <input type="file" id="qr-file-input" accept="image/*" class="hidden" onchange="App._handleQRFile(this)">
           <div id="qr-camera-wrap" class="hidden">
@@ -499,7 +622,7 @@ window.App = {
               <div class="absolute inset-0 border-[3px] border-primary-400/60 rounded-2xl m-8 pointer-events-none"></div>
             </div>
             <canvas id="qr-canvas" class="hidden"></canvas>
-            <button onclick="QRScanner.stop();document.getElementById('qr-camera-wrap').classList.add('hidden')" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-xl transition-all duration-150 bg-primary-600 text-white hover:bg-primary-700 shadow-sm shadow-primary-600/20 mt-3">Capture</button>
+            <button onclick="QRScanner.stop();document.getElementById('qr-camera-wrap').classList.add('hidden')" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-xl transition-all duration-150 bg-primary-600 text-white hover:bg-primary-700 shadow-sm shadow-primary-600/20 mt-3">${this._t('capture')}</button>
           </div>
         </div>`;
     } else {
@@ -558,7 +681,7 @@ window.App = {
     const issuer = document.getElementById('add-issuer').value.trim();
     const accountName = document.getElementById('add-account-name').value.trim();
     const secret = document.getElementById('add-secret').value.trim().toUpperCase().replace(/\s/g, '');
-    if (!secret) return this._toast('Secret key is required', 'error');
+    if (!secret) return this._toast(this._t('secretRequired'), 'error');
 
     this.accounts.push({
       id: uuid(), issuer: issuer || 'Unknown', accountName, secret,
@@ -568,13 +691,17 @@ window.App = {
       icon: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     });
     this._saveVault();
-    this._toast('Account added!', 'success');
+    this._toast(this._t('accountAdded'), 'success');
     this.navigate('accounts');
   },
 
   async _startQRScan() {
-    document.getElementById('qr-camera-wrap').classList.remove('hidden');
+    const wrap = document.getElementById('qr-camera-wrap');
+    wrap.classList.remove('hidden');
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera API not supported');
+      }
       await QRScanner.scanFromCamera((data) => {
         const parsed = TOTP.parseURI(data);
         if (parsed) {
@@ -585,13 +712,14 @@ window.App = {
             icon: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
           });
           this._saveVault();
-          this._toast('Account added!', 'success');
+          this._toast(this._t('accountAdded'), 'success');
           this.navigate('accounts');
-        } else { this._toast('Not a valid otpauth:// QR code', 'error'); }
+        } else { this._toast(this._t('notValid'), 'error'); }
       }, document.getElementById('qr-video'));
-    } catch {
-      this._toast('Camera access denied', 'error');
-      document.getElementById('qr-camera-wrap').classList.add('hidden');
+    } catch (e) {
+      console.error('QR scan error:', e);
+      this._toast(this._t('cameraDenied'), 'error');
+      wrap.classList.add('hidden');
     }
   },
 
@@ -607,9 +735,9 @@ window.App = {
           icon: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
         });
         this._saveVault();
-        this._toast('Account added!', 'success');
+        this._toast(this._t('accountAdded'), 'success');
         this.navigate('accounts');
-      } else { this._toast('Not a valid otpauth:// QR code', 'error'); }
+      } else { this._toast(this._t('notValid'), 'error'); }
     });
     input.value = '';
   },
@@ -619,57 +747,57 @@ window.App = {
     document.getElementById('app-header-inner').innerHTML = `
       <div class="flex items-center gap-2">
         <button onclick="App.navigate('accounts')" class="btn-icon -ml-1.5 w-9 h-9 flex items-center justify-center rounded-xl transition-colors duration-150 text-surface-500 hover:text-surface-300 hover:bg-surface-700">${SVG.back}</button>
-        <h1 class="text-base font-semibold text-surface-100">Settings</h1>
+        <h1 class="text-base font-semibold text-surface-100">${this._t('settings')}</h1>
       </div>
       <div class="flex items-center gap-1"></div>`;
 
     document.getElementById('app-main').innerHTML = `
       <div class="flex flex-col gap-6 animate-fade-in">
         <div>
-          <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 px-1 mb-3">Preferences</p>
+          <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 px-1 mb-3">${this._t('language')}</p>
           <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card divide-y divide-surface-700/50 overflow-hidden">
             <div class="flex items-center justify-between px-4 py-3.5">
-              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">Language</span></div>
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">${this._t('language')}</span></div>
               <div class="flex items-center gap-2 shrink-0">
-                <button class="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary-600 text-white shadow-sm" onclick="switchLanguage('en')">EN</button>
-                <button class="px-3 py-1.5 text-xs font-medium rounded-lg text-surface-400 hover:text-surface-200 hover:bg-surface-700" onclick="switchLanguage('ar')">AR</button>
+                <button class="px-3 py-1.5 text-xs font-medium rounded-lg ${currentLang === 'en' ? 'bg-primary-600 text-white shadow-sm' : 'text-surface-400 hover:text-surface-200 hover:bg-surface-700'}" onclick="switchLanguage('en')">EN</button>
+                <button class="px-3 py-1.5 text-xs font-medium rounded-lg ${currentLang === 'ar' ? 'bg-primary-600 text-white shadow-sm' : 'text-surface-400 hover:text-surface-200 hover:bg-surface-700'}" onclick="switchLanguage('ar')">AR</button>
               </div>
             </div>
           </div>
         </div>
 
         <div>
-          <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 px-1 mb-3">Backup</p>
+          <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 px-1 mb-3">${this._t('exportBackup').split(' ')[0]}</p>
           <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card divide-y divide-surface-700/50 overflow-hidden">
             <div class="flex items-center justify-between px-4 py-3.5">
-              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">Export Backup</span><span class="text-xs text-surface-400 mt-0.5">Download encrypted vault</span></div>
-              <div class="flex items-center gap-2 shrink-0"><button onclick="App.exportBackup()" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-100 text-surface-700 hover:bg-surface-200 dark:bg-surface-700 dark:text-surface-200 dark:hover:bg-surface-600">Export</button></div>
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">${this._t('exportBackup')}</span><span class="text-xs text-surface-400 mt-0.5">${this._t('exportDesc')}</span></div>
+              <div class="flex items-center gap-2 shrink-0"><button onclick="App.exportBackup()" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-100 text-surface-700 hover:bg-surface-200 dark:bg-surface-700 dark:text-surface-200 dark:hover:bg-surface-600">${this._t('export')}</button></div>
             </div>
             <div class="flex items-center justify-between px-4 py-3.5">
-              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">Import Backup</span><span class="text-xs text-surface-400 mt-0.5">Restore from backup file</span></div>
-              <div class="flex items-center gap-2 shrink-0"><button onclick="App.importBackup()" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-100 text-surface-700 hover:bg-surface-200 dark:bg-surface-700 dark:text-surface-200 dark:hover:bg-surface-600">Import</button></div>
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">${this._t('importBackup')}</span><span class="text-xs text-surface-400 mt-0.5">${this._t('importDesc')}</span></div>
+              <div class="flex items-center gap-2 shrink-0"><button onclick="App.importBackup()" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-100 text-surface-700 hover:bg-surface-200 dark:bg-surface-700 dark:text-surface-200 dark:hover:bg-surface-600">${this._t('import')}</button></div>
             </div>
           </div>
         </div>
 
         <div>
-          <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 px-1 mb-3">About</p>
+          <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 px-1 mb-3">${this._t('about')}</p>
           <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card divide-y divide-surface-700/50 overflow-hidden">
             <div class="flex items-center justify-between px-4 py-3.5">
               <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">OtpVault</span><span class="text-xs text-surface-400 mt-0.5">v0.1.6</span></div>
             </div>
             <div class="flex items-center justify-between px-4 py-3.5">
-              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">Copyright</span><span class="text-xs text-surface-400 mt-0.5">EuroMoscow Developments</span></div>
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">${this._t('copyright')}</span><span class="text-xs text-surface-400 mt-0.5">EuroMoscow Developments</span></div>
             </div>
           </div>
         </div>
 
         <button onclick="App._lockVault()" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-xl transition-all duration-150 bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-sm shadow-red-600/20 disabled:opacity-40 disabled:cursor-not-allowed select-none">
-          ${SVG.lock.replace('w-8 h-8','w-4 h-4').replace('text-surface-400','text-white')} Lock Vault
+          ${SVG.lock.replace('w-8 h-8','w-4 h-4').replace('text-surface-400','text-white')} ${this._t('lockVault')}
         </button>
 
         <button onclick="App.logout()" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-xl transition-all duration-150 text-surface-400 hover:text-red-500 hover:bg-red-950/30 select-none">
-          ${SVG.logout} Log Out
+          ${SVG.logout} ${this._t('logOut')}
         </button>
       </div>`;
   },
@@ -679,13 +807,13 @@ window.App = {
       const salt = StorageService.loadSalt();
       const testPayload = StorageService.loadTestPayload();
       const encryptedVault = StorageService.loadVaultData();
-      if (!salt || !encryptedVault) return this._toast('No vault to export', 'error');
+      if (!salt || !encryptedVault) return this._toast(this._t('noVaultExport'), 'error');
       const blob = new Blob([JSON.stringify({ version: 1, salt, testPayload: testPayload || '', encryptedVault }, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = 'otpvault-backup.json'; a.click();
       URL.revokeObjectURL(url);
-      this._toast('Backup exported!', 'success');
-    } catch (e) { this._toast('Export failed: ' + e.message, 'error'); }
+      this._toast(this._t('backupExported'), 'success');
+    } catch (e) { this._toast(this._t('exportFailed') + ': ' + e.message, 'error'); }
   },
 
   importBackup() {
@@ -696,23 +824,23 @@ window.App = {
       try {
         const text = await file.text();
         const backup = JSON.parse(text);
-        if (!backup.salt || !backup.encryptedVault) return this._toast('Invalid backup file', 'error');
+        if (!backup.salt || !backup.encryptedVault) return this._toast(this._t('invalidBackup'), 'error');
         const pw = prompt('Enter the password for this backup:');
         if (!pw) return;
         const valid = await CryptoService.verifyTestPayload(backup.testPayload || '', pw, backup.salt);
-        if (!valid) return this._toast('Wrong password', 'error');
+        if (!valid) return this._toast(this._t('wrongBackupPass'), 'error');
         const decrypted = await CryptoService.decryptVault(backup.encryptedVault, pw, backup.salt);
         const data = JSON.parse(decrypted);
-        if (!data.accounts) return this._toast('Invalid vault data', 'error');
+        if (!data.accounts) return this._toast(this._t('invalidVault'), 'error');
         StorageService.saveSalt(backup.salt);
         StorageService.saveTestPayload(backup.testPayload || '');
         StorageService.saveVaultData(backup.encryptedVault);
         this.accounts = data.accounts;
         this.password = pw;
         await this._saveVault();
-        this._toast('Backup imported!', 'success');
+        this._toast(this._t('backupImported'), 'success');
         this.navigate('accounts');
-      } catch { this._toast('Failed to import. Wrong password?', 'error'); }
+      } catch { this._toast(this._t('importFailed'), 'error'); }
     };
     input.click();
   },
