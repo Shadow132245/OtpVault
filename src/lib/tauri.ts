@@ -105,3 +105,7 @@ export async function loadRememberMe(): Promise<[string, string] | null> {
 export async function clearRememberMe(): Promise<void> {
   return invoke('clear_remember_me')
 }
+
+export async function pullVaultFromCloud(): Promise<boolean> {
+  return invoke('pull_vault_from_cloud')
+}

@@ -37,6 +37,7 @@ pub fn run() {
             commands::accounts::get_account_count,
             commands::accounts::get_decrypted_secrets,
             commands::accounts::generate_totp_for_account,
+            commands::accounts::pull_vault_from_cloud,
             commands::backup::export_backup,
             commands::backup::import_backup,
             qr_scanner::scan_qr_file,

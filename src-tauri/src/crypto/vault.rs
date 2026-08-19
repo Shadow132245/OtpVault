@@ -129,6 +129,22 @@ impl VaultState {
         Self::encrypt_standalone(plaintext, key)
     }
 
+    pub fn decrypt_for_sync(&self, data: &[u8]) -> Result<Vec<u8>, VaultError> {
+        let key = self.key.as_ref().ok_or(VaultError::NotInitialized)?;
+        Self::decrypt_standalone(data, key)
+    }
+
+    fn decrypt_standalone(data: &[u8], key: &[u8]) -> Result<Vec<u8>, VaultError> {
+        if data.len() < NONCE_SIZE {
+            return Err(VaultError::Decrypt("Data too short".into()));
+        }
+        let nonce = Nonce::from_slice(&data[..NONCE_SIZE]);
+        let ciphertext = &data[NONCE_SIZE..];
+        let aes_key = Key::<Aes256Gcm>::from_slice(key);
+        let cipher = Aes256Gcm::new(aes_key);
+        cipher.decrypt(nonce, ciphertext).map_err(|_| VaultError::InvalidPassword)
+    }
+
     pub fn decrypt(&self, ciphertext: &[u8]) -> Result<Vec<u8>, VaultError> {
         let key = self.key.as_ref().ok_or(VaultError::NotInitialized)?;
         if ciphertext.len() < SALT_SIZE + NONCE_SIZE {

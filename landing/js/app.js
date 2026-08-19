@@ -136,7 +136,10 @@ window.App = {
     if (remember && StorageService.isInitialized()) {
       this.email = remember.email;
       this.password = remember.password;
-      this._loadLocalVault().then(() => this.navigate('accounts'));
+      this._loadLocalVault().then(() => {
+        this.navigate('accounts');
+        this._startCloudSync();
+      });
     }
     this._startTOTPUpdater();
   },
@@ -317,15 +320,16 @@ window.App = {
       }
       const decrypted = await CryptoService.decryptVault(row.encrypted_vault, this.password, salt);
       const data = JSON.parse(decrypted);
-      if (data.accounts) {
-        StorageService.saveSalt(salt);
-        StorageService.saveTestPayload(testPayload);
-        StorageService.saveVaultData(row.encrypted_vault);
-        StorageService.saveEmail(this.email);
-        this.accounts = data.accounts;
-        if (this._rememberMe) StorageService.saveRememberMe(this.email, this.password);
-        this.navigate('accounts');
-        return;
+        if (data.accounts) {
+          StorageService.saveSalt(salt);
+          StorageService.saveTestPayload(testPayload);
+          StorageService.saveVaultData(row.encrypted_vault);
+          StorageService.saveEmail(this.email);
+          this.accounts = data.accounts;
+          if (this._rememberMe) StorageService.saveRememberMe(this.email, this.password);
+          this.navigate('accounts');
+          this._startCloudSync();
+          return;
       }
     } catch (e) {
       if (e.message.includes('404') || e.message.includes('Not found')) {
@@ -354,6 +358,7 @@ window.App = {
 
     this.accounts = [];
     this.navigate('accounts');
+    this._startCloudSync();
   },
 
   // ===== LOCAL VAULT =====
@@ -373,6 +378,68 @@ window.App = {
     const encrypted = await CryptoService.encryptVault(vaultJson, this.password, salt);
     StorageService.saveVaultData(encrypted);
     try { await NeonAPI.uploadVault(this.email, salt, StorageService.loadTestPayload() || '', encrypted); } catch {}
+  },
+
+  _syncIntervalId: null,
+
+  _startCloudSync() {
+    if (this._syncIntervalId) clearInterval(this._syncIntervalId);
+    this._pullFromCloud();
+    this._syncIntervalId = setInterval(() => this._pullFromCloud(), 10000);
+  },
+
+  _stopCloudSync() {
+    if (this._syncIntervalId) { clearInterval(this._syncIntervalId); this._syncIntervalId = null; }
+  },
+
+  async _pullFromCloud() {
+    if (!this.email || !this.password) return;
+    try {
+      const row = await NeonAPI.fetchVault(this.email);
+      if (!row) return;
+      const salt = StorageService.loadSalt();
+      if (!salt) return;
+      const localEncrypted = StorageService.loadVaultData();
+      if (row.encrypted_vault === localEncrypted) return;
+      const decrypted = await CryptoService.decryptVault(row.encrypted_vault, this.password, salt);
+      const data = JSON.parse(decrypted);
+      if (!data.accounts) return;
+      const remoteAccounts = data.accounts;
+      const localIds = new Set(this.accounts.map(a => a.id));
+      let changed = false;
+      for (const acc of remoteAccounts) {
+        if (localIds.has(acc.id)) continue;
+        if (acc.secret_encrypted) {
+          try {
+            const bytes = CryptoService._b64ToBytes(acc.secret_encrypted);
+            const saltBytes = bytes.slice(0, 32);
+            const iv = bytes.slice(32, 44);
+            const ciphertext = bytes.slice(44);
+            const key = await CryptoService._deriveKeyArgon2id(this.password, btoa(String.fromCharCode(...saltBytes)));
+            const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+            acc.secret = new TextDecoder().decode(dec);
+          } catch { continue; }
+          delete acc.secret_encrypted;
+        }
+        if (!acc.secret) continue;
+        const a = {
+          id: acc.id, issuer: acc.issuer || 'Unknown',
+          accountName: acc.accountName || acc.account_name || '',
+          secret: acc.secret, algorithm: acc.algorithm || 'SHA1',
+          digits: acc.digits || 6, step: acc.step || 30,
+          icon: acc.icon || '', createdAt: acc.createdAt || acc.created_at || '',
+          updatedAt: acc.updatedAt || acc.updated_at || '',
+        };
+        this.accounts.push(a);
+        changed = true;
+      }
+      if (changed) {
+        const vaultJson = JSON.stringify({ version: 1, accounts: this.accounts });
+        const encrypted = await CryptoService.encryptVault(vaultJson, this.password, salt);
+        StorageService.saveVaultData(encrypted);
+        if (this.screen === 'accounts') this._renderAccounts();
+      }
+    } catch {}
   },
 
   // ===== ACCOUNTS SCREEN =====
@@ -850,6 +917,7 @@ window.App = {
   },
 
   logout() {
+    this._stopCloudSync();
     StorageService.clearRememberMe();
     this.email = ''; this.password = ''; this.accounts = [];
     QRScanner.stop();

@@ -21,6 +21,7 @@ import {
   loadRememberMe,
   saveRememberMe,
   clearRememberMe,
+  pullVaultFromCloud,
 } from './lib/tauri'
 import type { AccountEntry, AddAccountPayload } from './types'
 
@@ -74,6 +75,19 @@ function App() {
       loadAccounts()
       setScreen('accounts')
     }
+  }, [vault.unlocked])
+
+  useEffect(() => {
+    if (!vault.unlocked) return
+    const poll = async () => {
+      try {
+        const changed = await pullVaultFromCloud()
+        if (changed) await loadAccounts()
+      } catch {}
+    }
+    poll()
+    const id = setInterval(poll, 10000)
+    return () => clearInterval(id)
   }, [vault.unlocked])
 
   useEffect(() => {
