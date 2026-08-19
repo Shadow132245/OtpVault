@@ -265,7 +265,7 @@ window.App = {
     if (!email || !pw) { errEl.textContent = this._t('fillAll'); return; }
     if (pw.length < 4) { errEl.textContent = this._t('minLength'); return; }
 
-    this.email = email;
+    this.email = email.toLowerCase();
     this.password = pw;
 
     btn.disabled = true;
