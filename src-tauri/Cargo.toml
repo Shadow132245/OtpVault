@@ -35,14 +35,8 @@ aes-gcm = "0.10"
 rand = "0.8"
 base64 = "0.22"
 data-encoding = "2"
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
 log = "0.4"
 simple-logging = "2"
 url = "2"
 thiserror = "2"
-
-[target.'cfg(not(target_os = "android"))'.dependencies]
-tokio-postgres = { version = "0.7", features = ["with-chrono-0_4"] }
-deadpool-postgres = { version = "0.14", features = ["serde"] }
-
-[target.'cfg(target_os = "android")'.dependencies]
-reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
