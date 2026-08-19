@@ -33,3 +33,7 @@ OtpVault_*.msi
 # Python
 __pycache__/
 *.pyc
+
+# Mobile (unused)
+mobile/
+mobile-temp/
