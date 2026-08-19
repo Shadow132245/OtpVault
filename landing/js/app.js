@@ -305,40 +305,6 @@ window.App = {
   async _doSignin() {
     const errEl = document.getElementById('auth-error');
     const btn = document.getElementById('auth-submit');
-
-    const isAndroid = /Android/i.test(navigator.userAgent);
-
-    if (isAndroid) {
-      try {
-        const encrypted = StorageService.loadVaultData();
-        const salt = StorageService.loadSalt();
-        const testPayload = StorageService.loadTestPayload();
-        if (encrypted && salt) {
-          const valid = await CryptoService.verifyTestPayload(testPayload || '', this.password, salt);
-          if (!valid) {
-            errEl.textContent = this._t('wrongPass');
-            btn.disabled = false; btn.innerHTML = this._t('unlockVault');
-            return;
-          }
-          const decrypted = await CryptoService.decryptVault(encrypted, this.password, salt);
-          const data = JSON.parse(decrypted);
-          if (data.accounts) {
-            this.accounts = data.accounts;
-            if (this._rememberMe) StorageService.saveRememberMe(this.email, this.password);
-            this.navigate('accounts');
-            return;
-          }
-        }
-        errEl.textContent = this._t('noVault');
-        btn.disabled = false; btn.innerHTML = this._t('unlockVault');
-        return;
-      } catch (e) {
-        errEl.textContent = this._t('wrongPass');
-        btn.disabled = false; btn.innerHTML = this._t('unlockVault');
-        return;
-      }
-    }
-
     try {
       const row = await NeonAPI.fetchVault(this.email);
       const testPayload = row.test_payload || row.testPayload || '';
@@ -364,7 +330,7 @@ window.App = {
     } catch (e) {
       if (e.message.includes('404') || e.message.includes('Not found')) {
         errEl.textContent = 'No account found with this email';
-        btn.disabled = false; btn.innerHTML = 'Unlock Vault';
+        btn.disabled = false; btn.innerHTML = this._t('unlockVault');
         return;
       }
     }
@@ -384,10 +350,7 @@ window.App = {
     StorageService.saveVaultData(encrypted);
     StorageService.saveRememberMe(this.email, this.password);
 
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    if (!isAndroid) {
-      try { await NeonAPI.uploadVault(this.email, salt, testPayload, encrypted); } catch {}
-    }
+    try { await NeonAPI.uploadVault(this.email, salt, testPayload, encrypted); } catch {}
 
     this.accounts = [];
     this.navigate('accounts');
@@ -409,10 +372,7 @@ window.App = {
     const vaultJson = JSON.stringify({ version: 1, accounts: this.accounts });
     const encrypted = await CryptoService.encryptVault(vaultJson, this.password, salt);
     StorageService.saveVaultData(encrypted);
-    const isAndroid = /Android/i.test(navigator.userAgent);
-    if (!isAndroid) {
-      try { await NeonAPI.uploadVault(this.email, salt, StorageService.loadTestPayload() || '', encrypted); } catch {}
-    }
+    try { await NeonAPI.uploadVault(this.email, salt, StorageService.loadTestPayload() || '', encrypted); } catch {}
   },
 
   // ===== ACCOUNTS SCREEN =====

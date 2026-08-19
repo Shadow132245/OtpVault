@@ -1,5 +1,7 @@
 window.NeonAPI = {
-  BASE: '/api/vault',
+  BASE: (location.protocol === 'file:' || /Android/i.test(navigator.userAgent))
+    ? 'https://otpvault1.vercel.app/api/vault'
+    : '/api/vault',
 
   async checkEmailExists(email) {
     try {
