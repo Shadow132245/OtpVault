@@ -578,11 +578,22 @@ window.App = {
           <input type="file" id="qr-file-input" accept="image/*" class="hidden" onchange="App._handleQRFile(this)">
           <div id="qr-camera-wrap" class="hidden">
             <div class="relative w-full max-w-sm aspect-square rounded-2xl overflow-hidden bg-surface-900 mx-auto">
-              <video id="qr-video" playsinline class="absolute inset-0 w-full h-full object-cover"></video>
+              <video id="qr-video" playsinline autoplay class="absolute inset-0 w-full h-full object-cover"></video>
               <div class="absolute inset-0 border-[3px] border-primary-400/60 rounded-2xl m-8 pointer-events-none"></div>
+              <div class="absolute bottom-3 left-0 right-0 text-center">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 text-xs text-primary-300 backdrop-blur-sm">
+                  <span class="w-2 h-2 rounded-full bg-primary-400 animate-pulse"></span>
+                  ${this._t('scanQRDesc')}
+                </span>
+              </div>
             </div>
             <canvas id="qr-canvas" class="hidden"></canvas>
-            <button onclick="QRScanner.stop();document.getElementById('qr-camera-wrap').classList.add('hidden')" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-xl transition-all duration-150 bg-primary-600 text-white hover:bg-primary-700 shadow-sm shadow-primary-600/20 mt-3">${this._t('capture')}</button>
+            <div class="flex gap-3 mt-3">
+              <button onclick="App._captureQR()" class="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-xl transition-all duration-150 bg-primary-600 text-white hover:bg-primary-700 shadow-sm shadow-primary-600/20">${this._t('capture')}</button>
+              <button onclick="QRScanner.stop();document.getElementById('qr-camera-wrap').classList.add('hidden')" class="inline-flex items-center justify-center px-4 py-3 rounded-xl border border-surface-600 text-surface-400 hover:text-surface-200 hover:bg-surface-700 transition-all">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>
           </div>
         </div>`;
     } else {
@@ -683,6 +694,29 @@ window.App = {
     }
   },
 
+  _captureQR() {
+    const data = QRScanner.captureFrame();
+    if (data) {
+      const parsed = TOTP.parseURI(data);
+      if (parsed) {
+        this.accounts.push({
+          id: uuid(), issuer: parsed.issuer || 'Unknown', accountName: parsed.accountName || '',
+          secret: parsed.secret, algorithm: parsed.algorithm || 'SHA1',
+          digits: parsed.digits || 6, step: parsed.period || 30,
+          icon: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+        });
+        this._saveVault();
+        this._toast(this._t('accountAdded'), 'success');
+        document.getElementById('qr-camera-wrap').classList.add('hidden');
+        this.navigate('accounts');
+      } else {
+        this._toast(this._t('notValid'), 'error');
+      }
+    } else {
+      this._toast('No QR code detected. Point camera at QR code.', 'error');
+    }
+  },
+
   _handleQRFile(input) {
     const file = input.files[0]; if (!file) return;
     QRScanner.scanFromFile(file, (data) => {
@@ -698,6 +732,8 @@ window.App = {
         this._toast(this._t('accountAdded'), 'success');
         this.navigate('accounts');
       } else { this._toast(this._t('notValid'), 'error'); }
+    }, (err) => {
+      this._toast(err || this._t('notValid'), 'error');
     });
     input.value = '';
   },
