@@ -32,7 +32,7 @@ window.QRScanner = {
           ctx.drawImage(videoEl, 0, 0);
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           if (typeof jsQR !== 'undefined') {
-            const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+            const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'attemptBoth' });
             if (code && code.data) {
               this.stop();
               onResult(code.data);
@@ -60,7 +60,7 @@ window.QRScanner = {
     ctx.drawImage(video, 0, 0);
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     if (typeof jsQR !== 'undefined') {
-      const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+      const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'attemptBoth' });
       if (code && code.data) {
         this.stop();
         return code.data;
@@ -81,7 +81,7 @@ window.QRScanner = {
         ctx.drawImage(img, 0, 0);
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         if (typeof jsQR !== 'undefined') {
-          const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+          const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'attemptBoth' });
           if (code && code.data) {
             onResult(code.data);
           } else {
