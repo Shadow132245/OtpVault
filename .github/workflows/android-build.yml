@@ -28,7 +28,7 @@ jobs:
       - name: Setup Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-linux-android
+          targets: aarch64-linux-android, armv7-linux-androideabi
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
@@ -59,8 +59,8 @@ jobs:
           keytool -genkeypair -v -keystore src-tauri/gen/android/app/otpvault.keystore -alias otpvault -keyalg RSA -keysize 2048 -validity 10000 -storepass otpvault123 -keypass otpvault123 -dname "CN=OtpVault, OU=Dev, O=OtpVault, L=Unknown, ST=Unknown, C=US"
           python3 scripts/patch-signing.py src-tauri/gen/android/app/build.gradle.kts
 
-      - name: Build Release APK (arm64 only)
-        run: npx tauri android build --target aarch64
+      - name: Build Release APK (arm64 + armv7)
+        run: npx tauri android build --target aarch64 --target armv7
 
       - name: List Build Outputs
         if: always()
