@@ -59,12 +59,21 @@ jobs:
           keytool -genkeypair -v -keystore src-tauri/gen/android/app/otpvault.keystore -alias otpvault -keyalg RSA -keysize 2048 -validity 10000 -storepass otpvault123 -keypass otpvault123 -dname "CN=OtpVault, OU=Dev, O=OtpVault, L=Unknown, ST=Unknown, C=US"
           python3 scripts/patch-signing.py src-tauri/gen/android/app/build.gradle.kts
 
-      - name: Build Release APK (arm64 + armv7)
+      - name: Show Patched build.gradle.kts
+        run: cat src-tauri/gen/android/app/build.gradle.kts
+
+      - name: Build Release APK
         run: npx tauri android build --target aarch64 --target armv7
 
-      - name: List Build Outputs
+      - name: Find APK Files
         if: always()
-        run: find src-tauri/gen/android -name "*.apk" -type f -exec ls -lh {} \;
+        run: |
+          echo "=== Searching for APK files ==="
+          find src-tauri/gen/android -name "*.apk" -type f -exec ls -lh {} \;
+          echo "=== Searching for AAB files ==="
+          find src-tauri/gen/android -name "*.aab" -type f -exec ls -lh {} \;
+          echo "=== All build outputs ==="
+          find src-tauri/gen/android/app/build/outputs -type f 2>/dev/null || echo "No outputs directory"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -72,4 +81,4 @@ jobs:
         with:
           name: OtpVault-APK
           path: src-tauri/gen/android/**/*.apk
-          if-no-files-found: warn
+          if-no-files-found: error
