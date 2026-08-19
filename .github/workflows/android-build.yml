@@ -28,7 +28,7 @@ jobs:
       - name: Setup Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-linux-android, armv7-linux-androideabi, i686-linux-android, x86_64-linux-android
+          targets: aarch64-linux-android
 
       - name: Setup Java JDK
         uses: actions/setup-java@v4
@@ -54,12 +54,17 @@ jobs:
           echo "tauri.android.versionCode=1" > src-tauri/gen/android/app/tauri.properties
           echo "tauri.android.versionName=0.1.6" >> src-tauri/gen/android/app/tauri.properties
 
-      - name: Build Debug APK
-        run: npx tauri android build --debug
+      - name: Generate Keystore and Patch Signing
+        run: |
+          keytool -genkeypair -v -keystore src-tauri/gen/android/app/otpvault.keystore -alias otpvault -keyalg RSA -keysize 2048 -validity 10000 -storepass otpvault123 -keypass otpvault123 -dname "CN=OtpVault, OU=Dev, O=OtpVault, L=Unknown, ST=Unknown, C=US"
+          python3 scripts/patch-signing.py src-tauri/gen/android/app/build.gradle.kts
+
+      - name: Build Release APK (arm64 only)
+        run: npx tauri android build --target aarch64
 
       - name: List Build Outputs
         if: always()
-        run: find src-tauri/gen/android -name "*.apk" -o -name "*.aab" 2>/dev/null
+        run: find src-tauri/gen/android -name "*.apk" -type f -exec ls -lh {} \;
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
