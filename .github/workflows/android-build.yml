@@ -54,17 +54,27 @@ jobs:
           echo "tauri.android.versionCode=1" > src-tauri/gen/android/app/tauri.properties
           echo "tauri.android.versionName=0.1.6" >> src-tauri/gen/android/app/tauri.properties
 
+      - name: Generate Keystore and Sign APK
+        run: |
+          keytool -genkeypair -v -keystore src-tauri/gen/android/app/otpvault.keystore -alias otpvault -keyalg RSA -keysize 2048 -validity 10000 -storepass otpvault123 -keypass otpvault123 -dname "CN=OtpVault, OU=Dev, O=EuroMoscow, L=Unknown, ST=Unknown, C=US"
+
+          sed -i '/getByName("release") {/a\
+            signingConfig {\
+                storeFile = file("otpvault.keystore")\
+                storePassword = "otpvault123"\
+                keyAlias = "otpvault"\
+                keyPassword = "otpvault123"\
+            }' src-tauri/gen/android/app/build.gradle.kts
+
       - name: Build Tauri Android APK
         run: npx tauri android build
 
       - name: Find APK
-        id: find-apk
         run: |
           echo "=== Looking for APK files ==="
           find src-tauri/gen/android -name "*.apk" -type f 2>/dev/null || echo "No APK found"
-          find src-tauri/gen/android -name "*.aab" -type f 2>/dev/null || echo "No AAB found"
           echo "=== Build outputs ==="
-          ls -la src-tauri/gen/android/app/build/outputs/ 2>/dev/null || echo "No outputs dir"
+          find src-tauri/gen/android/app/build/outputs -type f 2>/dev/null || echo "No outputs"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
