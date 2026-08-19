@@ -58,13 +58,33 @@ jobs:
         run: |
           keytool -genkeypair -v -keystore src-tauri/gen/android/app/otpvault.keystore -alias otpvault -keyalg RSA -keysize 2048 -validity 10000 -storepass otpvault123 -keypass otpvault123 -dname "CN=OtpVault, OU=Dev, O=EuroMoscow, L=Unknown, ST=Unknown, C=US"
 
-          sed -i '/getByName("release") {/a\
-            signingConfig {\
-                storeFile = file("otpvault.keystore")\
-                storePassword = "otpvault123"\
-                keyAlias = "otpvault"\
-                keyPassword = "otpvault123"\
-            }' src-tauri/gen/android/app/build.gradle.kts
+          python3 << 'PYEOF'
+          import re
+
+          with open("src-tauri/gen/android/app/build.gradle.kts", "r") as f:
+              content = f.read()
+
+          signing_block = '''    signingConfigs {
+        create("release") {
+            storeFile = file("otpvault.keystore")
+            storePassword = "otpvault123"
+            keyAlias = "otpvault"
+            keyPassword = "otpvault123"
+        }
+    }
+'''
+          content = content.replace("    buildTypes {", signing_block + "    buildTypes {")
+
+          content = content.replace(
+              'getByName("release") {\n            isMinifyEnabled',
+              'getByName("release") {\n            signingConfig = signingConfigs.getByName("release")\n            isMinifyEnabled'
+          )
+
+          with open("src-tauri/gen/android/app/build.gradle.kts", "w") as f:
+              f.write(content)
+
+          print("Patched build.gradle.kts with signing config")
+          PYEOF
 
       - name: Build Tauri Android APK
         run: npx tauri android build
