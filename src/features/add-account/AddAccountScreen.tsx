@@ -1,11 +1,11 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { AppLayout } from '../../components/layout/AppLayout'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
 import { scanQrBytes, parseOTPAuthURI } from '../../lib/tauri'
-import type { AddAccountPayload, ParsedUri } from '../../types'
+import type { AddAccountPayload } from '../../types'
 
 interface AddAccountScreenProps {
   onBack: () => void
@@ -22,88 +22,108 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
   const [algorithm, setAlgorithm] = useState('SHA1')
   const [digits, setDigits] = useState(6)
   const [step, setStep] = useState(30)
-  const [scanning, setScanning] = useState(false)
   const [scanError, setScanError] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
-
-  const fillFromParsed = useCallback((parsed: ParsedUri) => {
-    setIssuer(parsed.issuer)
-    setAccountName(parsed.account_name)
-    setSecret(parsed.secret)
-    setAlgorithm(parsed.algorithm)
-    setDigits(parsed.digits)
-    setStep(parsed.step)
-    setMode('manual')
-    stopCamera()
-  }, [])
-
-  const handleQrText = useCallback(async (text: string) => {
-    setScanning(false)
-    try {
-      const parsed = await parseOTPAuthURI(text)
-      fillFromParsed(parsed)
-    } catch {
-      setScanError(t('add_account.parse_error'))
-    }
-  }, [fillFromParsed, t])
-
-  const startCamera = useCallback(async () => {
-    setScanError(null)
-    setScanning(true)
-    setScannerMode('camera')
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: 640, height: 480 }
-      })
-      streamRef.current = stream
-      if (videoRef.current) videoRef.current.srcObject = stream
-    } catch {
-      setScanError(t('add_account.camera_error'))
-      setScanning(false)
-      setScannerMode(null)
-    }
-  }, [t])
-
-  const captureFrame = useCallback(async () => {
-    const video = videoRef.current
-    const canvas = canvasRef.current
-    if (!video || !canvas) return
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    ctx.drawImage(video, 0, 0)
-    canvas.toBlob(async (blob) => {
-      if (!blob) return
-      const buffer = await blob.arrayBuffer()
-      const bytes = Array.from(new Uint8Array(buffer))
-      try {
-        const text = await scanQrBytes(bytes)
-        await handleQrText(text)
-      } catch {
-        setScanError(t('add_account.scan_failed'))
-        setScanning(false)
-      }
-    }, 'image/png')
-  }, [handleQrText, t])
+  const scanLoopRef = useRef<number | null>(null)
+  const processingRef = useRef(false)
 
   const stopCamera = useCallback(() => {
+    if (scanLoopRef.current) {
+      cancelAnimationFrame(scanLoopRef.current)
+      scanLoopRef.current = null
+    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop())
       streamRef.current = null
     }
+    processingRef.current = false
     setScannerMode(null)
-    setScanning(false)
   }, [])
+
+  const handleQrText = useCallback(async (text: string) => {
+    processingRef.current = false
+    try {
+      const parsed = await parseOTPAuthURI(text)
+      stopCamera()
+      onSave({
+        issuer: parsed.issuer,
+        accountName: parsed.account_name,
+        secret: parsed.secret,
+        algorithm: parsed.algorithm,
+        digits: parsed.digits,
+        step: parsed.step,
+      })
+    } catch {
+      setScanError(t('add_account.parse_error'))
+    }
+  }, [stopCamera, onSave, t])
+
+  const processFrame = useCallback(async () => {
+    if (processingRef.current) return
+    const video = videoRef.current
+    const canvas = canvasRef.current
+    if (!video || !canvas || video.readyState < 2) return
+    processingRef.current = true
+    try {
+      const w = Math.min(video.videoWidth, 480)
+      const h = Math.round((w / video.videoWidth) * video.videoHeight)
+      canvas.width = w
+      canvas.height = h
+      const ctx = canvas.getContext('2d')
+      if (!ctx) { processingRef.current = false; return }
+      ctx.drawImage(video, 0, 0, w, h)
+      const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/jpeg', 0.6))
+      if (!blob) { processingRef.current = false; return }
+      const buffer = await blob.arrayBuffer()
+      const bytes = Array.from(new Uint8Array(buffer))
+      try {
+        const text = await scanQrBytes(bytes)
+        if (text) {
+          await handleQrText(text)
+          return
+        }
+      } catch { }
+      processingRef.current = false
+    } catch {
+      processingRef.current = false
+    }
+  }, [handleQrText])
+
+  const scanLoop = useCallback(() => {
+    processFrame().finally(() => {
+      if (streamRef.current && mode === 'qr-scanner') {
+        scanLoopRef.current = requestAnimationFrame(scanLoop)
+      }
+    })
+  }, [processFrame, mode])
+
+  const startCamera = useCallback(async () => {
+    setScanError(null)
+    setScannerMode('camera')
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
+      })
+      streamRef.current = stream
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        videoRef.current.onloadeddata = () => {
+          scanLoopRef.current = requestAnimationFrame(scanLoop)
+        }
+      }
+    } catch {
+      setScanError(t('add_account.camera_error'))
+      setScannerMode(null)
+    }
+  }, [t, scanLoop])
 
   const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     setScanError(null)
-    setScanning(true)
     setScannerMode('file')
     try {
       const buffer = await file.arrayBuffer()
@@ -112,7 +132,6 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
       await handleQrText(text)
     } catch {
       setScanError(t('add_account.scan_failed'))
-      setScanning(false)
       setScannerMode(null)
     }
   }, [handleQrText, t])
@@ -128,6 +147,10 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
     if (mode === 'manual' || mode === 'qr-scanner') setMode('select')
     else onBack()
   }, [mode, onBack, stopCamera])
+
+  useEffect(() => {
+    return () => { if (streamRef.current) stopCamera() }
+  }, [stopCamera])
 
   if (mode === 'select') {
     return (
@@ -226,16 +249,13 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
             <video ref={videoRef} autoPlay playsInline className="absolute inset-0 w-full h-full object-cover" />
             <div className="absolute inset-0 border-[3px] border-primary-400/60 rounded-2xl m-8 pointer-events-none" />
             <div className="absolute inset-0 border-[16px] border-black/40 rounded-2xl pointer-events-none" />
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1 rounded-full flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+              {t('add_account.scanning', 'Scanning...')}
+            </div>
           </div>
           <canvas ref={canvasRef} className="hidden" />
-          <div className="flex gap-3">
-            <Button size="lg" onClick={captureFrame} disabled={scanning}>
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>
-              </svg>
-              {t('add_account.capture')}
-            </Button>
-          </div>
+          <p className="text-surface-400 text-xs">{t('add_account.point_at_qr', 'Point camera at QR code')}</p>
           {scanError && (
             <p className="text-red-500 text-sm bg-red-50 dark:bg-red-950/50 px-4 py-2 rounded-xl">{scanError}</p>
           )}
