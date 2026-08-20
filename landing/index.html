@@ -310,7 +310,7 @@ tailwind.config = {
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="14" height="14" rx="2"/><path d="M9 2v2"/><path d="M13 2v2"/><path d="M4 13h14"/><path d="M4 17h10"/><path d="M18 10v6"/></svg>
         <span data-i18n="hero.download">Download for Windows</span>
       </a>
-      <a id="android-download-link" href="https://github.com/Shadow132245/OtpVault/releases/latest" class="btn-primary" style="background:#3DDC84">
+      <a id="android-download-link" href="/OtpVault.apk" class="btn-primary" style="background:#3DDC84">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.341c-.027.577-.027 1.062-.136 1.571-.108.516-.327.945-.654 1.31a2.766 2.766 0 0 1-1.072.862c-.427.163-.88.246-1.354.246-.49 0-.955-.082-1.395-.246a2.89 2.89 0 0 1-1.1-.862 3.143 3.143 0 0 1-.663-1.31c-.108-.509-.135-.994-.135-1.571V9.68h-.9V7.34c0-.437.149-.81.444-1.119a1.533 1.533 0 0 1 1.14-.505h5.454c.428 0 .797.168 1.072.505.283.336.43.704.444 1.119v2.34h-.9v5.66zM6.462 9.68c.042-.267.135-.544.254-.785.134-.254.296-.462.479-.646a1.56 1.56 0 0 1 .598-.404c.225-.091.463-.136.714-.136.238 0 .463.045.664.136.216.091.405.23.57.404.178.184.333.392.462.646.135.241.235.518.276.785h-3.417zm5.773.091c.295 0 .57-.045.836-.136a2.29 2.29 0 0 0 .723-.404c.216-.184.39-.392.516-.646.134-.254.22-.531.249-.785h3.363c-.042.267-.136.544-.263.785a2.78 2.78 0 0 1-.682.646 2.612 2.612 0 0 1-.863.404c-.327.091-.664.136-1.017.136-.48 0-.937-.082-1.363-.246a2.766 2.766 0 0 1-1.072-.862 3.143 3.143 0 0 1-.663-1.31c-.108-.509-.135-.994-.135-1.571V9.68h-.9V7.34c0-.437.148-.81.444-1.119a1.533 1.533 0 0 1 1.14-.505h5.454c.428 0 .797.168 1.072.505.283.336.43.704.444 1.119v2.34h-.9v5.66c.027.577.027 1.062-.108 1.571zM6.462 9.68z"/></svg>
         <span>Download for Android</span>
       </a>
@@ -607,8 +607,6 @@ fetch('https://api.github.com/repos/Shadow132245/OtpVault/releases/latest')
   .then(d => {
     const msiAsset = d.assets.find(a => a.name.endsWith('_x64_en-US.msi'));
     if (msiAsset) document.getElementById('download-link').href = msiAsset.browser_download_url;
-    const apkAsset = d.assets.find(a => a.name.endsWith('.apk'));
-    if (apkAsset) document.getElementById('android-download-link').href = apkAsset.browser_download_url;
     const badge = document.getElementById('version-badge');
     if (badge) {
       const suffix = currentLang === 'ar' ? '\u0645\u0641\u062a\u0648\u062d \u0627\u0644\u0645\u0635\u062f\u0631' : 'Open Source';

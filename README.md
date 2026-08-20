@@ -56,11 +56,11 @@
 | 💻 32-bit | `OtpVault_x86_en-US.msi` |
 
 ### Android APK
-| Platform | File |
+| Platform | Link |
 |----------|------|
-| 📱 Android (ARM64) | `OtpVault.apk` |
+| 📱 Android | [Download APK](https://otpvault1.vercel.app/OtpVault.apk) |
 
-> Download the APK from [GitHub Releases](https://github.com/Shadow132245/OtpVault/releases/latest) and install it directly on your Android device. Enable "Install from unknown sources" in your settings if prompted.
+> Download the APK directly and install it on your Android device. Enable "Install from unknown sources" in your settings if prompted.
 
 ### PWA (Browser)
 | Platform | Link |
