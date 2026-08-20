@@ -55,29 +55,29 @@ export function OTPDisplay({
       className="card-hover select-none relative overflow-hidden"
       onClick={onCopy}
     >
-      <div className="flex items-center gap-4 p-4">
+      <div className="flex items-center gap-2 sm:gap-4 p-3 sm:p-4">
         <div
-          className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm ${getIssuerColor(issuer)}`}
+          className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-white font-bold text-xs sm:text-sm shrink-0 shadow-sm ${getIssuerColor(issuer)}`}
         >
           {getIssuerInitial(issuer)}
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-surface-900 dark:text-surface-100 truncate text-sm">
+          <p className="font-semibold text-surface-900 dark:text-surface-100 truncate text-xs sm:text-sm">
             {issuer}
           </p>
-          <p className="text-xs text-surface-400 dark:text-surface-500 truncate mt-0.5">
+          <p className="text-[10px] sm:text-xs text-surface-400 dark:text-surface-500 truncate mt-0.5">
             {accountName}
           </p>
         </div>
 
-        <div className="flex items-center gap-4">
-          <span className="font-mono font-bold text-xl tracking-[0.15em] text-surface-900 dark:text-surface-100 tabular-nums">
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          <span className="font-mono font-bold text-base sm:text-xl tracking-[0.1em] sm:tracking-[0.15em] text-surface-900 dark:text-surface-100 tabular-nums">
             {code}
           </span>
 
-          <div className="relative w-9 h-9 flex items-center justify-center">
-            <svg width="36" height="36" viewBox="0 0 36 36" className="transform -rotate-90">
+          <div className="relative w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center shrink-0">
+            <svg width="32" height="32" viewBox="0 0 36 36" className="transform -rotate-90">
               <circle
                 cx="18" cy="18" r="13"
                 fill="none"
@@ -95,7 +95,7 @@ export function OTPDisplay({
                 className={isUrgent ? 'stroke-red-500' : 'stroke-primary-500'}
               />
             </svg>
-            <span className={`absolute text-[10px] font-mono font-medium ${isUrgent ? 'text-red-500' : 'text-surface-400 dark:text-surface-500'}`}>
+            <span className={`absolute text-[9px] sm:text-[10px] font-mono font-medium ${isUrgent ? 'text-red-500' : 'text-surface-400 dark:text-surface-500'}`}>
               {remaining}
             </span>
           </div>
@@ -104,7 +104,7 @@ export function OTPDisplay({
             key={copied ? 'copied' : 'copy'}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-surface-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-950 transition-colors"
+            className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg text-surface-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-950 transition-colors shrink-0"
           >
             {copied ? (
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary-500">
