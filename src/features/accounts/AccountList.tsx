@@ -4,6 +4,7 @@ import { AnimatePresence } from 'motion/react'
 import { AppLayout } from '../../components/layout/AppLayout'
 import { OTPDisplay } from '../../components/ui/OTPDisplay'
 import { Button } from '../../components/ui/Button'
+import { DeleteConfirmModal } from '../../components/ui/DeleteConfirmModal'
 import { generateTotpForAccount } from '../../lib/tauri'
 import type { AccountEntry } from '../../types'
 
@@ -27,6 +28,7 @@ export function AccountList({ accounts, onAdd, onSettings, onHelp, onDelete }: A
   const [totpCodes, setTotpCodes] = useState<Map<string, AccountListItem>>(new Map())
   const [search, setSearch] = useState('')
   const [totpError, setTotpError] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<AccountEntry | null>(null)
 
   const fetchCodes = useCallback(async () => {
     const newCodes = new Map<string, AccountListItem>()
@@ -56,9 +58,17 @@ export function AccountList({ accounts, onAdd, onSettings, onHelp, onDelete }: A
     } catch { /* clipboard not available */ }
   }
 
-  const handleDelete = async (e: React.MouseEvent, id: string) => {
+  const handleDeleteClick = async (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
-    onDelete(id)
+    const acc = accounts.find(a => a.id === id)
+    if (acc) setDeleteTarget(acc)
+  }
+
+  const handleDeleteConfirm = () => {
+    if (deleteTarget) {
+      onDelete(deleteTarget.id)
+      setDeleteTarget(null)
+    }
   }
 
   const filtered = accounts.filter((a) =>
@@ -160,7 +170,7 @@ export function AccountList({ accounts, onAdd, onSettings, onHelp, onDelete }: A
                         copied={copiedId === acc.id}
                       />
                       <button
-                        onClick={(e) => handleDelete(e, acc.id)}
+                        onClick={(e) => handleDeleteClick(e, acc.id)}
                         className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-white dark:bg-surface-700 border border-surface-200 dark:border-surface-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-50 dark:hover:bg-red-950 group"
                       >
                         <svg className="w-3 h-3 text-red-400 group-hover:text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -176,7 +186,12 @@ export function AccountList({ accounts, onAdd, onSettings, onHelp, onDelete }: A
         ))}
       </div>
 
-
+      <DeleteConfirmModal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteConfirm}
+        accountName={deleteTarget ? `${deleteTarget.issuer} (${deleteTarget.account_name})` : ''}
+      />
     </AppLayout>
   )
 }

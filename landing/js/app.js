@@ -82,6 +82,9 @@ window.App = {
       noVaultExport: 'No vault to export', invalidBackup: 'Invalid backup file',
       wrongBackupPass: 'Wrong password', backupImported: 'Backup imported!',
       importFailed: 'Failed to import. Wrong password?', invalidVault: 'Invalid vault data',
+      deleteConfirm: 'Delete Account', deleteConfirmMsg: 'Are you sure you want to delete this account? This action cannot be undone.',
+      deleteConfirmPass: 'Enter your password to confirm', deleteWrongPass: 'Incorrect password',
+      deleteCancel: 'Cancel', deleteDelete: 'Delete', deleteVerifying: 'Verifying...',
     },
     ar: {
       myAccounts: '\u062d\u0633\u0627\u0628\u0627\u062a\u064a', addAccount: '\u0625\u0636\u0627\u0641\u0629 \u062d\u0633\u0627\u0628', settings: '\u0627\u0644\u0625\u0639\u062f\u0627\u062f\u0627\u062a',
@@ -122,6 +125,13 @@ window.App = {
       backupImported: '\u062a\u0645 \u0627\u0633\u062a\u0639\u0645\u0627\u0644 \u0627\u0644\u0646\u0633\u062e\u0629!',
       importFailed: '\u0641\u0634\u0644 \u0627\u0644\u0627\u0633\u062a\u0639\u0645\u0627\u0644. \u0643\u0644\u0645\u0629 \u0645\u0631\u0648\u0631 \u063a\u064a\u0631 \u0635\u0627\u0644\u062d\u0629\u061f',
       invalidVault: '\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u062e\u0632\u0646 \u063a\u064a\u0631 \u0635\u0627\u0644\u062d\u0629',
+      deleteConfirm: '\u062d\u0630\u0641 \u0627\u0644\u062d\u0633\u0627\u0628',
+      deleteConfirmMsg: '\u0647\u0644 \u0623\u0646\u062a \u0645\u062a\u0623\u0643\u062f \u0645\u0646 \u062d\u0630\u0641 \u0647\u0630\u0627 \u0627\u0644\u062d\u0633\u0627\u0628\u061f \u0647\u0630\u0647 \u0627\u0644\u0639\u0645\u0644\u064a\u0629 \u063a\u064a\u0631 \u0642\u0627\u0628\u0644\u0629 \u0644\u0644\u062a\u0631\u0627\u062c\u0639.',
+      deleteConfirmPass: '\u0623\u062f\u062e\u0644 \u0643\u0644\u0645\u0629 \u0645\u0631\u0648\u0631\u0643 \u0644\u0644\u062a\u0623\u0643\u064a\u062f',
+      deleteWrongPass: '\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u063a\u064a\u0631 \u0635\u0627\u0644\u062d\u0629',
+      deleteCancel: '\u0625\u0644\u063a\u0627\u0621',
+      deleteDelete: '\u062d\u0630\u0641',
+      deleteVerifying: '\u062c\u0627\u0631\u064a \u0627\u0644\u062a\u062d\u0642\u0642...',
     }
   },
 
@@ -600,10 +610,81 @@ window.App = {
   },
 
   async deleteAccount(idx) {
-    if (!confirm('Delete this account?')) return;
-    this.accounts.splice(idx, 1);
-    await this._saveVault();
-    this._renderAccounts();
+    const acc = this.accounts[idx];
+    const name = acc ? `${acc.issuer} (${acc.accountName || acc.account_name || ''})` : '';
+    this._showDeleteConfirm(name, idx);
+  },
+
+  _showDeleteConfirm(name, idx) {
+    const existing = document.getElementById('delete-confirm-modal');
+    if (existing) existing.remove();
+    const overlay = document.createElement('div');
+    overlay.id = 'delete-confirm-modal';
+    overlay.className = 'fixed inset-0 z-[100] flex items-center justify-center p-4';
+    overlay.innerHTML = `
+      <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" id="dc-overlay"></div>
+      <div class="relative bg-surface-800 rounded-2xl shadow-2xl w-full max-w-sm p-6 flex flex-col gap-4 animate-fade-in">
+        <h3 class="text-base font-semibold text-surface-100">${this._t('deleteConfirm')}</h3>
+        <p class="text-sm text-surface-300">${this._t('deleteConfirmMsg')}</p>
+        <div>
+          <label class="block text-xs font-medium text-surface-400 mb-1.5">${this._t('deleteConfirmPass')}</label>
+          <input type="password" id="dc-password" placeholder="${this._t('password')}"
+            class="w-full px-3 py-2.5 text-sm rounded-xl bg-surface-700/50 border border-surface-600 text-surface-100 placeholder-surface-400 focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-500/20 transition-all"
+            autocomplete="current-password" />
+          <p id="dc-error" class="text-xs text-red-400 mt-1 hidden"></p>
+        </div>
+        <div class="flex gap-3 pt-1">
+          <button id="dc-cancel" class="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl text-surface-400 hover:text-surface-200 hover:bg-surface-700 transition-all">${this._t('deleteCancel')}</button>
+          <button id="dc-confirm" class="flex-1 px-4 py-2.5 text-sm font-medium rounded-xl bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-sm shadow-red-600/20 transition-all">${this._t('deleteDelete')}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const close = () => overlay.remove();
+    document.getElementById('dc-overlay').onclick = close;
+    document.getElementById('dc-cancel').onclick = close;
+
+    const pwInput = document.getElementById('dc-password');
+    const errorEl = document.getElementById('dc-error');
+    const confirmBtn = document.getElementById('dc-confirm');
+
+    const doDelete = async () => {
+      const pw = pwInput.value.trim();
+      if (!pw) { errorEl.textContent = this._t('deleteConfirmPass'); errorEl.classList.remove('hidden'); return; }
+      confirmBtn.textContent = this._t('deleteVerifying');
+      confirmBtn.disabled = true;
+      try {
+        const testPayload = StorageService.loadTestPayload();
+        const salt = StorageService.loadSalt();
+        let valid = false;
+        if (testPayload && salt) {
+          valid = await CryptoService.verifyTestPayload(testPayload, pw, salt);
+        } else {
+          valid = true;
+        }
+        if (valid) {
+          close();
+          this.accounts.splice(idx, 1);
+          await this._saveVault();
+          this._renderAccounts();
+          this._toast(this._t('deleted'), 'success');
+        } else {
+          errorEl.textContent = this._t('deleteWrongPass');
+          errorEl.classList.remove('hidden');
+          pwInput.value = '';
+          confirmBtn.textContent = this._t('deleteDelete');
+          confirmBtn.disabled = false;
+        }
+      } catch (e) {
+        errorEl.textContent = String(e);
+        errorEl.classList.remove('hidden');
+        confirmBtn.textContent = this._t('deleteDelete');
+        confirmBtn.disabled = false;
+      }
+    };
+    confirmBtn.onclick = doDelete;
+    pwInput.onkeydown = (e) => { if (e.key === 'Enter') doDelete(); };
+    pwInput.focus();
   },
 
   // ===== ADD ACCOUNT =====

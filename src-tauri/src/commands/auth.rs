@@ -38,3 +38,8 @@ pub fn lock_vault(vault: State<'_, VaultManager>) -> Result<(), String> {
     vault.0.lock().unwrap().lock();
     Ok(())
 }
+
+#[tauri::command]
+pub fn verify_password(app: tauri::AppHandle, password: String) -> Result<bool, String> {
+    Keychain::verify_password(&app, &password).map_err(|e| e.to_string())
+}

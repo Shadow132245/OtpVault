@@ -138,5 +138,15 @@
     "lock_desc": "Use the Lock button in Settings to lock your vault without closing the app. Log Out will clear saved credentials and return to the welcome screen.",
     "settings_title": "Settings",
     "settings_desc": "In Settings you can change the language (English/Arabic), toggle dark/light theme, export/import backups, lock the vault, or log out completely."
+  },
+  "delete_confirm": {
+    "title": "Delete Account",
+    "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+    "password_label": "Enter your password to confirm",
+    "password_placeholder": "Your account password",
+    "wrong_password": "Incorrect password",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "verifying": "Verifying..."
   }
 }

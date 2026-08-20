@@ -104,4 +104,34 @@ impl Keychain {
         store.save().map_err(|e| VaultError::Storage(e.to_string()))?;
         Ok(())
     }
+
+    pub fn verify_password(app: &AppHandle, password: &str) -> Result<bool, VaultError> {
+        use aes_gcm::{Aes256Gcm, Key, KeyInit, Nonce};
+        use aes_gcm::aead::Aead;
+        use argon2::Argon2;
+
+        let salt = Self::load_salt(app)?;
+        let test_payload = Self::load_test_payload(app)?;
+        if test_payload.is_empty() {
+            return Ok(true);
+        }
+
+        let mut key = vec![0u8; 32];
+        Argon2::default()
+            .hash_password_into(password.as_bytes(), &salt, &mut key)
+            .map_err(|e| VaultError::KeyDerivation(e.to_string()))?;
+
+        if test_payload.len() < 32 + 12 {
+            return Ok(false);
+        }
+        let nonce = Nonce::from_slice(&test_payload[32..44]);
+        let ciphertext = &test_payload[44..];
+        let aes_key = Key::<Aes256Gcm>::from_slice(&key);
+        let cipher = Aes256Gcm::new(aes_key);
+
+        match cipher.decrypt(nonce, ciphertext) {
+            Ok(decrypted) => Ok(decrypted == b"OTPVAULT_INIT"),
+            Err(_) => Ok(false),
+        }
+    }
 }

@@ -109,3 +109,7 @@ export async function clearRememberMe(): Promise<void> {
 export async function pullVaultFromCloud(): Promise<boolean> {
   return invoke('pull_vault_from_cloud')
 }
+
+export async function verifyPassword(password: string): Promise<boolean> {
+  return invoke('verify_password', { password })
+}

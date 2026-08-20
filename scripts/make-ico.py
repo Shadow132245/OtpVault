@@ -1,6 +1,6 @@
 import struct, os, glob
 
-icons_dir = r'C:\Users\Admin\Desktop\OtpVault\src-tauri\icons'
+icons_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src-tauri', 'icons')
 sizes = [32, 128, 256]
 files = {32: '32x32.png', 128: '128x128.png', 256: '128x128@2x.png'}
 
