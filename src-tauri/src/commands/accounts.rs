@@ -227,6 +227,15 @@ pub async fn pull_vault_from_cloud(
     let mut local_vault = load_vault(&app).map_err(|e| e.to_string())?;
     let local_ids: HashSet<String> = local_vault.accounts.iter().map(|a| a.id.clone()).collect();
 
+    let cloud_ids: HashSet<String> = cloud_accounts.iter()
+        .filter_map(|a| a.get("id").and_then(|v| v.as_str()))
+        .map(|s| s.to_string())
+        .collect();
+
+    let before_count = local_vault.accounts.len();
+    local_vault.accounts.retain(|a| cloud_ids.contains(&a.id));
+    let removed = before_count - local_vault.accounts.len();
+
     let mut added = 0u32;
     for acc in cloud_accounts {
         let id = acc.get("id").and_then(|v| v.as_str()).unwrap_or("").to_string();
@@ -264,10 +273,10 @@ pub async fn pull_vault_from_cloud(
         added += 1;
     }
 
-    if added > 0 {
+    if added > 0 || removed > 0 {
         save_vault(&app, &local_vault).map_err(|e| e.to_string())?;
-        log::info!("Pulled {} accounts from cloud", added);
+        log::info!("Cloud sync: added {}, removed {}", added, removed);
     }
 
-    Ok(added > 0)
+    Ok(added > 0 || removed > 0)
 }

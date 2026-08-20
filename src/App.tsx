@@ -86,7 +86,7 @@ function App() {
       } catch {}
     }
     poll()
-    const id = setInterval(poll, 10000)
+    const id = setInterval(poll, 3000)
     return () => clearInterval(id)
   }, [vault.unlocked])
 
@@ -145,6 +145,7 @@ function App() {
       await addAccount(data)
       await loadAccounts()
       setScreen('accounts')
+      pullVaultFromCloud().then(changed => { if (changed) loadAccounts() })
     } catch (e) {
       setError(String(e))
     }
@@ -154,6 +155,7 @@ function App() {
     try {
       await deleteAccount(id)
       await loadAccounts()
+      pullVaultFromCloud().then(changed => { if (changed) loadAccounts() })
     } catch (e) {
       setError(String(e))
     }

@@ -395,7 +395,7 @@ window.App = {
   _startCloudSync() {
     if (this._syncIntervalId) clearInterval(this._syncIntervalId);
     this._pullFromCloud();
-    this._syncIntervalId = setInterval(() => this._pullFromCloud(), 10000);
+    this._syncIntervalId = setInterval(() => this._pullFromCloud(), 3000);
   },
 
   _stopCloudSync() {
@@ -415,8 +415,12 @@ window.App = {
       const data = JSON.parse(decrypted);
       if (!data.accounts) return;
       const remoteAccounts = data.accounts;
-      const localIds = new Set(this.accounts.map(a => a.id));
+      const remoteIds = new Set(remoteAccounts.map(a => a.id));
       let changed = false;
+      const beforeCount = this.accounts.length;
+      this.accounts = this.accounts.filter(a => remoteIds.has(a.id));
+      if (this.accounts.length < beforeCount) changed = true;
+      const localIds = new Set(this.accounts.map(a => a.id));
       for (const acc of remoteAccounts) {
         if (localIds.has(acc.id)) continue;
         if (acc.secret_encrypted) {
@@ -667,6 +671,7 @@ window.App = {
           this.accounts.splice(idx, 1);
           await this._saveVault();
           this._renderAccounts();
+          this._pullFromCloud();
           this._toast(this._t('deleted'), 'success');
         } else {
           errorEl.textContent = this._t('deleteWrongPass');
@@ -796,7 +801,7 @@ window.App = {
     }
   },
 
-  _addManual() {
+  async _addManual() {
     const issuer = document.getElementById('add-issuer').value.trim();
     const accountName = document.getElementById('add-account-name').value.trim();
     const secret = document.getElementById('add-secret').value.trim().toUpperCase().replace(/\s/g, '');
@@ -809,7 +814,8 @@ window.App = {
       step: parseInt(document.getElementById('add-step').value),
       icon: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     });
-    this._saveVault();
+    await this._saveVault();
+    this._pullFromCloud();
     this._toast(this._t('accountAdded'), 'success');
     this.navigate('accounts');
   },
@@ -821,7 +827,7 @@ window.App = {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('Camera API not supported');
       }
-      await QRScanner.scanFromCamera((data) => {
+      await QRScanner.scanFromCamera(async (data) => {
         const parsed = TOTP.parseURI(data);
         if (parsed) {
           this.accounts.push({
@@ -830,7 +836,8 @@ window.App = {
             digits: parsed.digits || 6, step: parsed.period || 30,
             icon: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
           });
-          this._saveVault();
+          await this._saveVault();
+          this._pullFromCloud();
           this._toast(this._t('accountAdded'), 'success');
           this.navigate('accounts');
         } else { this._toast(this._t('notValid'), 'error'); }
@@ -842,7 +849,7 @@ window.App = {
     }
   },
 
-  _captureQR() {
+  async _captureQR() {
     const data = QRScanner.captureFrame();
     if (data) {
       const parsed = TOTP.parseURI(data);
@@ -853,7 +860,8 @@ window.App = {
           digits: parsed.digits || 6, step: parsed.period || 30,
           icon: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
         });
-        this._saveVault();
+        await this._saveVault();
+        this._pullFromCloud();
         this._toast(this._t('accountAdded'), 'success');
         document.getElementById('qr-camera-wrap').classList.add('hidden');
         this.navigate('accounts');
@@ -867,7 +875,7 @@ window.App = {
 
   _handleQRFile(input) {
     const file = input.files[0]; if (!file) return;
-    QRScanner.scanFromFile(file, (data) => {
+    QRScanner.scanFromFile(file, async (data) => {
       const parsed = TOTP.parseURI(data);
       if (parsed) {
         this.accounts.push({
@@ -876,7 +884,8 @@ window.App = {
           digits: parsed.digits || 6, step: parsed.period || 30,
           icon: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
         });
-        this._saveVault();
+        await this._saveVault();
+        this._pullFromCloud();
         this._toast(this._t('accountAdded'), 'success');
         this.navigate('accounts');
       } else { this._toast(this._t('notValid'), 'error'); }
