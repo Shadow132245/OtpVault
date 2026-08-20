@@ -49,6 +49,17 @@ jobs:
           rm -rf src-tauri/gen/android
           npx tauri android init
 
+      - name: Copy Android Icons
+        run: |
+          RES="src-tauri/gen/android/app/src/main/res"
+          cp src-tauri/icons/android/mipmap-mdpi.png "$RES/mipmap-mdpi/ic_launcher.png"
+          cp src-tauri/icons/android/mipmap-hdpi.png "$RES/mipmap-hdpi/ic_launcher.png"
+          cp src-tauri/icons/android/mipmap-xhdpi.png "$RES/mipmap-xhdpi/ic_launcher.png"
+          cp src-tauri/icons/android/mipmap-xxhdpi.png "$RES/mipmap-xxhdpi/ic_launcher.png"
+          cp src-tauri/icons/android/mipmap-xxxhdpi.png "$RES/mipmap-xxxhdpi/ic_launcher.png"
+          cp src-tauri/icons/android/mipmap-xxxhdpi.png "$RES/mipmap-xxxhdpi/ic_launcher_round.png"
+          echo "Android icons replaced successfully"
+
       - name: Patch Android Permissions
         run: python3 scripts/patch-android-permissions.py src-tauri/gen/android/app/src/main/AndroidManifest.xml
 
@@ -58,7 +69,7 @@ jobs:
       - name: Set Android Version Info
         run: |
           echo "tauri.android.versionCode=1" > src-tauri/gen/android/app/tauri.properties
-          echo "tauri.android.versionName=0.1.9" >> src-tauri/gen/android/app/tauri.properties
+          echo "tauri.android.versionName=0.2.0" >> src-tauri/gen/android/app/tauri.properties
 
       - name: Generate Keystore and Patch Signing
         run: |
