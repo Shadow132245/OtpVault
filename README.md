@@ -8,7 +8,7 @@
   [![License: MIT](https://img.shields.io/badge/License-MIT-indigo.svg)](LICENSE)
   [![Windows](https://img.shields.io/badge/Windows-0078D6?logo=windows)](https://github.com/Shadow132245/OtpVault/releases/latest)
   [![PWA](https://img.shields.io/badge/PWA-Supported-blue?logo=pwa)](https://otpvault1.vercel.app)
-  [![Android](https://img.shields.io/badge/Android-3DDC84?logo=android)](https://github.com/Shadow132245/OtpVault/releases/latest)
+  [![Android](https://img.shields.io/badge/Android-3DDC84?logo=android)](https://otpvault1.vercel.app/OtpVault-APK.zip)
 
   <br>
 
@@ -16,7 +16,7 @@
     <a href="https://github.com/Shadow132245/OtpVault/releases/latest">
       <img src="https://img.shields.io/badge/Download_for_Windows-6366f1?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows"/>
     </a>
-    <a href="https://github.com/Shadow132245/OtpVault/releases/latest">
+    <a href="https://otpvault1.vercel.app/OtpVault-APK.zip">
       <img src="https://img.shields.io/badge/Download_APK_Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download APK for Android"/>
     </a>
     <a href="https://otpvault1.vercel.app">
