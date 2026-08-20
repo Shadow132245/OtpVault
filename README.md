@@ -58,9 +58,9 @@
 ### Android APK
 | Platform | Link |
 |----------|------|
-| 📱 Android | [Download APK](https://otpvault1.vercel.app/OtpVault.apk) |
+| 📱 Android | [Download APK](https://otpvault1.vercel.app/OtpVault-APK.zip) |
 
-> Download the APK directly and install it on your Android device. Enable "Install from unknown sources" in your settings if prompted.
+> Download the ZIP file, extract the APK, and install it on your Android device. Enable "Install from unknown sources" in your settings if prompted.
 
 ### PWA (Browser)
 | Platform | Link |
