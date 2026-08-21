@@ -591,7 +591,12 @@ let currentLang = localStorage.getItem('landing-lang') || 'en';
 function switchLanguage(lang) {
   currentLang = lang;
   localStorage.setItem('landing-lang', lang);
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  document.documentElement.lang = lang;
   translate(lang);
+  if (typeof App !== 'undefined' && App.screen) {
+    App.navigate(App.screen);
+  }
 }
 translate(currentLang);
 

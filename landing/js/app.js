@@ -378,7 +378,30 @@ window.App = {
       const salt = StorageService.loadSalt();
       if (!encrypted || !salt) { this.accounts = []; return; }
       const json = await CryptoService.decryptVault(encrypted, this.password, salt);
-      this.accounts = JSON.parse(json).accounts || [];
+      const data = JSON.parse(json);
+      const accounts = data.accounts || [];
+      let changed = false;
+      for (const a of accounts) {
+        if (a.secret_encrypted && !a.secret) {
+          try {
+            const bytes = CryptoService._b64ToBytes(a.secret_encrypted);
+            const saltBytes = bytes.slice(0, 32);
+            const iv = bytes.slice(32, 44);
+            const ciphertext = bytes.slice(44);
+            const key = await CryptoService._deriveKeyArgon2id(this.password, btoa(String.fromCharCode(...saltBytes)));
+            const dec = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext);
+            a.secret = new TextDecoder().decode(dec);
+            delete a.secret_encrypted;
+            changed = true;
+          } catch { }
+        }
+      }
+      this.accounts = accounts;
+      if (changed) {
+        const vaultJson = JSON.stringify({ version: 1, accounts: this.accounts });
+        const enc = await CryptoService.encryptVault(vaultJson, this.password, salt);
+        StorageService.saveVaultData(enc);
+      }
     } catch { this.accounts = []; }
   },
 
@@ -577,6 +600,7 @@ window.App = {
     const circumference = 2 * Math.PI * 13;
     for (let i = 0; i < this.accounts.length; i++) {
       const a = this.accounts[i];
+      if (!a.secret) continue;
       const codeEl = document.getElementById(`code-${i}`);
       const ringEl = document.getElementById(`ring-${i}`);
       const timerEl = document.getElementById(`timer-${i}`);
