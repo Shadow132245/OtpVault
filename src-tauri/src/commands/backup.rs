@@ -4,12 +4,6 @@ use base64::Engine;
 use std::path::PathBuf;
 use tauri::State;
 
-fn backup_path(app: &tauri::AppHandle) -> PathBuf {
-    let dir = app.path().app_data_dir().unwrap_or_else(|_| PathBuf::from("."));
-    std::fs::create_dir_all(&dir).ok();
-    dir.join("backup.otpvault")
-}
-
 #[tauri::command]
 pub fn export_backup(app: tauri::AppHandle, vault: State<'_, VaultManager>, export_path: String) -> Result<(), String> {
     let data = vault::load_vault(&app).map_err(|e| e.to_string())?;
