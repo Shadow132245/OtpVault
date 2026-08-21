@@ -108,15 +108,16 @@ pub async fn email_sign_in(
     email: String,
     password: String,
 ) -> Result<bool, String> {
-    let local_salt = Keychain::load_salt(&app);
+    let email = email.trim().to_lowercase();
+    let local_email = Keychain::load_email(&app);
 
-    let (salt, test_payload) = match local_salt {
-        Ok(s) => {
-            let tp = Keychain::load_test_payload(&app).map_err(|e| e.to_string())?;
-            (s, tp)
-        }
-        Err(_) => {
-            log::info!("No local vault, fetching from Neon for {}", email);
+    let should_fetch = match &local_email {
+        Some(le) => le.to_lowercase() != email,
+        None => true,
+    };
+
+    let (salt, test_payload) = if should_fetch {
+            log::info!("Fetching vault from Neon for {}", email);
 
             let row = neon::fetch_vault(&email).await?;
 
@@ -145,7 +146,10 @@ pub async fn email_sign_in(
             log::info!("Vault restored from Neon for {}", email);
 
             (salt, test_payload)
-        }
+    } else {
+        let s = Keychain::load_salt(&app).map_err(|e| e.to_string())?;
+        let tp = Keychain::load_test_payload(&app).map_err(|e| e.to_string())?;
+        (s, tp)
     };
 
     let ok = vault_state
