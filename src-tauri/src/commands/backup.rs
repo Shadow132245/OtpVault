@@ -2,7 +2,14 @@ use crate::crypto::vault::{self, VaultData};
 use crate::commands::auth::VaultManager;
 use base64::Engine;
 use std::path::PathBuf;
-use tauri::State;
+use tauri::{Manager, State};
+
+fn android_backup_dir(app: &tauri::AppHandle) -> PathBuf {
+    let dir = app.path().app_data_dir().unwrap_or_else(|_| PathBuf::from("."));
+    let backups = dir.join("backups");
+    std::fs::create_dir_all(&backups).ok();
+    backups
+}
 
 #[tauri::command]
 pub fn export_backup(app: tauri::AppHandle, vault: State<'_, VaultManager>, export_path: String) -> Result<(), String> {
@@ -12,18 +19,28 @@ pub fn export_backup(app: tauri::AppHandle, vault: State<'_, VaultManager>, expo
     drop(vault_state);
     let b64 = base64::engine::general_purpose::STANDARD.encode(&encrypted);
 
-    let path = PathBuf::from(&export_path);
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| format!("Failed to create directory: {}", e))?;
-    }
-    std::fs::write(&path, &b64).map_err(|e| format!("Write failed: {}", e))?;
-    log::info!("Backup exported to {}", export_path);
+    #[cfg(target_os = "android")]
+    let write_path = {
+        let dir = android_backup_dir(&app);
+        let filename = PathBuf::from(&export_path)
+            .file_name()
+            .map(|f| f.to_owned())
+            .unwrap_or_else(|| "backup.otpvault".into());
+        dir.join(filename)
+    };
+    #[cfg(not(target_os = "android"))]
+    let write_path = PathBuf::from(&export_path);
+
+    std::fs::write(&write_path, &b64).map_err(|e| format!("Write failed: {}", e))?;
+    log::info!("Backup exported to {:?}", write_path);
     Ok(())
 }
 
 #[tauri::command]
 pub fn import_backup(app: tauri::AppHandle, vault: State<'_, VaultManager>, import_path: String) -> Result<(), String> {
-    let b64 = std::fs::read_to_string(&import_path).map_err(|e| format!("Read failed: {}", e))?;
+    let read_path = PathBuf::from(&import_path);
+
+    let b64 = std::fs::read_to_string(&read_path).map_err(|e| format!("Read failed: {}", e))?;
     let vault_state = vault.0.lock().unwrap();
     let encrypted = base64::engine::general_purpose::STANDARD
         .decode(b64.trim())
