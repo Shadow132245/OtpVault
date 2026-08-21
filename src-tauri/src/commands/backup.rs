@@ -1,7 +1,14 @@
 use crate::crypto::vault::{self, VaultData};
 use crate::commands::auth::VaultManager;
 use base64::Engine;
+use std::path::PathBuf;
 use tauri::State;
+
+fn backup_path(app: &tauri::AppHandle) -> PathBuf {
+    let dir = app.path().app_data_dir().unwrap_or_else(|_| PathBuf::from("."));
+    std::fs::create_dir_all(&dir).ok();
+    dir.join("backup.otpvault")
+}
 
 #[tauri::command]
 pub fn export_backup(app: tauri::AppHandle, vault: State<'_, VaultManager>, export_path: String) -> Result<(), String> {
@@ -10,8 +17,13 @@ pub fn export_backup(app: tauri::AppHandle, vault: State<'_, VaultManager>, expo
     let encrypted = vault_state.encrypt(&serde_json::to_vec(&data).unwrap()).map_err(|e| e.to_string())?;
     drop(vault_state);
     let b64 = base64::engine::general_purpose::STANDARD.encode(&encrypted);
-    std::fs::write(&export_path, b64).map_err(|e| format!("Write failed: {}", e))?;
-    log::info!("Backup exported");
+
+    let path = PathBuf::from(&export_path);
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| format!("Failed to create directory: {}", e))?;
+    }
+    std::fs::write(&path, &b64).map_err(|e| format!("Write failed: {}", e))?;
+    log::info!("Backup exported to {}", export_path);
     Ok(())
 }
 
