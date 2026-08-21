@@ -177,7 +177,7 @@ function App() {
   const handleExport = async () => {
     try {
       if (isAndroid) {
-        const result = await exportBackup()
+        await exportBackup()
       } else {
         const path = await save({ filters: [{ name: 'OtpVault Backup', extensions: ['json'] }] })
         if (!path) return
