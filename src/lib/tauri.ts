@@ -70,12 +70,12 @@ export async function getAccountCount(): Promise<number> {
   return invoke('get_account_count')
 }
 
-export async function exportBackup(path: string): Promise<void> {
-  return invoke('export_backup', { exportPath: path })
+export async function exportBackup(path?: string): Promise<string> {
+  return invoke('export_backup', { exportPath: path ?? null })
 }
 
-export async function importBackup(path: string): Promise<void> {
-  return invoke('import_backup', { importPath: path })
+export async function importBackup(path?: string): Promise<void> {
+  return invoke('import_backup', { importPath: path ?? null })
 }
 
 export async function scanQrFile(path: string): Promise<string> {

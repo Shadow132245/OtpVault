@@ -4,43 +4,48 @@ use base64::Engine;
 use std::path::PathBuf;
 use tauri::{Manager, State};
 
-fn android_backup_dir(app: &tauri::AppHandle) -> PathBuf {
+fn backup_file(app: &tauri::AppHandle) -> PathBuf {
     let dir = app.path().app_data_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let backups = dir.join("backups");
-    std::fs::create_dir_all(&backups).ok();
-    backups
+    std::fs::create_dir_all(&dir).ok();
+    dir.join("backup.json")
 }
 
 #[tauri::command]
-pub fn export_backup(app: tauri::AppHandle, vault: State<'_, VaultManager>, export_path: String) -> Result<(), String> {
+pub fn export_backup(app: tauri::AppHandle, vault: State<'_, VaultManager>, export_path: Option<String>) -> Result<String, String> {
     let data = vault::load_vault(&app).map_err(|e| e.to_string())?;
     let vault_state = vault.0.lock().unwrap();
     let encrypted = vault_state.encrypt(&serde_json::to_vec(&data).unwrap()).map_err(|e| e.to_string())?;
     drop(vault_state);
     let b64 = base64::engine::general_purpose::STANDARD.encode(&encrypted);
 
-    #[cfg(target_os = "android")]
-    let write_path = {
-        let dir = android_backup_dir(&app);
-        let filename = PathBuf::from(&export_path)
-            .file_name()
-            .map(|f| f.to_owned())
-            .unwrap_or_else(|| "backup.otpvault".into());
-        dir.join(filename)
+    let path = match export_path {
+        Some(p) if !p.is_empty() => {
+            let pb = PathBuf::from(&p);
+            let mut final_path = pb;
+            if final_path.extension().is_none() {
+                final_path.set_extension("json");
+            }
+            if let Some(parent) = final_path.parent() {
+                std::fs::create_dir_all(parent).map_err(|e| format!("Failed to create directory: {}", e))?;
+            }
+            final_path
+        }
+        _ => backup_file(&app),
     };
-    #[cfg(not(target_os = "android"))]
-    let write_path = PathBuf::from(&export_path);
 
-    std::fs::write(&write_path, &b64).map_err(|e| format!("Write failed: {}", e))?;
-    log::info!("Backup exported to {:?}", write_path);
-    Ok(())
+    std::fs::write(&path, &b64).map_err(|e| format!("Write failed: {}", e))?;
+    log::info!("Backup exported to {:?}", path);
+    Ok(path.to_string_lossy().to_string())
 }
 
 #[tauri::command]
-pub fn import_backup(app: tauri::AppHandle, vault: State<'_, VaultManager>, import_path: String) -> Result<(), String> {
-    let read_path = PathBuf::from(&import_path);
+pub fn import_backup(app: tauri::AppHandle, vault: State<'_, VaultManager>, import_path: Option<String>) -> Result<(), String> {
+    let path = match import_path {
+        Some(p) if !p.is_empty() => PathBuf::from(&p),
+        _ => backup_file(&app),
+    };
 
-    let b64 = std::fs::read_to_string(&read_path).map_err(|e| format!("Read failed: {}", e))?;
+    let b64 = std::fs::read_to_string(&path).map_err(|e| format!("Read failed: {}", e))?;
     let vault_state = vault.0.lock().unwrap();
     let encrypted = base64::engine::general_purpose::STANDARD
         .decode(b64.trim())
@@ -49,6 +54,6 @@ pub fn import_backup(app: tauri::AppHandle, vault: State<'_, VaultManager>, impo
     drop(vault_state);
     let data: VaultData = serde_json::from_slice(&decrypted).map_err(|e| format!("Invalid data: {}", e))?;
     vault::save_vault(&app, &data).map_err(|e| e.to_string())?;
-    log::info!("Backup imported");
+    log::info!("Backup imported from {:?}", path);
     Ok(())
 }

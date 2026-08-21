@@ -172,11 +172,17 @@ function App() {
     i18n.changeLanguage(newLang)
   }
 
+  const isAndroid = navigator.userAgent.includes('Android')
+
   const handleExport = async () => {
     try {
-      const path = await save({ filters: [{ name: 'OtpVault Backup', extensions: ['json'] }] })
-      if (!path) return
-      await exportBackup(path)
+      if (isAndroid) {
+        const result = await exportBackup()
+      } else {
+        const path = await save({ filters: [{ name: 'OtpVault Backup', extensions: ['json'] }] })
+        if (!path) return
+        await exportBackup(path)
+      }
     } catch (e) {
       setError(String(e))
     }
@@ -184,9 +190,13 @@ function App() {
 
   const handleImport = async () => {
     try {
-      const path = await open({ filters: [{ name: 'OtpVault Backup', extensions: ['json'] }], multiple: false })
-      if (!path) return
-      await importBackup(path as string)
+      if (isAndroid) {
+        await importBackup()
+      } else {
+        const path = await open({ filters: [{ name: 'OtpVault Backup', extensions: ['json'] }], multiple: false })
+        if (!path) return
+        await importBackup(path as string)
+      }
       await loadAccounts()
     } catch (e) {
       setError(String(e))
