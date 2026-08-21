@@ -68,8 +68,8 @@ jobs:
 
       - name: Set Android Version Info
         run: |
-          echo "tauri.android.versionCode=2" > src-tauri/gen/android/app/tauri.properties
-          echo "tauri.android.versionName=0.2.1" >> src-tauri/gen/android/app/tauri.properties
+          echo "tauri.android.versionCode=3" > src-tauri/gen/android/app/tauri.properties
+          echo "tauri.android.versionName=0.2.2" >> src-tauri/gen/android/app/tauri.properties
 
       - name: Generate Keystore and Patch Signing
         run: |

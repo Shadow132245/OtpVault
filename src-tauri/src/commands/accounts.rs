@@ -273,9 +273,14 @@ pub async fn pull_vault_from_cloud(
         added += 1;
     }
 
+    drop(vault_state);
+
     if added > 0 || removed > 0 {
         save_vault(&app, &local_vault).map_err(|e| e.to_string())?;
         log::info!("Cloud sync: added {}, removed {}", added, removed);
+        if let Err(e) = neon::upload_vault(&app, &vault, &email).await {
+            log::warn!("Re-upload after sync failed: {}", e);
+        }
     }
 
     Ok(added > 0 || removed > 0)

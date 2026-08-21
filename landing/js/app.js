@@ -471,9 +471,7 @@ window.App = {
         changed = true;
       }
       if (changed) {
-        const vaultJson = JSON.stringify({ version: 1, accounts: this.accounts });
-        const encrypted = await CryptoService.encryptVault(vaultJson, this.password, salt);
-        StorageService.saveVaultData(encrypted);
+        await this._saveVault();
         if (this.screen === 'accounts') this._renderAccounts();
       }
     } catch {}
