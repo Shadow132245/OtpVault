@@ -9,7 +9,7 @@ import { SettingsScreen } from './features/settings/SettingsScreen'
 import { HelpGuideModal } from './components/help/HelpGuideModal'
 import { useVault } from './hooks/useVault'
 import { save, open } from '@tauri-apps/plugin-dialog'
-import {
+  import {
   getAccounts,
   addAccount,
   deleteAccount,
@@ -22,6 +22,7 @@ import {
   saveRememberMe,
   clearRememberMe,
   pullVaultFromCloud,
+  isMobile,
 } from './lib/tauri'
 import type { AccountEntry, AddAccountPayload } from './types'
 
@@ -38,7 +39,15 @@ function App() {
   const [screen, setScreen] = useState<Screen>('loading')
   const [accounts, setAccounts] = useState<AccountEntry[]>([])
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
+
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => setSuccess(null), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [success])
   const [vaultExists, setVaultExists] = useState(false)
 
   useEffect(() => {
@@ -172,12 +181,12 @@ function App() {
     i18n.changeLanguage(newLang)
   }
 
-  const isAndroid = navigator.userAgent.includes('Android')
-
   const handleExport = async () => {
     try {
-      if (isAndroid) {
+      const mobile = await isMobile()
+      if (mobile) {
         await exportBackup()
+        setSuccess(t('settings.export_success') || 'Backup exported successfully')
       } else {
         const path = await save({ filters: [{ name: 'OtpVault Backup', extensions: ['json'] }] })
         if (!path) return
@@ -190,14 +199,21 @@ function App() {
 
   const handleImport = async () => {
     try {
-      if (isAndroid) {
-        await importBackup()
+      const mobile = await isMobile()
+      if (mobile) {
+        const path = await open({ multiple: false })
+        if (path) {
+          await importBackup(path as string)
+        } else {
+          await importBackup()
+        }
       } else {
         const path = await open({ filters: [{ name: 'OtpVault Backup', extensions: ['json'] }], multiple: false })
         if (!path) return
         await importBackup(path as string)
       }
       await loadAccounts()
+      setSuccess(t('settings.import_success') || 'Backup imported successfully')
     } catch (e) {
       setError(String(e))
     }
@@ -209,6 +225,12 @@ function App() {
         <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded-lg shadow-lg">
           {error}
           <button className="ml-3 text-red-500 hover:text-red-700" onClick={() => setError(null)}>x</button>
+        </div>
+      )}
+      {success && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded-lg shadow-lg">
+          {success}
+          <button className="ml-3 text-green-500 hover:text-green-700" onClick={() => setSuccess(null)}>x</button>
         </div>
       )}
       <AnimatePresence mode="wait">

@@ -41,6 +41,8 @@ pub fn run() {
             commands::accounts::pull_vault_from_cloud,
             commands::backup::export_backup,
             commands::backup::import_backup,
+            commands::backup::import_backup_content,
+            commands::backup::is_mobile,
             qr_scanner::scan_qr_file,
             qr_scanner::scan_qr_bytes,
         ])

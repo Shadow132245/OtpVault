@@ -4,6 +4,11 @@ use base64::Engine;
 use std::path::PathBuf;
 use tauri::{Manager, State};
 
+#[tauri::command]
+pub fn is_mobile() -> bool {
+    cfg!(target_os = "android") || cfg!(target_os = "ios")
+}
+
 fn backup_file(app: &tauri::AppHandle) -> PathBuf {
     let dir = app.path().app_data_dir().unwrap_or_else(|_| PathBuf::from("."));
     std::fs::create_dir_all(&dir).ok();
@@ -55,5 +60,19 @@ pub fn import_backup(app: tauri::AppHandle, vault: State<'_, VaultManager>, impo
     let data: VaultData = serde_json::from_slice(&decrypted).map_err(|e| format!("Invalid data: {}", e))?;
     vault::save_vault(&app, &data).map_err(|e| e.to_string())?;
     log::info!("Backup imported from {:?}", path);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn import_backup_content(app: tauri::AppHandle, vault: State<'_, VaultManager>, content: String) -> Result<(), String> {
+    let vault_state = vault.0.lock().unwrap();
+    let encrypted = base64::engine::general_purpose::STANDARD
+        .decode(content.trim())
+        .map_err(|e| format!("Invalid backup: {}", e))?;
+    let decrypted = vault_state.decrypt(&encrypted).map_err(|e| e.to_string())?;
+    drop(vault_state);
+    let data: VaultData = serde_json::from_slice(&decrypted).map_err(|e| format!("Invalid data: {}", e))?;
+    vault::save_vault(&app, &data).map_err(|e| e.to_string())?;
+    log::info!("Backup imported from content");
     Ok(())
 }

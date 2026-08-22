@@ -78,6 +78,14 @@ export async function importBackup(path?: string): Promise<void> {
   return invoke('import_backup', { importPath: path ?? null })
 }
 
+export async function importBackupContent(content: string): Promise<void> {
+  return invoke('import_backup_content', { content })
+}
+
+export async function isMobile(): Promise<boolean> {
+  return invoke('is_mobile')
+}
+
 export async function scanQrFile(path: string): Promise<string> {
   return invoke('scan_qr_file', { path })
 }

@@ -86,6 +86,8 @@
     "import_desc": "استعد الخزنة من ملف",
     "export_btn": "تصدير",
     "import_btn": "استيراد",
+    "export_success": "تم تصدير النسخة الاحتياطية بنجاح",
+    "import_success": "تم استيراد النسخة الاحتياطية بنجاح",
     "copyright": "الحقوق"
   },
   "sync": {

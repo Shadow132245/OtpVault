@@ -86,6 +86,8 @@
     "import_desc": "Restore your vault from a file",
     "export_btn": "Export",
     "import_btn": "Import",
+    "export_success": "Backup exported successfully",
+    "import_success": "Backup imported successfully",
     "copyright": "Rights"
   },
   "sync": {
