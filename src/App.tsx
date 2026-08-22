@@ -185,8 +185,8 @@ function App() {
     try {
       const mobile = await isMobile()
       if (mobile) {
-        await exportBackup()
-        setSuccess(t('settings.export_success') || 'Backup exported successfully')
+        const result = await exportBackup()
+        setSuccess(`${t('settings.export_success') || 'Backup exported'}: ${result}`)
       } else {
         const path = await save({ filters: [{ name: 'OtpVault Backup', extensions: ['json'] }] })
         if (!path) return

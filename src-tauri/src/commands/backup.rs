@@ -4,15 +4,27 @@ use base64::Engine;
 use std::path::PathBuf;
 use tauri::{Manager, State};
 
+const BACKUP_FILENAME: &str = "OtpVault-Backup.json";
+
 #[tauri::command]
 pub fn is_mobile() -> bool {
     cfg!(target_os = "android") || cfg!(target_os = "ios")
 }
 
-fn backup_file(app: &tauri::AppHandle) -> PathBuf {
+fn download_backup_path(app: &tauri::AppHandle) -> PathBuf {
+    if let Ok(dir) = app.path().download_dir() {
+        std::fs::create_dir_all(&dir).ok();
+        return dir.join(BACKUP_FILENAME);
+    }
     let dir = app.path().app_data_dir().unwrap_or_else(|_| PathBuf::from("."));
     std::fs::create_dir_all(&dir).ok();
-    dir.join("backup.json")
+    dir.join(BACKUP_FILENAME)
+}
+
+fn internal_backup_path(app: &tauri::AppHandle) -> PathBuf {
+    let dir = app.path().app_data_dir().unwrap_or_else(|_| PathBuf::from("."));
+    std::fs::create_dir_all(&dir).ok();
+    dir.join(BACKUP_FILENAME)
 }
 
 #[tauri::command]
@@ -35,7 +47,7 @@ pub fn export_backup(app: tauri::AppHandle, vault: State<'_, VaultManager>, expo
             }
             final_path
         }
-        _ => backup_file(&app),
+        _ => download_backup_path(&app),
     };
 
     std::fs::write(&path, &b64).map_err(|e| format!("Write failed: {}", e))?;
@@ -47,7 +59,7 @@ pub fn export_backup(app: tauri::AppHandle, vault: State<'_, VaultManager>, expo
 pub fn import_backup(app: tauri::AppHandle, vault: State<'_, VaultManager>, import_path: Option<String>) -> Result<(), String> {
     let path = match import_path {
         Some(p) if !p.is_empty() => PathBuf::from(&p),
-        _ => backup_file(&app),
+        _ => internal_backup_path(&app),
     };
 
     let b64 = std::fs::read_to_string(&path).map_err(|e| format!("Read failed: {}", e))?;

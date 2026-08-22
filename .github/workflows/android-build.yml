@@ -61,7 +61,7 @@ jobs:
           echo "Android icons replaced successfully"
 
       - name: Patch Android Permissions
-        run: python3 scripts/patch-android-permissions.py src-tauri/gen/android/app/src/main/AndroidManifest.xml
+        run: python3 scripts/patch-android-permissions.py src-tauri/gen/android/app/src/main/AndroidManifest.xml src-tauri/gen/android/app/src/main/java/com/otpvault/desktop/MainActivity.kt
 
       - name: Patch Android Fullscreen/Immersive Mode
         run: python3 scripts/patch-android-fullscreen.py src-tauri/gen/android
