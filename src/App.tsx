@@ -34,7 +34,7 @@ type Screen =
   | 'settings'
 
 function App() {
-  const { i18n } = useTranslation()
+  const { t, i18n } = useTranslation()
   const vault = useVault()
   const [screen, setScreen] = useState<Screen>('loading')
   const [accounts, setAccounts] = useState<AccountEntry[]>([])
