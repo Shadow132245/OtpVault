@@ -86,7 +86,7 @@
     "local_only": "Local-Only Mode",
     "local_only_desc": "Disable all cloud sync and backup uploads",
     "biometric": "Unlock with Fingerprint",
-    "biometric_desc": "Use device biometrics (fingerprint / Windows Hello) to unlock",
+    "biometric_desc": "Use device biometrics (e.g. fingerprint) to unlock",
     "export": "Export Backup",
     "import": "Import Backup",
     "about": "About",

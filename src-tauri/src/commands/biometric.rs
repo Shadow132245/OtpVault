@@ -11,10 +11,93 @@ static JAVA_VM: std::sync::atomic::AtomicPtr<jni::sys::JavaVM> =
     std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
 #[cfg(target_os = "android")]
+static NDK_INIT_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+#[cfg(target_os = "android")]
+static NDK_INIT_DONE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+#[cfg(target_os = "android")]
 #[no_mangle]
 pub extern "system" fn JNI_OnLoad(vm: *mut jni::sys::JavaVM, _reserved: *mut std::ffi::c_void) -> i32 {
     JAVA_VM.store(vm, std::sync::atomic::Ordering::Relaxed);
     0x00010006 // JNI_VERSION_1_6
+}
+
+/// Initializes the global `ndk_context` once so robius-authentication's
+/// biometric prompt can find the Java VM and Activity/Application context.
+#[cfg(target_os = "android")]
+fn init_android_env() {
+    use std::sync::atomic::Ordering;
+
+    if NDK_INIT_DONE.load(Ordering::Relaxed) {
+        return;
+    }
+    let _guard = match NDK_INIT_LOCK.lock() {
+        Ok(g) => g,
+        Err(poisoned) => poisoned.into_inner(),
+    };
+    if NDK_INIT_DONE.load(Ordering::Relaxed) {
+        return;
+    }
+
+    let outcome = std::panic::catch_unwind(|| -> Result<(), String> {
+        let vm_ptr = JAVA_VM.load(Ordering::Relaxed);
+        if vm_ptr.is_null() {
+            return Err("Android VM not initialized yet".to_string());
+        }
+        let vm = unsafe { jni::JavaVM::from_raw(vm_ptr) }.map_err(|e| e.to_string())?;
+        let mut env = vm.attach_current_thread().map_err(|e| e.to_string())?;
+
+        // Prefer the current Activity for the biometric dialog; fall back to
+        // the Application context if the Activity is not reachable.
+        let activity = env
+            .call_static_method(
+                "android/app/ActivityThread",
+                "currentActivity",
+                "()Landroid/app/Activity;",
+                &[],
+            )
+            .and_then(|v| v.l())
+            .ok()
+            .filter(|o| !o.is_null());
+        let _ = env.exception_clear();
+
+        let context = match activity {
+            Some(a) => a,
+            None => {
+                let application = env
+                    .call_static_method(
+                        "android/app/ActivityThread",
+                        "currentApplication",
+                        "()Landroid/app/Application;",
+                        &[],
+                    )
+                    .map_err(|e| format!("JNI currentApplication: {}", e))?
+                    .l()
+                    .map_err(|e| e.to_string())?;
+                if application.is_null() {
+                    return Err("Android application context not available yet".to_string());
+                }
+                application
+            }
+        };
+
+        // Promote to a global reference; intentionally leaked for the process lifetime.
+        let global = env.new_global_ref(&context).map_err(|e| e.to_string())?;
+        let ctx_ptr = global.as_raw() as *mut std::ffi::c_void;
+        std::mem::forget(global);
+
+        unsafe {
+            ndk_context::initialize_android_context(vm_ptr as *mut std::ffi::c_void, ctx_ptr);
+        }
+        Ok(())
+    });
+
+    match outcome {
+        Ok(Ok(())) => NDK_INIT_DONE.store(true, Ordering::Relaxed),
+        Ok(Err(e)) => log::warn!("ndk_context init skipped: {}", e),
+        Err(_) => log::warn!("ndk_context init panicked"),
+    }
 }
 
 #[cfg(target_os = "android")]
@@ -87,6 +170,7 @@ fn check_with_context(
 
 #[cfg(target_os = "android")]
 fn device_supports_biometrics() -> Result<bool, String> {
+    init_android_env();
     let outcome = std::panic::catch_unwind(|| -> Result<bool, String> {
         let vm_ptr = JAVA_VM.load(std::sync::atomic::Ordering::Relaxed);
         if vm_ptr.is_null() {
@@ -144,6 +228,7 @@ fn biometric_supported_blocking() -> Result<bool, String> {
 
 #[cfg(target_os = "android")]
 fn run_biometric_prompt() -> Result<bool, String> {
+    init_android_env();
     use robius_authentication::{AndroidText, BiometricStrength, Context, PolicyBuilder, Text, WindowsText};
 
     let policy = PolicyBuilder::new()
