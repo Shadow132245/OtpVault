@@ -3,18 +3,19 @@ use crate::commands::neon;
 use crate::crypto::keychain::Keychain;
 use crate::crypto::vault::{self, VaultState};
 use tauri::AppHandle;
+use tauri::Manager;
 use tauri::State;
 
 #[cfg(target_os = "android")]
 fn device_supports_biometrics() -> Result<bool, String> {
     use jni::objects::{JObject, JValue};
 
-    let android_ctx = ndk_context::android_context().map_err(|e| e.to_string())?;
+    let android_ctx = ndk_context::android_context();
     let vm = unsafe { jni::JavaVM::from_raw(android_ctx.vm() as *mut jni::sys::JavaVM) }
         .map_err(|e| e.to_string())?;
     let mut env = vm.attach_current_thread().map_err(|e| e.to_string())?;
 
-    let context = unsafe { JObject::from_raw(android_ctx.context() as *mut jni::sys::jobject) };
+    let context = unsafe { JObject::from_raw(android_ctx.context() as jni::sys::jobject) };
 
     // API 29+: verify hardware + enrolled fingerprints via BiometricManager
     let has_biometric_manager = env
@@ -26,7 +27,7 @@ fn device_supports_biometrics() -> Result<bool, String> {
         });
     if has_biometric_manager {
         let service_jstr = env.new_string("biometric").map_err(|e| e.to_string())?;
-        let service_obj = unsafe { JObject::from_raw(service_jstr.into_raw() as *mut jni::sys::jobject) };
+        let service_obj: JObject = service_jstr.into();
         let service = env
             .call_method(
                 &context,
@@ -52,7 +53,7 @@ fn device_supports_biometrics() -> Result<bool, String> {
 
     // API 28 fallback: FingerprintManager
     let fm_jstr = env.new_string("fingerprint").map_err(|e| e.to_string())?;
-    let fm_obj = unsafe { JObject::from_raw(fm_jstr.into_raw() as *mut jni::sys::jobject) };
+    let fm_obj: JObject = fm_jstr.into();
     let fm = env
         .call_method(
             &context,
