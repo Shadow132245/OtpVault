@@ -12,7 +12,7 @@ fn run_biometric_prompt() -> Result<bool, String> {
         .password(false)
         .companion(false)
         .build()
-        .map_err(|e| e.to_string())?;
+        .ok_or_else(|| "Failed to build biometric policy".to_string())?;
 
     let text = Text {
         android: AndroidText {

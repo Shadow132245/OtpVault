@@ -318,7 +318,7 @@ pub fn load_vault(app: &AppHandle) -> Result<VaultData, VaultError> {
     let bytes = base64::engine::general_purpose::STANDARD
         .decode(b64)
         .map_err(|e| VaultError::Storage(e.to_string()))?;
-    let data: VaultData = serde_json::from_slice(&bytes)
+    let data: VaultData = serde_json::from_slice::<VaultData>(&bytes)
         .map_err(|e| VaultError::Storage(e.to_string()))?
         .migrate();
     log::info!("Vault loaded ({} accounts)", data.accounts.len());
