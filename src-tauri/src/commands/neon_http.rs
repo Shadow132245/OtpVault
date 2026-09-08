@@ -68,6 +68,11 @@ pub async fn upload_vault(
     vault: &VaultManager,
     email: &str,
 ) -> Result<(), String> {
+    if Keychain::load_settings(app).local_only {
+        log::info!("Local-only mode: skipping cloud upload");
+        return Ok(());
+    }
+
     let data = vault_store::load_vault(app).map_err(|e| e.to_string())?;
     let vault_json = serde_json::to_vec(&data).map_err(|e| e.to_string())?;
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, motion } from 'motion/react'
 import { listen } from '@tauri-apps/api/event'
@@ -24,9 +24,18 @@ import {
   clearRememberMe,
   pullVaultFromCloud,
   isMobile,
+  getSettings,
+  setSettings,
   moveAccount,
 } from './lib/tauri'
-import type { AccountEntry, AddAccountPayload } from './types'
+import type { AccountEntry, AddAccountPayload, AppSettings } from './types'
+
+const DEFAULT_SETTINGS: AppSettings = {
+  auto_lock_seconds: 120,
+  lock_on_hide: true,
+  local_only: false,
+  biometric_enabled: false,
+}
 
 type Screen =
   | 'loading'
@@ -44,6 +53,8 @@ function App() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
+  const [appSettings, setAppSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
+  const lastActivity = useRef(Date.now())
 
   useEffect(() => {
     if (success) {
@@ -83,6 +94,10 @@ function App() {
   }, [])
 
   useEffect(() => {
+    getSettings().then((s) => setAppSettings(s)).catch(() => {})
+  }, [])
+
+  useEffect(() => {
     if (vault.unlocked) {
       loadAccounts()
       setScreen('accounts')
@@ -93,6 +108,7 @@ function App() {
     if (!vault.unlocked) return
     const poll = async () => {
       try {
+        if (appSettings.local_only) return
         const changed = await pullVaultFromCloud()
         if (changed) await loadAccounts()
       } catch {}
@@ -100,7 +116,25 @@ function App() {
     poll()
     const id = setInterval(poll, 3000)
     return () => clearInterval(id)
-  }, [vault.unlocked])
+  }, [vault.unlocked, appSettings.local_only])
+
+  useEffect(() => {
+    if (!vault.unlocked) return
+    const reset = () => { lastActivity.current = Date.now() }
+    const events: (keyof WindowEventMap)[] = ['pointerdown', 'keydown', 'mousemove', 'touchstart']
+    events.forEach((evt) => window.addEventListener(evt, reset, { passive: true }))
+    reset()
+    const id = setInterval(() => {
+      const seconds = appSettings.auto_lock_seconds
+      if (seconds > 0 && Date.now() - lastActivity.current >= seconds * 1000) {
+        handleLock()
+      }
+    }, 1000)
+    return () => {
+      events.forEach((evt) => window.removeEventListener(evt, reset))
+      clearInterval(id)
+    }
+  }, [vault.unlocked, appSettings.auto_lock_seconds])
 
   useEffect(() => {
     const unlisten = listen('lock-vault', async () => {
@@ -167,7 +201,7 @@ function App() {
     try {
       await deleteAccount(id)
       await loadAccounts()
-      pullVaultFromCloud().then(changed => { if (changed) loadAccounts() })
+      if (!appSettings.local_only) pullVaultFromCloud().then(changed => { if (changed) loadAccounts() })
     } catch (e) {
       setError(String(e))
     }
@@ -177,7 +211,16 @@ function App() {
     try {
       await moveAccount(accountId, folderId)
       await loadAccounts()
-      pullVaultFromCloud().then(changed => { if (changed) loadAccounts() })
+      if (!appSettings.local_only) pullVaultFromCloud().then(changed => { if (changed) loadAccounts() })
+    } catch (e) {
+      setError(String(e))
+    }
+  }
+
+  const handleSettingsChanged = async (next: AppSettings) => {
+    setAppSettings(next)
+    try {
+      await setSettings(next)
     } catch (e) {
       setError(String(e))
     }
@@ -301,6 +344,8 @@ function App() {
               onLock={handleLock}
               onLogOut={handleLogOut}
               onHelp={() => setHelpOpen(true)}
+              settings={appSettings}
+              onSettingsChanged={handleSettingsChanged}
               currentLang={i18n.language}
             />
           </motion.div>

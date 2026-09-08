@@ -6,6 +6,7 @@ import { Button } from '../../components/ui/Button'
 import { LegalModal } from '../../components/legal/LegalModal'
 import { termsOfService, privacyPolicy } from '../../lib/legal'
 import { useTheme } from '../../contexts/ThemeContext'
+import type { AppSettings } from '../../types'
 
 interface SettingsScreenProps {
   onBack: () => void
@@ -15,6 +16,8 @@ interface SettingsScreenProps {
   onLock: () => void
   onLogOut: () => void
   onHelp: () => void
+  settings: AppSettings
+  onSettingsChanged: (settings: AppSettings) => void
   currentLang: string
 }
 
@@ -28,13 +31,30 @@ function SettingCard({ children }: { children: React.ReactNode }) {
 
 function SettingRow({ label, value, action }: { label: string; value?: string; action?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between px-4 py-3.5">
-      <div className="flex flex-col">
+    <div className="flex items-center justify-between px-4 py-3.5 gap-3">
+      <div className="flex flex-col min-w-0">
         <span className="text-sm font-medium text-surface-900 dark:text-surface-100">{label}</span>
         {value && <span className="text-xs text-surface-400 mt-0.5">{value}</span>}
       </div>
       {action && <div className="flex items-center gap-2 shrink-0">{action}</div>}
     </div>
+  )
+}
+
+function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button
+      onClick={() => onChange(!on)}
+      aria-checked={on}
+      role="switch"
+      className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-primary-500 ${on ? 'bg-primary-600' : 'bg-surface-300 dark:bg-surface-600'}`}
+    >
+      <motion.div
+        animate={{ x: on ? 22 : 2 }}
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+        className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+      />
+    </button>
   )
 }
 
@@ -46,11 +66,22 @@ export function SettingsScreen({
   onLock,
   onLogOut,
   onHelp,
+  settings,
+  onSettingsChanged,
   currentLang,
 }: SettingsScreenProps) {
   const { t, i18n } = useTranslation()
   const { theme, toggleTheme } = useTheme()
   const [legalView, setLegalView] = useState<'terms' | 'privacy' | null>(null)
+
+  const autoLockOptions = [
+    { value: 30, label: t('settings.seconds_30') },
+    { value: 60, label: t('settings.seconds_60') },
+    { value: 120, label: t('settings.minutes_2') },
+    { value: 300, label: t('settings.minutes_5') },
+    { value: 900, label: t('settings.minutes_15') },
+    { value: 0, label: t('settings.never') },
+  ]
 
   return (
     <AppLayout title={t('settings.title')} onBack={onBack} onHelp={onHelp}>
@@ -94,6 +125,49 @@ export function SettingsScreen({
                     className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
                   />
                 </button>
+              }
+            />
+          </SettingCard>
+        </div>
+
+        <div>
+          <p className="section-label px-1 mb-3">{t('settings.security')}</p>
+          <SettingCard>
+            <SettingRow
+              label={t('settings.auto_lock')}
+              value={t('settings.auto_lock_desc')}
+              action={
+                <select
+                  value={settings.auto_lock_seconds}
+                  onChange={(e) => {
+                    const seconds = Number(e.target.value)
+                    onSettingsChanged({ ...settings, auto_lock_seconds: seconds })
+                  }}
+                  className="px-2.5 py-1.5 text-sm rounded-lg bg-surface-50 dark:bg-surface-700 border border-surface-200 dark:border-surface-600 text-surface-900 dark:text-surface-100 focus:outline-none focus:border-primary-400"
+                >
+                  {autoLockOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              }
+            />
+            <SettingRow
+              label={t('settings.lock_on_hide')}
+              action={
+                <Toggle
+                  on={settings.lock_on_hide}
+                  onChange={(v) => onSettingsChanged({ ...settings, lock_on_hide: v })}
+                />
+              }
+            />
+            <SettingRow
+              label={t('settings.local_only')}
+              value={t('settings.local_only_desc')}
+              action={
+                <Toggle
+                  on={settings.local_only}
+                  onChange={(v) => onSettingsChanged({ ...settings, local_only: v })}
+                />
               }
             />
           </SettingCard>

@@ -7,6 +7,7 @@ mod totp;
 mod tray;
 
 use commands::auth::VaultManager;
+use crate::crypto::keychain::Keychain;
 use crypto::vault::VaultState;
 use std::sync::Mutex;
 
@@ -53,18 +54,40 @@ pub fn run() {
             commands::backup::import_backup,
             commands::backup::import_backup_content,
             commands::backup::is_mobile,
+commands::settings::get_settings,
+            commands::settings::set_settings,
             qr_scanner::scan_qr_file,
             qr_scanner::scan_qr_bytes,
         ])
-        .setup(|_app| {
+        .setup(|app| {
             #[cfg(desktop)]
-            tray::setup_tray(_app.handle()).ok();
+            tray::setup_tray(app.handle()).ok();
             log::info!("OtpVault started");
             Ok(())
         })
         .on_window_event(|window, event| {
-            if let tauri::WindowEvent::CloseRequested { .. } = event {
-                window.hide().ok();
+            match event {
+                tauri::WindowEvent::CloseRequested { .. } => {
+                    window.hide().ok();
+                }
+                tauri::WindowEvent::Focused(false) => {
+                    let settings = Keychain::load_settings(window.app_handle());
+                    if settings.lock_on_hide && settings.auto_lock_seconds > 0 {
+                        let app = window.app_handle().clone();
+                        let auto_lock_ms = settings.auto_lock_seconds * 1000;
+                        tauri::async_runtime::spawn(async move {
+                            std::thread::sleep(std::time::Duration::from_millis(auto_lock_ms));
+                            if let Some(state) = app.try_state::<VaultManager>() {
+                                let mut guard = state.0.lock().unwrap();
+                                if guard.is_unlocked() {
+                                    guard.lock();
+                                    log::info!("Auto-lock: locked after focus loss");
+                                }
+                            }
+                        });
+                    }
+                }
+                _ => {}
             }
         })
         .run(tauri::generate_context!())
