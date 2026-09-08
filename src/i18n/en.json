@@ -55,6 +55,7 @@
     "step": "Step (seconds)",
     "save": "Add Account",
     "scan_instruction": "Point camera at QR code",
+    "scan_hint": "Make sure the QR code fills the frame and is in focus",
     "upload_qr": "Upload QR image",
     "use_camera": "Use Camera",
     "capture": "Capture",

@@ -26,12 +26,15 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
   const [folderId, setFolderId] = useState('')
   const [tags, setTags] = useState('')
   const [scanError, setScanError] = useState<string | null>(null)
+  const [scanHint, setScanHint] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const scanLoopRef = useRef<number | null>(null)
   const processingRef = useRef(false)
+  const lastScanRef = useRef(0)
+  const scanStartedAtRef = useRef(0)
 
   const parseTags = (value: string): string[] =>
     value.split(',').map(s => s.trim()).filter(Boolean).filter((s, i, a) => a.indexOf(s) === i)
@@ -47,6 +50,7 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
     }
     processingRef.current = false
     setScannerMode(null)
+    setScanHint(false)
   }, [])
 
   const handleQrText = useCallback(async (text: string) => {
@@ -54,6 +58,8 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
     try {
       const parsed = await parseOTPAuthURI(text)
       stopCamera()
+      setScanError(null)
+      setScanHint(false)
       onSave({
         issuer: parsed.issuer,
         accountName: parsed.account_name,
@@ -71,10 +77,13 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
 
   const processFrame = useCallback(async () => {
     if (processingRef.current) return
+    const now = performance.now()
+    if (now - lastScanRef.current < 180) return
     const video = videoRef.current
     const canvas = canvasRef.current
     if (!video || !canvas || video.readyState < 2) return
     processingRef.current = true
+    lastScanRef.current = now
     try {
       const w = Math.min(video.videoWidth, 480)
       const h = Math.round((w / video.videoWidth) * video.videoHeight)
@@ -83,7 +92,7 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
       const ctx = canvas.getContext('2d')
       if (!ctx) { processingRef.current = false; return }
       ctx.drawImage(video, 0, 0, w, h)
-      const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/jpeg', 0.6))
+      const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/jpeg', 0.85))
       if (!blob) { processingRef.current = false; return }
       const buffer = await blob.arrayBuffer()
       const bytes = Array.from(new Uint8Array(buffer))
@@ -94,6 +103,9 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
           return
         }
       } catch { }
+      if (now - scanStartedAtRef.current > 6000) {
+        setScanHint(true)
+      }
       processingRef.current = false
     } catch {
       processingRef.current = false
@@ -110,7 +122,9 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
 
   const startCamera = useCallback(async () => {
     setScanError(null)
+    setScanHint(false)
     setScannerMode('camera')
+    scanStartedAtRef.current = performance.now()
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } }
@@ -277,6 +291,11 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
           </div>
           <canvas ref={canvasRef} className="hidden" />
           <p className="text-surface-400 text-xs">{t('add_account.point_at_qr', 'Point camera at QR code')}</p>
+          {scanHint && !scanError && (
+            <p className="text-amber-500 text-sm bg-amber-50 dark:bg-amber-950/40 px-4 py-2 rounded-xl text-center">
+              {t('add_account.scan_hint')}
+            </p>
+          )}
           {scanError && (
             <p className="text-red-500 text-sm bg-red-50 dark:bg-red-950/50 px-4 py-2 rounded-xl">{scanError}</p>
           )}
