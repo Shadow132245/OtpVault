@@ -21,6 +21,7 @@ interface SettingsScreenProps {
   settings: AppSettings
   onSettingsChanged: (settings: AppSettings) => void
   currentLang: string
+  isMobile: boolean
 }
 
 function SettingCard({ children }: { children: React.ReactNode }) {
@@ -71,6 +72,7 @@ export function SettingsScreen({
   settings,
   onSettingsChanged,
   currentLang,
+  isMobile,
 }: SettingsScreenProps) {
   const { t, i18n } = useTranslation()
   const { theme, toggleTheme } = useTheme()
@@ -170,19 +172,21 @@ export function SettingsScreen({
                 />
               }
             />
-            <SettingRow
-              label={t('settings.biometric')}
-              value={t('settings.biometric_desc')}
-              action={
-                settings.biometric_enabled ? (
-                  <Toggle on danger onChange={() => handleBiometricDisable()} />
-                ) : (
-                  <Button variant="secondary" size="sm" onClick={() => setBiometricOpen(true)}>
-                    {t('biometric.enable')}
-                  </Button>
-                )
-              }
-            />
+            {isMobile && (
+              <SettingRow
+                label={t('settings.biometric')}
+                value={t('settings.biometric_desc')}
+                action={
+                  settings.biometric_enabled ? (
+                    <Toggle on danger onChange={() => handleBiometricDisable()} />
+                  ) : (
+                    <Button variant="secondary" size="sm" onClick={() => setBiometricOpen(true)}>
+                      {t('biometric.enable')}
+                    </Button>
+                  )
+                }
+              />
+            )}
             <SettingRow
               label={t('settings.local_only')}
               value={t('settings.local_only_desc')}
@@ -265,11 +269,13 @@ export function SettingsScreen({
         </Button>
       </div>
 
-      <BiometricSetupModal
-        open={biometricOpen}
-        onClose={() => setBiometricOpen(false)}
-        onEnabled={() => onSettingsChanged({ ...settings, biometric_enabled: true })}
-      />
+      {isMobile && (
+        <BiometricSetupModal
+          open={biometricOpen}
+          onClose={() => setBiometricOpen(false)}
+          onEnabled={() => onSettingsChanged({ ...settings, biometric_enabled: true })}
+        />
+      )}
 
       <LegalModal
         open={legalView === 'terms'}

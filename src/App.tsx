@@ -56,6 +56,7 @@ function App() {
   const [helpOpen, setHelpOpen] = useState(false)
   const [appSettings, setAppSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
   const [biometricLoading, setBiometricLoading] = useState(false)
+  const [isMobileDevice, setIsMobileDevice] = useState(false)
   const lastActivity = useRef(Date.now())
 
   useEffect(() => {
@@ -75,6 +76,7 @@ function App() {
     const init = async () => {
       const { initialized: exists } = await vault.init()
       setVaultExists(exists ?? false)
+      isMobile().then(setIsMobileDevice).catch(() => {})
       if (exists === false) {
         setScreen('onboarding')
       } else {
@@ -140,7 +142,9 @@ function App() {
 
   useEffect(() => {
     const unlisten = listen('lock-vault', async () => {
-      await lockVaultCmd()
+      try {
+        await lockVaultCmd()
+      } catch {}
       vault.lock()
       setScreen('onboarding')
     })
@@ -316,6 +320,7 @@ function App() {
               onBiometricUnlock={handleBiometricUnlock}
               biometricEnabled={appSettings.biometric_enabled}
               biometricLoading={biometricLoading}
+              isMobile={isMobileDevice}
               defaultTab={vaultExists ? 'signin' : 'signup'}
             />
           </motion.div>
@@ -367,6 +372,7 @@ function App() {
               settings={appSettings}
               onSettingsChanged={handleSettingsChanged}
               currentLang={i18n.language}
+              isMobile={isMobileDevice}
             />
           </motion.div>
         )}

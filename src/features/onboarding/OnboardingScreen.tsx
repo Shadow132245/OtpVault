@@ -13,12 +13,13 @@ interface OnboardingScreenProps {
   onBiometricUnlock: () => Promise<boolean>
   biometricEnabled: boolean
   biometricLoading: boolean
+  isMobile: boolean
   defaultTab?: AuthTab
 }
 
 type AuthTab = 'signup' | 'signin'
 
-export function OnboardingScreen({ onSignUp, onSignIn, onError, onBiometricUnlock, biometricEnabled, biometricLoading, defaultTab }: OnboardingScreenProps) {
+export function OnboardingScreen({ onSignUp, onSignIn, onError, onBiometricUnlock, biometricEnabled, biometricLoading, isMobile, defaultTab }: OnboardingScreenProps) {
   const { t, i18n } = useTranslation()
   const [tab, setTab] = useState<AuthTab>(defaultTab ?? 'signup')
   const [email, setEmail] = useState('')
@@ -228,7 +229,7 @@ export function OnboardingScreen({ onSignUp, onSignIn, onError, onBiometricUnloc
           </button>
         </div>
 
-        {biometricEnabled && (
+        {biometricEnabled && isMobile && (
           <Button
             variant="ghost"
             fullWidth
