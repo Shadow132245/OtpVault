@@ -10,6 +10,7 @@ use commands::auth::VaultManager;
 use crate::crypto::keychain::Keychain;
 use crypto::vault::VaultState;
 use std::sync::Mutex;
+use tauri::Emitter;
 use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -90,6 +91,7 @@ pub fn run() {
                                 if guard.is_unlocked() {
                                     guard.lock();
                                     log::info!("Auto-lock: locked after focus loss");
+                                    let _ = app.emit("lock-vault", ());
                                 }
                             }
                         });

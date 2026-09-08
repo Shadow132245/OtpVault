@@ -1,9 +1,9 @@
 use crate::commands::auth::VaultManager;
 use crate::crypto::keychain::Keychain;
 use crate::crypto::vault::VaultState;
-use tauri::State;
 use tauri::AppHandle;
 
+#[cfg(target_os = "android")]
 fn run_biometric_prompt() -> Result<bool, String> {
     use robius_authentication::{AndroidText, BiometricStrength, Context, PolicyBuilder, Text, WindowsText};
 
@@ -33,6 +33,11 @@ fn run_biometric_prompt() -> Result<bool, String> {
 
     rx.recv_timeout(std::time::Duration::from_secs(120))
         .map_err(|_| "Biometric prompt timed out".to_string())
+}
+
+#[cfg(not(target_os = "android"))]
+fn run_biometric_prompt() -> Result<bool, String> {
+    Err("Biometric unlock is only available on mobile devices".into())
 }
 
 #[tauri::command]
@@ -69,7 +74,7 @@ pub fn disable_biometric(app: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn unlock_with_biometric(app: AppHandle, vault: State<'_, VaultManager>) -> Result<bool, String> {
+pub async fn unlock_with_biometric(app: AppHandle) -> Result<bool, String> {
     let settings = Keychain::load_settings(&app);
     if !settings.biometric_enabled {
         return Ok(false);
@@ -80,13 +85,19 @@ pub fn unlock_with_biometric(app: AppHandle, vault: State<'_, VaultManager>) -> 
         _ => return Ok(false),
     };
 
-    if !run_biometric_prompt()? {
+    let allowed = tauri::async_runtime::spawn_blocking(run_biometric_prompt)
+        .await
+        .map_err(|e| format!("Biometric prompt task failed: {}", e))?;
+    if !allowed? {
         return Ok(false);
     }
 
     let salt = Keychain::load_salt(&app).map_err(|e| e.to_string())?;
     let test_payload = Keychain::load_test_payload(&app).map_err(|e| e.to_string())?;
 
-    let mut vault_state = vault.0.lock().map_err(|e| e.to_string())?;
-    vault_state.unlock_with_key(&secret, &salt, &test_payload).map_err(|e| e.to_string())
+    let vault_state = app
+        .try_state::<VaultManager>()
+        .ok_or_else(|| "Vault state unavailable".to_string())?;
+    let mut guard = vault_state.0.lock().map_err(|e| e.to_string())?;
+    guard.unlock_with_key(&secret, &salt, &test_payload).map_err(|e| e.to_string())
 }
