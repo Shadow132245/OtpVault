@@ -62,6 +62,7 @@ pub fn run() {
             commands::settings::get_biometric_secret,
             commands::settings::clear_biometric_secret,
             commands::biometric::biometric_available,
+            commands::biometric::biometric_supported,
             commands::biometric::setup_biometric,
             commands::biometric::disable_biometric,
             commands::biometric::unlock_with_biometric,

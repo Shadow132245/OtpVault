@@ -206,6 +206,12 @@ impl Keychain {
         base64::engine::general_purpose::STANDARD.decode(b64).ok()
     }
 
+    pub fn save_biometric_enabled(app: &AppHandle, enabled: bool) -> Result<(), VaultError> {
+        let store = app.store("config.json").map_err(|e| VaultError::Storage(e.to_string()))?;
+        store.set(BIOMETRIC_KEY, serde_json::Value::Bool(enabled));
+        store.save().map_err(|e| VaultError::Storage(e.to_string()))
+    }
+
     pub fn clear_biometric_secret(app: &AppHandle) {
         if let Ok(store) = app.store("config.json") {
             store.delete(BIOMETRIC_SECRET_KEY);

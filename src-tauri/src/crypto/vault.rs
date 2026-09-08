@@ -104,6 +104,10 @@ pub struct VaultData {
     pub folders: Vec<Folder>,
     #[serde(default)]
     pub trash: Vec<TrashEntry>,
+    #[serde(default)]
+    pub biometric_enabled: bool,
+    #[serde(default)]
+    pub biometric_secret: Vec<u8>,
 }
 
 impl VaultData {
@@ -113,6 +117,8 @@ impl VaultData {
             accounts: vec![],
             folders: vec![],
             trash: vec![],
+            biometric_enabled: false,
+            biometric_secret: vec![],
         }
     }
 

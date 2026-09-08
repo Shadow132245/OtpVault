@@ -143,6 +143,15 @@ pub async fn email_sign_in(
             Keychain::save_email(&app, &email).map_err(|e| e.to_string())?;
             vault::save_vault(&app, &vault_data).map_err(|e| e.to_string())?;
 
+            Keychain::save_biometric_enabled(&app, vault_data.biometric_enabled)
+                .map_err(|e| e.to_string())?;
+            if vault_data.biometric_secret.is_empty() {
+                Keychain::clear_biometric_secret(&app);
+            } else {
+                Keychain::save_biometric_secret(&app, &vault_data.biometric_secret)
+                    .map_err(|e| e.to_string())?;
+            }
+
             log::info!("Vault restored from Neon for {}", email);
 
             (salt, test_payload)

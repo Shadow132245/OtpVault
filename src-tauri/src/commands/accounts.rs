@@ -236,7 +236,7 @@ pub async fn pull_vault_from_cloud(
         Err(_) => return Ok(false),
     };
 
-    let cloud_accounts = {
+    let (cloud_accounts, cloud_biometric) = {
         let vault_state = vault.0.lock().map_err(|e| e.to_string())?;
         if !vault_state.is_unlocked() {
             return Ok(false);
@@ -256,11 +256,48 @@ pub async fn pull_vault_from_cloud(
         let cloud_json: serde_json::Value = serde_json::from_slice(&decrypted)
             .map_err(|e| format!("Invalid vault JSON: {}", e))?;
 
-        cloud_json.get("accounts")
+        let accounts = cloud_json.get("accounts")
             .and_then(|v| v.as_array())
             .ok_or("No accounts in cloud vault")?
-            .clone()
+            .clone();
+
+        let biometric_meta = if cloud_json.get("biometric_enabled").is_some() {
+            let enabled = cloud_json
+                .get("biometric_enabled")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false);
+            let secret: Vec<u8> = cloud_json
+                .get("biometric_secret")
+                .and_then(|v| v.as_array())
+                .map(|arr| {
+                    arr.iter()
+                        .filter_map(|b| b.as_u64().and_then(|x| u8::try_from(x).ok()))
+                        .collect()
+                })
+                .unwrap_or_default();
+            Some((enabled, secret))
+        } else {
+            None
+        };
+
+        (accounts, biometric_meta)
     };
+
+    if let Some((enabled, secret)) = &cloud_biometric {
+        let current = Keychain::load_settings(&app);
+        if current.biometric_enabled != *enabled {
+            let mut next = current.clone();
+            next.biometric_enabled = *enabled;
+            let _ = Keychain::save_settings(&app, &next);
+        }
+        if secret.is_empty() {
+            if Keychain::load_biometric_secret(&app).is_some() {
+                Keychain::clear_biometric_secret(&app);
+            }
+        } else if Keychain::load_biometric_secret(&app) != Some(secret.clone()) {
+            let _ = Keychain::save_biometric_secret(&app, secret);
+        }
+    }
 
     let mut local_vault = load_vault(&app).map_err(|e| e.to_string())?;
     let local_ids: HashSet<String> = local_vault.accounts.iter().map(|a| a.id.clone()).collect();
