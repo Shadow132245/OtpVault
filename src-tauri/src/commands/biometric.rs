@@ -7,15 +7,22 @@ use tauri::Manager;
 use tauri::State;
 
 #[cfg(target_os = "android")]
-fn device_supports_biometrics() -> Result<bool, String> {
+static JAVA_VM: std::sync::atomic::AtomicPtr<jni::sys::JavaVM> =
+    std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
+
+#[cfg(target_os = "android")]
+#[no_mangle]
+pub extern "system" fn JNI_OnLoad(vm: *mut jni::sys::JavaVM, _reserved: *mut std::ffi::c_void) -> i32 {
+    JAVA_VM.store(vm, std::sync::atomic::Ordering::Relaxed);
+    0x00010006 // JNI_VERSION_1_6
+}
+
+#[cfg(target_os = "android")]
+fn check_with_context(
+    env: &mut jni::JNIEnv<'_>,
+    context: &jni::objects::JObject<'_>,
+) -> Result<bool, String> {
     use jni::objects::{JObject, JValue};
-
-    let android_ctx = ndk_context::android_context();
-    let vm = unsafe { jni::JavaVM::from_raw(android_ctx.vm() as *mut jni::sys::JavaVM) }
-        .map_err(|e| e.to_string())?;
-    let mut env = vm.attach_current_thread().map_err(|e| e.to_string())?;
-
-    let context = unsafe { JObject::from_raw(android_ctx.context() as jni::sys::jobject) };
 
     // API 29+: verify hardware + enrolled fingerprints via BiometricManager
     let has_biometric_manager = env
@@ -26,11 +33,10 @@ fn device_supports_biometrics() -> Result<bool, String> {
             false
         });
     if has_biometric_manager {
-        let service_jstr = env.new_string("biometric").map_err(|e| e.to_string())?;
-        let service_obj: JObject = service_jstr.into();
+        let service_obj: JObject = env.new_string("biometric").map_err(|e| e.to_string())?.into();
         let service = env
             .call_method(
-                &context,
+                context,
                 "getSystemService",
                 "(Ljava/lang/String;)Ljava/lang/Object;",
                 &[JValue::Object(&service_obj)],
@@ -52,11 +58,10 @@ fn device_supports_biometrics() -> Result<bool, String> {
     }
 
     // API 28 fallback: FingerprintManager
-    let fm_jstr = env.new_string("fingerprint").map_err(|e| e.to_string())?;
-    let fm_obj: JObject = fm_jstr.into();
+    let fm_obj: JObject = env.new_string("fingerprint").map_err(|e| e.to_string())?.into();
     let fm = env
         .call_method(
-            &context,
+            context,
             "getSystemService",
             "(Ljava/lang/String;)Ljava/lang/Object;",
             &[JValue::Object(&fm_obj)],
@@ -81,7 +86,51 @@ fn device_supports_biometrics() -> Result<bool, String> {
 }
 
 #[cfg(target_os = "android")]
-fn biometric_supported_impl() -> Result<bool, String> {
+fn device_supports_biometrics() -> Result<bool, String> {
+    let outcome = std::panic::catch_unwind(|| -> Result<bool, String> {
+        let vm_ptr = JAVA_VM.load(std::sync::atomic::Ordering::Relaxed);
+        if vm_ptr.is_null() {
+            return Err("Android VM not initialized yet".to_string());
+        }
+        let vm = unsafe { jni::JavaVM::from_raw(vm_ptr) }.map_err(|e| e.to_string())?;
+        let mut env = vm.attach_current_thread().map_err(|e| e.to_string())?;
+
+        let application = env
+            .call_static_method(
+                "android/app/ActivityThread",
+                "currentApplication",
+                "()Landroid/app/Application;",
+                &[],
+            )
+            .map_err(|e| format!("JNI currentApplication: {}", e))?
+            .l()
+            .map_err(|e| e.to_string())?;
+        if application.is_null() {
+            return Ok(false);
+        }
+        let context = env
+            .call_method(
+                &application,
+                "getApplicationContext",
+                "()Landroid/content/Context;",
+                &[],
+            )
+            .map_err(|e| format!("JNI getApplicationContext: {}", e))?
+            .l()
+            .map_err(|e| e.to_string())?;
+        if context.is_null() {
+            return Ok(false);
+        }
+        check_with_context(&mut env, &context)
+    });
+    outcome.unwrap_or_else(|_| {
+        log::warn!("Biometric support check panicked");
+        Ok(false)
+    })
+}
+
+#[cfg(target_os = "android")]
+fn biometric_supported_blocking() -> Result<bool, String> {
     device_supports_biometrics().or_else(|e| {
         log::warn!("Biometric support check failed: {}", e);
         Ok(false)
@@ -89,7 +138,7 @@ fn biometric_supported_impl() -> Result<bool, String> {
 }
 
 #[cfg(not(target_os = "android"))]
-fn biometric_supported_impl() -> Result<bool, String> {
+fn biometric_supported_blocking() -> Result<bool, String> {
     Ok(false)
 }
 
@@ -172,8 +221,10 @@ pub fn biometric_available(app: AppHandle) -> bool {
 }
 
 #[tauri::command]
-pub fn biometric_supported(_app: AppHandle) -> Result<bool, String> {
-    biometric_supported_impl()
+pub async fn biometric_supported(_app: AppHandle) -> Result<bool, String> {
+    tauri::async_runtime::spawn_blocking(biometric_supported_blocking)
+        .await
+        .map_err(|e| format!("Biometric check task failed: {}", e))?
 }
 
 #[tauri::command]
@@ -182,7 +233,10 @@ pub async fn setup_biometric(
     vault_state: State<'_, VaultManager>,
     password: String,
 ) -> Result<bool, String> {
-    if !biometric_supported_impl()? {
+    let device_ok = tauri::async_runtime::spawn_blocking(biometric_supported_blocking)
+        .await
+        .map_err(|e| format!("Biometric check task failed: {}", e))?;
+    if !device_ok? {
         return Err("Biometrics are not available on this device".into());
     }
 
