@@ -196,7 +196,7 @@
   },
   "biometric": {
     "setup_title": "Enable Biometric Unlock",
-    "setup_desc": "Enter your master password to securely enable fingerprint / Windows Hello unlock.",
+    "setup_desc": "Enter your master password, then place your finger on the sensor to confirm.",
     "password_label": "Master password",
     "password_placeholder": "Your master password",
     "enable": "Enable",
@@ -206,6 +206,8 @@
     "unlock_hint": "Use fingerprint to unlock",
     "unlock_error": "Biometric authentication failed",
     "not_supported": "Biometrics are not available on this device",
+    "requires_finger": "Place your finger on the sensor to confirm",
+    "verification_failed": "Fingerprint verification failed or was cancelled",
     "disable": "Disable"
   }
 }

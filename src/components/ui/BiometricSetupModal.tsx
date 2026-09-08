@@ -32,7 +32,16 @@ export function BiometricSetupModal({ open, onClose, onEnabled }: BiometricSetup
       onEnabled()
       onClose()
     } catch (e) {
-      setError(typeof e === 'string' ? e : t('biometric.wrong_password'))
+      const msg = typeof e === 'string' ? e : ''
+      if (msg.includes('Incorrect password')) {
+        setError(t('biometric.wrong_password'))
+      } else if (msg.includes('not available')) {
+        setError(t('biometric.not_supported'))
+      } else if (msg.includes('verification failed') || msg.includes('cancelled')) {
+        setError(t('biometric.verification_failed'))
+      } else {
+        setError(msg || t('biometric.verification_failed'))
+      }
     } finally {
       setLoading(false)
     }
@@ -59,6 +68,11 @@ export function BiometricSetupModal({ open, onClose, onEnabled }: BiometricSetup
           />
         </div>
         {error && <p className="text-xs text-red-500 dark:text-red-400">{error}</p>}
+        {loading && (
+          <p className="text-xs text-primary-500 dark:text-primary-400 text-center">
+            {t('biometric.requires_finger')}
+          </p>
+        )}
         <div className="flex gap-3 pt-2">
           <Button variant="ghost" onClick={handleClose} className="flex-1" disabled={loading}>
             {t('common.cancel')}

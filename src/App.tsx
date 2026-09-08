@@ -28,6 +28,7 @@ import {
   setSettings,
   unlockWithBiometric,
   moveAccount,
+  biometricSupported as checkBiometricSupport,
 } from './lib/tauri'
 import type { AccountEntry, AddAccountPayload, AppSettings } from './types'
 
@@ -57,6 +58,7 @@ function App() {
   const [appSettings, setAppSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
   const [biometricLoading, setBiometricLoading] = useState(false)
   const [isMobileDevice, setIsMobileDevice] = useState(false)
+  const [biometricSupported, setBiometricSupported] = useState(false)
   const lastActivity = useRef(Date.now())
 
   useEffect(() => {
@@ -77,11 +79,14 @@ function App() {
       const { initialized: exists } = await vault.init()
       setVaultExists(exists ?? false)
       isMobile().then(setIsMobileDevice).catch(() => {})
+      checkBiometricSupport().then(setBiometricSupported).catch(() => {})
+      const settings = await getSettings().catch(() => DEFAULT_SETTINGS)
+      setAppSettings(settings)
       if (exists === false) {
         setScreen('onboarding')
       } else {
         const creds = await loadRememberMe()
-        if (creds) {
+        if (creds && !settings.biometric_enabled) {
           try {
             const ok = await emailSignIn(creds[0], creds[1])
             if (ok) {
@@ -373,6 +378,7 @@ function App() {
               onSettingsChanged={handleSettingsChanged}
               currentLang={i18n.language}
               isMobile={isMobileDevice}
+              biometricSupported={biometricSupported}
             />
           </motion.div>
         )}

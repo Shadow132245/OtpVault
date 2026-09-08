@@ -22,6 +22,7 @@ interface SettingsScreenProps {
   onSettingsChanged: (settings: AppSettings) => void
   currentLang: string
   isMobile: boolean
+  biometricSupported: boolean
 }
 
 function SettingCard({ children }: { children: React.ReactNode }) {
@@ -73,6 +74,7 @@ export function SettingsScreen({
   onSettingsChanged,
   currentLang,
   isMobile,
+  biometricSupported,
 }: SettingsScreenProps) {
   const { t, i18n } = useTranslation()
   const { theme, toggleTheme } = useTheme()
@@ -172,7 +174,7 @@ export function SettingsScreen({
                 />
               }
             />
-            {isMobile && (
+            {isMobile && biometricSupported && (
               <SettingRow
                 label={t('settings.biometric')}
                 value={t('settings.biometric_desc')}

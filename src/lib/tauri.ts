@@ -131,6 +131,10 @@ export async function biometricAvailable(): Promise<boolean> {
   return invoke('biometric_available')
 }
 
+export async function biometricSupported(): Promise<boolean> {
+  return invoke('biometric_supported')
+}
+
 export async function setupBiometric(password: string): Promise<boolean> {
   return invoke('setup_biometric', { password })
 }
