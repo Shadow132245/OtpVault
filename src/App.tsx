@@ -26,6 +26,7 @@ import {
   isMobile,
   getSettings,
   setSettings,
+  unlockWithBiometric,
   moveAccount,
 } from './lib/tauri'
 import type { AccountEntry, AddAccountPayload, AppSettings } from './types'
@@ -54,6 +55,7 @@ function App() {
   const [success, setSuccess] = useState<string | null>(null)
   const [helpOpen, setHelpOpen] = useState(false)
   const [appSettings, setAppSettings] = useState<AppSettings>(DEFAULT_SETTINGS)
+  const [biometricLoading, setBiometricLoading] = useState(false)
   const lastActivity = useRef(Date.now())
 
   useEffect(() => {
@@ -226,6 +228,21 @@ function App() {
     }
   }
 
+  const handleBiometricUnlock = async (): Promise<boolean> => {
+    setBiometricLoading(true)
+    try {
+      const ok = await unlockWithBiometric()
+      if (ok) {
+        vault.setUnlocked(true)
+        setScreen('accounts')
+        return true
+      }
+      return false
+    } finally {
+      setBiometricLoading(false)
+    }
+  }
+
   const handleLock = async () => {
     await lockVaultCmd()
     vault.lock()
@@ -296,6 +313,9 @@ function App() {
               onSignUp={handleSignUp}
               onSignIn={(email, password) => handleSignIn(email, password, true)}
               onError={(msg) => setError(msg)}
+              onBiometricUnlock={handleBiometricUnlock}
+              biometricEnabled={appSettings.biometric_enabled}
+              biometricLoading={biometricLoading}
               defaultTab={vaultExists ? 'signin' : 'signup'}
             />
           </motion.div>

@@ -12,6 +12,7 @@ permissions_to_add = [
     "android.permission.READ_EXTERNAL_STORAGE",
     "android.permission.WRITE_EXTERNAL_STORAGE",
     "android.permission.READ_MEDIA_IMAGES",
+    "android.permission.USE_BIOMETRIC",
 ]
 
 for perm in permissions_to_add:

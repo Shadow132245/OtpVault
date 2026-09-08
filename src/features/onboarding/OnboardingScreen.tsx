@@ -10,12 +10,15 @@ interface OnboardingScreenProps {
   onSignUp: (email: string, password: string) => Promise<void>
   onSignIn: (email: string, password: string) => Promise<boolean>
   onError: (message: string) => void
+  onBiometricUnlock: () => Promise<boolean>
+  biometricEnabled: boolean
+  biometricLoading: boolean
   defaultTab?: AuthTab
 }
 
 type AuthTab = 'signup' | 'signin'
 
-export function OnboardingScreen({ onSignUp, onSignIn, onError, defaultTab }: OnboardingScreenProps) {
+export function OnboardingScreen({ onSignUp, onSignIn, onError, onBiometricUnlock, biometricEnabled, biometricLoading, defaultTab }: OnboardingScreenProps) {
   const { t, i18n } = useTranslation()
   const [tab, setTab] = useState<AuthTab>(defaultTab ?? 'signup')
   const [email, setEmail] = useState('')
@@ -224,6 +227,31 @@ export function OnboardingScreen({ onSignUp, onSignIn, onError, defaultTab }: On
             {tab === 'signup' ? t('auth.have_account') : t('auth.no_account')}
           </button>
         </div>
+
+        {biometricEnabled && (
+          <Button
+            variant="ghost"
+            fullWidth
+            onClick={async () => {
+              setLoading(true)
+              try {
+                const ok = await onBiometricUnlock()
+                if (!ok) onError(t('biometric.unlock_error'))
+              } catch (e) {
+                onError(typeof e === 'string' ? e : t('biometric.unlock_error'))
+              } finally {
+                setLoading(false)
+              }
+            }}
+            disabled={loading || biometricLoading}
+            className="mt-3 border border-surface-200 dark:border-surface-700"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            {biometricLoading ? t('vault.unlocking') : t('biometric.unlock_hint')}
+          </Button>
+        )}
       </motion.div>
 
       <LegalModal

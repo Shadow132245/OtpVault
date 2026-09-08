@@ -4,8 +4,10 @@ import { useTranslation } from 'react-i18next'
 import { AppLayout } from '../../components/layout/AppLayout'
 import { Button } from '../../components/ui/Button'
 import { LegalModal } from '../../components/legal/LegalModal'
+import { BiometricSetupModal } from '../../components/ui/BiometricSetupModal'
 import { termsOfService, privacyPolicy } from '../../lib/legal'
 import { useTheme } from '../../contexts/ThemeContext'
+import { disableBiometric } from '../../lib/tauri'
 import type { AppSettings } from '../../types'
 
 interface SettingsScreenProps {
@@ -41,13 +43,13 @@ function SettingRow({ label, value, action }: { label: string; value?: string; a
   )
 }
 
-function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+function Toggle({ on, onChange, danger }: { on: boolean; onChange: (v: boolean) => void; danger?: boolean }) {
   return (
     <button
       onClick={() => onChange(!on)}
       aria-checked={on}
       role="switch"
-      className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-primary-500 ${on ? 'bg-primary-600' : 'bg-surface-300 dark:bg-surface-600'}`}
+      className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-primary-500 ${on ? (danger ? 'bg-red-500' : 'bg-primary-600') : 'bg-surface-300 dark:bg-surface-600'}`}
     >
       <motion.div
         animate={{ x: on ? 22 : 2 }}
@@ -73,6 +75,7 @@ export function SettingsScreen({
   const { t, i18n } = useTranslation()
   const { theme, toggleTheme } = useTheme()
   const [legalView, setLegalView] = useState<'terms' | 'privacy' | null>(null)
+  const [biometricOpen, setBiometricOpen] = useState(false)
 
   const autoLockOptions = [
     { value: 30, label: t('settings.seconds_30') },
@@ -82,6 +85,13 @@ export function SettingsScreen({
     { value: 900, label: t('settings.minutes_15') },
     { value: 0, label: t('settings.never') },
   ]
+
+  const handleBiometricDisable = async () => {
+    try {
+      await disableBiometric()
+      onSettingsChanged({ ...settings, biometric_enabled: false })
+    } catch {}
+  }
 
   return (
     <AppLayout title={t('settings.title')} onBack={onBack} onHelp={onHelp}>
@@ -158,6 +168,19 @@ export function SettingsScreen({
                   on={settings.lock_on_hide}
                   onChange={(v) => onSettingsChanged({ ...settings, lock_on_hide: v })}
                 />
+              }
+            />
+            <SettingRow
+              label={t('settings.biometric')}
+              value={t('settings.biometric_desc')}
+              action={
+                settings.biometric_enabled ? (
+                  <Toggle on danger onChange={() => handleBiometricDisable()} />
+                ) : (
+                  <Button variant="secondary" size="sm" onClick={() => setBiometricOpen(true)}>
+                    {t('biometric.enable')}
+                  </Button>
+                )
               }
             />
             <SettingRow
@@ -241,6 +264,12 @@ export function SettingsScreen({
           {t('settings.log_out')}
         </Button>
       </div>
+
+      <BiometricSetupModal
+        open={biometricOpen}
+        onClose={() => setBiometricOpen(false)}
+        onEnabled={() => onSettingsChanged({ ...settings, biometric_enabled: true })}
+      />
 
       <LegalModal
         open={legalView === 'terms'}
