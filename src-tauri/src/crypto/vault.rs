@@ -47,20 +47,90 @@ pub struct AccountEntry {
     pub icon: String,
     pub created_at: String,
     pub updated_at: String,
+    #[serde(default)]
+    pub folder_id: String,
+    #[serde(default)]
+    pub tags: Vec<String>,
+}
+
+impl AccountEntry {
+    pub fn new(
+        id: String,
+        issuer: String,
+        account_name: String,
+        secret_encrypted: String,
+        algorithm: String,
+        digits: u32,
+        step: u64,
+        icon: String,
+        created_at: String,
+        updated_at: String,
+    ) -> Self {
+        Self {
+            id,
+            issuer,
+            account_name,
+            secret_encrypted,
+            algorithm,
+            digits,
+            step,
+            icon,
+            created_at,
+            updated_at,
+            folder_id: String::new(),
+            tags: vec![],
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Folder {
+    pub id: String,
+    pub name: String,
+    pub created_at: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct TrashEntry {
+    pub account: AccountEntry,
+    pub deleted_at: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
 pub struct VaultData {
     pub version: u32,
     pub accounts: Vec<AccountEntry>,
+    #[serde(default)]
+    pub folders: Vec<Folder>,
+    #[serde(default)]
+    pub trash: Vec<TrashEntry>,
 }
 
 impl VaultData {
     pub fn empty() -> Self {
         Self {
-            version: 1,
+            version: 2,
             accounts: vec![],
+            folders: vec![],
+            trash: vec![],
         }
+    }
+
+    pub fn migrate(mut self) -> Self {
+        if self.version < 2 {
+            self.version = 2;
+            if self.folders.is_empty() {
+                self.folders = vec![];
+            }
+            if self.trash.is_empty() {
+                self.trash = vec![];
+            }
+            for account in &mut self.accounts {
+                account.folder_id = String::new();
+                account.tags = vec![];
+            }
+        }
+        self
     }
 }
 
@@ -110,6 +180,25 @@ impl VaultState {
                 Ok(false)
             }
         }
+    }
+
+    pub fn unlock_with_key(&mut self, key: &[u8], salt: &[u8], test_payload: &[u8]) -> Result<bool, VaultError> {
+        if test_payload.len() < SALT_SIZE + NONCE_SIZE {
+            return Ok(false);
+        }
+        match Self::decrypt_internal(&test_payload[SALT_SIZE..], &key.to_vec()) {
+            Ok(decrypted) if decrypted == b"OTPVAULT_INIT" => {
+                self.key = Some(key.to_vec());
+                self.salt = Some(salt.to_vec());
+                log::info!("Vault unlocked with stored key (biometric)");
+                Ok(true)
+            }
+            _ => Ok(false),
+        }
+    }
+
+    pub fn derive_key_from_password(password: &str, salt: &[u8]) -> Result<Vec<u8>, VaultError> {
+        Self::derive_key(password, salt)
     }
 
     pub fn lock(&mut self) {
@@ -230,7 +319,8 @@ pub fn load_vault(app: &AppHandle) -> Result<VaultData, VaultError> {
         .decode(b64)
         .map_err(|e| VaultError::Storage(e.to_string()))?;
     let data: VaultData = serde_json::from_slice(&bytes)
-        .map_err(|e| VaultError::Storage(e.to_string()))?;
+        .map_err(|e| VaultError::Storage(e.to_string()))?
+        .migrate();
     log::info!("Vault loaded ({} accounts)", data.accounts.len());
     Ok(data)
 }

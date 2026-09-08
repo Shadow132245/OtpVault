@@ -6,10 +6,11 @@ import { OnboardingScreen } from './features/onboarding/OnboardingScreen'
 import { AccountList } from './features/accounts/AccountList'
 import { AddAccountScreen } from './features/add-account/AddAccountScreen'
 import { SettingsScreen } from './features/settings/SettingsScreen'
+import { TrashScreen } from './features/trash/TrashScreen'
 import { HelpGuideModal } from './components/help/HelpGuideModal'
 import { useVault } from './hooks/useVault'
 import { save, open } from '@tauri-apps/plugin-dialog'
-  import {
+import {
   getAccounts,
   addAccount,
   deleteAccount,
@@ -23,6 +24,7 @@ import { save, open } from '@tauri-apps/plugin-dialog'
   clearRememberMe,
   pullVaultFromCloud,
   isMobile,
+  moveAccount,
 } from './lib/tauri'
 import type { AccountEntry, AddAccountPayload } from './types'
 
@@ -32,6 +34,7 @@ type Screen =
   | 'accounts'
   | 'add-account'
   | 'settings'
+  | 'trash'
 
 function App() {
   const { t, i18n } = useTranslation()
@@ -170,6 +173,16 @@ function App() {
     }
   }
 
+  const handleMove = async (accountId: string, folderId: string) => {
+    try {
+      await moveAccount(accountId, folderId)
+      await loadAccounts()
+      pullVaultFromCloud().then(changed => { if (changed) loadAccounts() })
+    } catch (e) {
+      setError(String(e))
+    }
+  }
+
   const handleLock = async () => {
     await lockVaultCmd()
     vault.lock()
@@ -253,6 +266,8 @@ function App() {
               onSettings={() => setScreen('settings')}
               onHelp={() => setHelpOpen(true)}
               onDelete={handleDelete}
+              onTrash={() => setScreen('trash')}
+              onMove={handleMove}
             />
           </motion.div>
         )}
@@ -262,6 +277,16 @@ function App() {
             <AddAccountScreen
               onBack={() => setScreen('accounts')}
               onSave={handleAddAccount}
+            />
+          </motion.div>
+        )}
+
+        {screen === 'trash' && (
+          <motion.div key="trash" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+            <TrashScreen
+              onBack={() => setScreen('accounts')}
+              onHelp={() => setHelpOpen(true)}
+              onRestored={loadAccounts}
             />
           </motion.div>
         )}

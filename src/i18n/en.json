@@ -62,7 +62,11 @@
     "scan_failed": "No QR code found in image",
     "invalid_uri": "Invalid QR code",
     "parse_error": "Could not parse this QR code",
-    "advanced": "Advanced Settings"
+    "advanced": "Advanced Settings",
+    "folder": "Folder",
+    "no_folder": "No Folder",
+    "tags": "Tags",
+    "tags_placeholder": "Comma-separated tags (work, personal...)"
   },
   "settings": {
     "title": "Settings",
@@ -74,6 +78,14 @@
     "light": "Light",
     "cloud_sync": "Cloud Sync",
     "backup": "Backup & Restore",
+    "security": "Security",
+    "auto_lock": "Auto-Lock",
+    "auto_lock_desc": "Lock the vault automatically after inactivity",
+    "lock_on_hide": "Lock when window is hidden",
+    "local_only": "Local-Only Mode",
+    "local_only_desc": "Disable all cloud sync and backup uploads",
+    "biometric": "Unlock with Fingerprint",
+    "biometric_desc": "Use device biometrics (fingerprint / Windows Hello) to unlock",
     "export": "Export Backup",
     "import": "Import Backup",
     "about": "About",
@@ -88,7 +100,13 @@
     "import_btn": "Import",
     "export_success": "Backup exported successfully",
     "import_success": "Backup imported successfully",
-    "copyright": "Rights"
+    "copyright": "Rights",
+    "seconds_30": "30 seconds",
+    "seconds_60": "1 minute",
+    "minutes_2": "2 minutes",
+    "minutes_5": "5 minutes",
+    "minutes_15": "15 minutes",
+    "never": "Never"
   },
   "sync": {
     "title": "Cloud Sync",
@@ -143,12 +161,50 @@
   },
   "delete_confirm": {
     "title": "Delete Account",
-    "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+    "message": "Are you sure you want to move \"{{name}}\" to the trash? You can restore it later.",
     "password_label": "Enter your password to confirm",
     "password_placeholder": "Your account password",
     "wrong_password": "Incorrect password",
     "cancel": "Cancel",
-    "delete": "Delete",
+    "delete": "Move to Trash",
     "verifying": "Verifying..."
+  },
+  "folders": {
+    "all": "All",
+    "unfiled": "No Folder",
+    "title": "Folders",
+    "create": "New Folder",
+    "create_desc": "Enter a name for the new folder",
+    "name_placeholder": "Folder name",
+    "rename": "Rename Folder",
+    "delete": "Delete Folder",
+    "delete_confirm": "Delete this folder? Accounts inside will be moved to \"No Folder\".",
+    "move_to": "Move to folder",
+    "no_folders": "No folders yet"
+  },
+  "trash": {
+    "title": "Trash",
+    "empty": "Trash is empty",
+    "restore": "Restore",
+    "delete": "Delete Forever",
+    "empty_all": "Empty Trash",
+    "empty_confirm": "Permanently delete all accounts in the trash?",
+    "restore_success": "Account restored",
+    "auto_cleanup": "Items are kept for 14 days, then deleted automatically.",
+    "count": "{{count}} items"
+  },
+  "biometric": {
+    "setup_title": "Enable Biometric Unlock",
+    "setup_desc": "Enter your master password to securely enable fingerprint / Windows Hello unlock.",
+    "password_label": "Master password",
+    "password_placeholder": "Your master password",
+    "enable": "Enable",
+    "wrong_password": "Incorrect password",
+    "enabled_success": "Biometric unlock enabled",
+    "disabled_success": "Biometric unlock disabled",
+    "unlock_hint": "Use fingerprint to unlock",
+    "unlock_error": "Biometric authentication failed",
+    "not_supported": "Biometrics are not available on this device",
+    "disable": "Disable"
   }
 }

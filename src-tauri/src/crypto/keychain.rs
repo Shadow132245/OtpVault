@@ -1,5 +1,6 @@
 use crate::crypto::vault::VaultError;
 use base64::Engine;
+use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 use tauri_plugin_store::StoreExt;
 
@@ -8,6 +9,30 @@ const TEST_KEY: &str = "vault_test";
 const TYPE_KEY: &str = "vault_type";
 const EMAIL_KEY: &str = "vault_email";
 const REMEMBER_KEY: &str = "vault_remember";
+const AUTO_LOCK_KEY: &str = "auto_lock_seconds";
+const LOCK_ON_HIDE_KEY: &str = "lock_on_hide";
+const LOCAL_ONLY_KEY: &str = "local_only";
+const BIOMETRIC_KEY: &str = "biometric_enabled";
+const BIOMETRIC_SECRET_KEY: &str = "biometric_secret";
+
+#[derive(Serialize, Deserialize, Clone)]
+pub struct AppSettings {
+    pub auto_lock_seconds: u64,
+    pub lock_on_hide: bool,
+    pub local_only: bool,
+    pub biometric_enabled: bool,
+}
+
+impl Default for AppSettings {
+    fn default() -> Self {
+        Self {
+            auto_lock_seconds: 120,
+            lock_on_hide: true,
+            local_only: false,
+            biometric_enabled: false,
+        }
+    }
+}
 
 pub struct Keychain;
 
@@ -132,6 +157,59 @@ impl Keychain {
         match cipher.decrypt(nonce, ciphertext) {
             Ok(decrypted) => Ok(decrypted == b"OTPVAULT_INIT"),
             Err(_) => Ok(false),
+        }
+    }
+
+    pub fn load_settings(app: &AppHandle) -> AppSettings {
+        let store = app.store("config.json");
+        let mut settings = AppSettings::default();
+        match store {
+            Ok(store) => {
+                if let Some(v) = store.get(AUTO_LOCK_KEY).and_then(|v| v.as_u64()) {
+                    settings.auto_lock_seconds = v;
+                }
+                if let Some(v) = store.get(LOCK_ON_HIDE_KEY).and_then(|v| v.as_bool()) {
+                    settings.lock_on_hide = v;
+                }
+                if let Some(v) = store.get(LOCAL_ONLY_KEY).and_then(|v| v.as_bool()) {
+                    settings.local_only = v;
+                }
+                if let Some(v) = store.get(BIOMETRIC_KEY).and_then(|v| v.as_bool()) {
+                    settings.biometric_enabled = v;
+                }
+            }
+            Err(_) => {}
+        }
+        settings
+    }
+
+    pub fn save_settings(app: &AppHandle, settings: &AppSettings) -> Result<(), VaultError> {
+        let store = app.store("config.json").map_err(|e| VaultError::Storage(e.to_string()))?;
+        store.set(AUTO_LOCK_KEY, serde_json::Value::from(settings.auto_lock_seconds));
+        store.set(LOCK_ON_HIDE_KEY, serde_json::Value::Bool(settings.lock_on_hide));
+        store.set(LOCAL_ONLY_KEY, serde_json::Value::Bool(settings.local_only));
+        store.set(BIOMETRIC_KEY, serde_json::Value::Bool(settings.biometric_enabled));
+        store.save().map_err(|e| VaultError::Storage(e.to_string()))
+    }
+
+    pub fn save_biometric_secret(app: &AppHandle, secret: &[u8]) -> Result<(), VaultError> {
+        let store = app.store("config.json").map_err(|e| VaultError::Storage(e.to_string()))?;
+        let b64 = base64::engine::general_purpose::STANDARD.encode(secret);
+        store.set(BIOMETRIC_SECRET_KEY, serde_json::Value::String(b64));
+        store.save().map_err(|e| VaultError::Storage(e.to_string()))
+    }
+
+    pub fn load_biometric_secret(app: &AppHandle) -> Option<Vec<u8>> {
+        let store = app.store("config.json").ok()?;
+        let v = store.get(BIOMETRIC_SECRET_KEY)?;
+        let b64 = v.as_str()?;
+        base64::engine::general_purpose::STANDARD.decode(b64).ok()
+    }
+
+    pub fn clear_biometric_secret(app: &AppHandle) {
+        if let Ok(store) = app.store("config.json") {
+            store.delete(BIOMETRIC_SECRET_KEY);
+            let _ = store.save();
         }
     }
 }

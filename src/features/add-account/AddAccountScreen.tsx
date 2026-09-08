@@ -4,8 +4,8 @@ import { motion } from 'motion/react'
 import { AppLayout } from '../../components/layout/AppLayout'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
-import { scanQrBytes, parseOTPAuthURI } from '../../lib/tauri'
-import type { AddAccountPayload } from '../../types'
+import { scanQrBytes, parseOTPAuthURI, getFolders } from '../../lib/tauri'
+import type { AddAccountPayload, Folder } from '../../types'
 
 interface AddAccountScreenProps {
   onBack: () => void
@@ -22,6 +22,9 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
   const [algorithm, setAlgorithm] = useState('SHA1')
   const [digits, setDigits] = useState(6)
   const [step, setStep] = useState(30)
+  const [folders, setFolders] = useState<Folder[]>([])
+  const [folderId, setFolderId] = useState('')
+  const [tags, setTags] = useState('')
   const [scanError, setScanError] = useState<string | null>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -29,6 +32,9 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
   const streamRef = useRef<MediaStream | null>(null)
   const scanLoopRef = useRef<number | null>(null)
   const processingRef = useRef(false)
+
+  const parseTags = (value: string): string[] =>
+    value.split(',').map(s => s.trim()).filter(Boolean).filter((s, i, a) => a.indexOf(s) === i)
 
   const stopCamera = useCallback(() => {
     if (scanLoopRef.current) {
@@ -55,11 +61,13 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
         algorithm: parsed.algorithm,
         digits: parsed.digits,
         step: parsed.step,
+        folderId: folderId || undefined,
+        tags: parseTags(tags),
       })
     } catch {
       setScanError(t('add_account.parse_error'))
     }
-  }, [stopCamera, onSave, t])
+  }, [stopCamera, onSave, t, folderId, tags])
 
   const processFrame = useCallback(async () => {
     if (processingRef.current) return
@@ -139,7 +147,16 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
   const handleSave = () => {
     if (!issuer || !secret) return
     const cleanSecret = secret.replace(/\s/g, '')
-    onSave({ issuer, accountName, secret: cleanSecret, algorithm, digits, step })
+    onSave({
+      issuer,
+      accountName,
+      secret: cleanSecret,
+      algorithm,
+      digits,
+      step,
+      folderId: folderId || undefined,
+      tags: parseTags(tags),
+    })
   }
 
   const handleBack = useCallback(() => {
@@ -147,6 +164,10 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
     if (mode === 'manual' || mode === 'qr-scanner') setMode('select')
     else onBack()
   }, [mode, onBack, stopCamera])
+
+  useEffect(() => {
+    getFolders().then(setFolders).catch(() => {})
+  }, [])
 
   useEffect(() => {
     return () => { if (streamRef.current) stopCamera() }
@@ -287,6 +308,27 @@ export function AddAccountScreen({ onBack, onSave }: AddAccountScreenProps) {
               value={secret}
               onChange={(e) => setSecret(e.target.value)}
               placeholder="JBSWY3DPEHPK3PXP"
+            />
+            <div>
+              <label className="text-xs font-medium text-surface-500 dark:text-surface-400 block mb-1.5">
+                {t('add_account.folder')}
+              </label>
+              <select
+                value={folderId}
+                onChange={(e) => setFolderId(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl border border-surface-200 dark:border-surface-600 bg-white dark:bg-surface-800 text-surface-900 dark:text-surface-100 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all"
+              >
+                <option value="">{t('add_account.no_folder')}</option>
+                {folders.map((folder) => (
+                  <option key={folder.id} value={folder.id}>{folder.name}</option>
+                ))}
+              </select>
+            </div>
+            <Input
+              label={t('add_account.tags')}
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              placeholder={t('add_account.tags_placeholder')}
             />
           </div>
         </div>

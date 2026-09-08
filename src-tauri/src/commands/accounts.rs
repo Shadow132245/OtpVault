@@ -1,12 +1,14 @@
 use crate::commands::auth::VaultManager;
 use crate::commands::neon;
 use crate::crypto::keychain::Keychain;
-use crate::crypto::vault::{AccountEntry, save_vault, load_vault};
+use crate::crypto::vault::{AccountEntry, Folder, TrashEntry, save_vault, load_vault};
 use crate::totp::generator::{TotpCode, TotpGenerator};
 use base64::Engine;
 use std::collections::HashSet;
 use tauri::State;
 use uuid::Uuid;
+
+const TRASH_RETENTION_DAYS: i64 = 14;
 
 #[tauri::command]
 pub fn get_accounts(app: tauri::AppHandle) -> Result<Vec<AccountEntry>, String> {
@@ -25,6 +27,8 @@ pub async fn add_account(
     digits: u32,
     step: u64,
     icon: String,
+    folder_id: Option<String>,
+    tags: Option<Vec<String>>,
 ) -> Result<(), String> {
     let secret_encrypted = {
         let vault_state = vault.0.lock().map_err(|e| e.to_string())?;
@@ -38,17 +42,25 @@ pub async fn add_account(
     let secret_b64 = base64::engine::general_purpose::STANDARD.encode(&secret_encrypted);
 
     let now = chrono::Utc::now().to_rfc3339();
-    let entry = AccountEntry {
-        id: Uuid::new_v4().to_string(),
+    let entry = AccountEntry::new(
+        Uuid::new_v4().to_string(),
         issuer,
         account_name,
-        secret_encrypted: secret_b64,
+        secret_b64,
         algorithm,
         digits,
         step,
         icon,
-        created_at: now.clone(),
-        updated_at: now,
+        now.clone(),
+        now,
+    );
+
+    let folder_id = folder_id.unwrap_or_default();
+    let tags = tags.unwrap_or_default();
+    let entry = AccountEntry {
+        folder_id,
+        tags,
+        ..entry
     };
 
     let mut data = load_vault(&app).map_err(|e| e.to_string())?;
@@ -68,7 +80,18 @@ pub async fn add_account(
 #[tauri::command]
 pub async fn delete_account(app: tauri::AppHandle, vault: State<'_, VaultManager>, account_id: String) -> Result<(), String> {
     let mut data = load_vault(&app).map_err(|e| e.to_string())?;
+    let now = chrono::Utc::now().to_rfc3339();
+
+    let account = match data.accounts.iter().find(|a| a.id == account_id) {
+        Some(a) => a.clone(),
+        None => return Err("Account not found".to_string()),
+    };
+
     data.accounts.retain(|a| a.id != account_id);
+    data.trash.push(TrashEntry {
+        account,
+        deleted_at: now,
+    });
     save_vault(&app, &data).map_err(|e| e.to_string())?;
 
     if let Some(email) = Keychain::load_email(&app) {
@@ -77,7 +100,7 @@ pub async fn delete_account(app: tauri::AppHandle, vault: State<'_, VaultManager
         }
     }
 
-    log::info!("Account deleted: {}", account_id);
+    log::info!("Account moved to trash: {}", account_id);
     Ok(())
 }
 
@@ -88,11 +111,19 @@ pub async fn update_account(
     account_id: String,
     issuer: String,
     account_name: String,
+    folder_id: Option<String>,
+    tags: Option<Vec<String>>,
 ) -> Result<(), String> {
     let mut data = load_vault(&app).map_err(|e| e.to_string())?;
     if let Some(account) = data.accounts.iter_mut().find(|a| a.id == account_id) {
         account.issuer = issuer;
         account.account_name = account_name;
+        if let Some(f) = folder_id {
+            account.folder_id = f;
+        }
+        if let Some(t) = tags {
+            account.tags = t;
+        }
         account.updated_at = chrono::Utc::now().to_rfc3339();
     }
     save_vault(&app, &data).map_err(|e| e.to_string())?;
@@ -210,6 +241,10 @@ pub async fn pull_vault_from_cloud(
         if !vault_state.is_unlocked() {
             return Ok(false);
         }
+        if Keychain::load_settings(&app).local_only {
+            log::info!("Local-only mode: skipping cloud pull");
+            return Ok(false);
+        }
 
         let encrypted_bytes = base64::engine::general_purpose::STANDARD
             .decode(&row.encrypted_vault)
@@ -272,8 +307,15 @@ pub async fn pull_vault_from_cloud(
                 continue;
             };
 
+            let folder_id = acc.get("folder_id").and_then(|v| v.as_str()).unwrap_or("").to_string();
+            let tags: Vec<String> = acc.get("tags")
+                .and_then(|v| v.as_array())
+                .map(|arr| arr.iter().filter_map(|t| t.as_str().map(|s| s.to_string())).collect())
+                .unwrap_or_default();
+
             local_vault.accounts.push(AccountEntry {
                 id, issuer, account_name, secret_encrypted, algorithm, digits, step, icon, created_at, updated_at,
+                folder_id, tags,
             });
             added += 1;
         }
@@ -289,4 +331,168 @@ pub async fn pull_vault_from_cloud(
     }
 
     Ok(added > 0 || removed > 0)
+}
+
+// ---- Folders ----
+
+#[tauri::command]
+pub fn get_folders(app: tauri::AppHandle) -> Result<Vec<Folder>, String> {
+    let data = load_vault(&app).map_err(|e| e.to_string())?;
+    Ok(data.folders)
+}
+
+#[tauri::command]
+pub async fn create_folder(app: tauri::AppHandle, vault: State<'_, VaultManager>, name: String) -> Result<Folder, String> {
+    let mut data = load_vault(&app).map_err(|e| e.to_string())?;
+    if name.trim().is_empty() {
+        return Err("Folder name cannot be empty".to_string());
+    }
+    let folder = Folder {
+        id: Uuid::new_v4().to_string(),
+        name: name.trim().to_string(),
+        created_at: chrono::Utc::now().to_rfc3339(),
+    };
+    data.folders.push(folder.clone());
+    save_vault(&app, &data).map_err(|e| e.to_string())?;
+
+    if let Some(email) = Keychain::load_email(&app) {
+        if let Err(e) = neon::upload_vault(&app, &*vault, &email).await {
+            log::warn!("Neon sync warning (non-fatal): {}", e);
+        }
+    }
+    Ok(folder)
+}
+
+#[tauri::command]
+pub async fn rename_folder(app: tauri::AppHandle, vault: State<'_, VaultManager>, folder_id: String, name: String) -> Result<(), String> {
+    let mut data = load_vault(&app).map_err(|e| e.to_string())?;
+    if let Some(folder) = data.folders.iter_mut().find(|f| f.id == folder_id) {
+        folder.name = name;
+    }
+    save_vault(&app, &data).map_err(|e| e.to_string())?;
+
+    if let Some(email) = Keychain::load_email(&app) {
+        if let Err(e) = neon::upload_vault(&app, &*vault, &email).await {
+            log::warn!("Neon sync warning (non-fatal): {}", e);
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn delete_folder(app: tauri::AppHandle, vault: State<'_, VaultManager>, folder_id: String) -> Result<(), String> {
+    let mut data = load_vault(&app).map_err(|e| e.to_string())?;
+    data.folders.retain(|f| f.id != folder_id);
+    for account in &mut data.accounts {
+        if account.folder_id == folder_id {
+            account.folder_id = String::new();
+        }
+    }
+    save_vault(&app, &data).map_err(|e| e.to_string())?;
+
+    if let Some(email) = Keychain::load_email(&app) {
+        if let Err(e) = neon::upload_vault(&app, &*vault, &email).await {
+            log::warn!("Neon sync warning (non-fatal): {}", e);
+        }
+    }
+    Ok(())
+}
+
+// ---- Move / Tags ----
+
+#[tauri::command]
+pub async fn move_account(app: tauri::AppHandle, vault: State<'_, VaultManager>, account_id: String, folder_id: String) -> Result<(), String> {
+    let mut data = load_vault(&app).map_err(|e| e.to_string())?;
+    if let Some(account) = data.accounts.iter_mut().find(|a| a.id == account_id) {
+        account.folder_id = folder_id;
+        account.updated_at = chrono::Utc::now().to_rfc3339();
+    }
+    save_vault(&app, &data).map_err(|e| e.to_string())?;
+
+    if let Some(email) = Keychain::load_email(&app) {
+        if let Err(e) = neon::upload_vault(&app, &*vault, &email).await {
+            log::warn!("Neon sync warning (non-fatal): {}", e);
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn set_account_tags(app: tauri::AppHandle, vault: State<'_, VaultManager>, account_id: String, tags: Vec<String>) -> Result<(), String> {
+    let mut data = load_vault(&app).map_err(|e| e.to_string())?;
+    if let Some(account) = data.accounts.iter_mut().find(|a| a.id == account_id) {
+        account.tags = tags;
+        account.updated_at = chrono::Utc::now().to_rfc3339();
+    }
+    save_vault(&app, &data).map_err(|e| e.to_string())?;
+
+    if let Some(email) = Keychain::load_email(&app) {
+        if let Err(e) = neon::upload_vault(&app, &*vault, &email).await {
+            log::warn!("Neon sync warning (non-fatal): {}", e);
+        }
+    }
+    Ok(())
+}
+
+// ---- Trash ----
+
+fn purge_expired_trash(data: &mut crate::crypto::vault::VaultData) {
+    let cutoff = chrono::Utc::now() - chrono::Duration::days(TRASH_RETENTION_DAYS);
+    data.trash.retain(|entry| {
+        chrono::DateTime::parse_from_rfc3339(&entry.deleted_at)
+            .map(|dt| dt.with_timezone(&chrono::Utc) > cutoff)
+            .unwrap_or(true)
+    });
+}
+
+#[tauri::command]
+pub fn get_trash(app: tauri::AppHandle) -> Result<Vec<TrashEntry>, String> {
+    let mut data = load_vault(&app).map_err(|e| e.to_string())?;
+    purge_expired_trash(&mut data);
+    Ok(data.trash)
+}
+
+#[tauri::command]
+pub async fn restore_trash_entry(app: tauri::AppHandle, vault: State<'_, VaultManager>, account_id: String) -> Result<(), String> {
+    let mut data = load_vault(&app).map_err(|e| e.to_string())?;
+    if let Some(idx) = data.trash.iter().position(|t| t.account.id == account_id) {
+        let entry = data.trash.remove(idx);
+        data.accounts.push(entry.account);
+    }
+    save_vault(&app, &data).map_err(|e| e.to_string())?;
+
+    if let Some(email) = Keychain::load_email(&app) {
+        if let Err(e) = neon::upload_vault(&app, &*vault, &email).await {
+            log::warn!("Neon sync warning (non-fatal): {}", e);
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn purge_trash_entry(app: tauri::AppHandle, vault: State<'_, VaultManager>, account_id: String) -> Result<(), String> {
+    let mut data = load_vault(&app).map_err(|e| e.to_string())?;
+    data.trash.retain(|t| t.account.id != account_id);
+    save_vault(&app, &data).map_err(|e| e.to_string())?;
+
+    if let Some(email) = Keychain::load_email(&app) {
+        if let Err(e) = neon::upload_vault(&app, &*vault, &email).await {
+            log::warn!("Neon sync warning (non-fatal): {}", e);
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
+pub async fn empty_trash(app: tauri::AppHandle, vault: State<'_, VaultManager>) -> Result<(), String> {
+    let mut data = load_vault(&app).map_err(|e| e.to_string())?;
+    data.trash.clear();
+    save_vault(&app, &data).map_err(|e| e.to_string())?;
+
+    if let Some(email) = Keychain::load_email(&app) {
+        if let Err(e) = neon::upload_vault(&app, &*vault, &email).await {
+            log::warn!("Neon sync warning (non-fatal): {}", e);
+        }
+    }
+    Ok(())
 }

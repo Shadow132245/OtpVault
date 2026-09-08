@@ -11,6 +11,8 @@ export interface AccountEntry {
   icon: string
   created_at: string
   updated_at: string
+  folder_id: string
+  tags: string[]
 }
 
 export interface AddAccountPayload {
@@ -20,6 +22,26 @@ export interface AddAccountPayload {
   algorithm: string
   digits: number
   step: number
+  folderId?: string
+  tags?: string[]
+}
+
+export interface Folder {
+  id: string
+  name: string
+  created_at: string
+}
+
+export interface TrashEntry {
+  account: AccountEntry
+  deleted_at: string
+}
+
+export interface AppSettings {
+  auto_lock_seconds: number
+  lock_on_hide: boolean
+  local_only: boolean
+  biometric_enabled: boolean
 }
 
 export interface TotpCode {
