@@ -157,24 +157,6 @@ fn show_biometric_prompt(
     result
 }
 
-/// Resolves the currently resumed Activity from the main thread.
-#[cfg(target_os = "android")]
-fn get_current_activity(env: &mut jni::JNIEnv<'_>) -> Result<jni::objects::JObject, String> {
-    let _ = env.exception_clear();
-    let activity = env
-        .call_static_method(
-            "android/app/ActivityThread",
-            "currentActivity",
-            "()Landroid/app/Activity;",
-            &[],
-        )
-        .and_then(|v| v.l())
-        .ok()
-        .filter(|o| !o.is_null());
-    let _ = env.exception_clear();
-    activity.ok_or_else(|| "Current Android activity not available".to_string())
-}
-
 /// Runs the biometric prompt. The prompt is built and shown on the Android
 /// main thread (where the real Activity lives) via the app's main-thread
 /// dispatcher; this thread waits for the authentication result.
@@ -200,7 +182,23 @@ fn run_biometric_prompt(app: &tauri::AppHandle) -> Result<bool, String> {
             std::panic::catch_unwind(|| -> Result<(), String> {
                 let vm = unsafe { jni::JavaVM::from_raw(vm_ptr) }.map_err(|e| e.to_string())?;
                 let mut env = vm.attach_current_thread().map_err(|e| e.to_string())?;
-                let activity = get_current_activity(&mut env)?;
+
+                let _ = env.exception_clear();
+                let activity = env
+                    .call_static_method(
+                        "android/app/ActivityThread",
+                        "currentActivity",
+                        "()Landroid/app/Activity;",
+                        &[],
+                    )
+                    .map_err(|e| format!("JNI currentActivity: {}", e))?
+                    .l()
+                    .map_err(|e| e.to_string())?;
+                let _ = env.exception_clear();
+                if activity.is_null() {
+                    return Err("Current Android activity not available".to_string());
+                }
+
                 show_biometric_prompt(&mut env, &activity, callback_ptr)
             })
             .unwrap_or_else(|_| Err("Biometric prompt setup panicked".to_string()))
