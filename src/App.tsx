@@ -30,6 +30,7 @@ import {
   moveAccount,
   biometricSupported as checkBiometricSupport,
   onAppHidden,
+  vaultStatus,
 } from './lib/tauri'
 import type { AccountEntry, AddAccountPayload, AppSettings } from './types'
 
@@ -86,6 +87,15 @@ function App() {
       if (exists === false) {
         setScreen('onboarding')
       } else {
+        // A mobile webview can be recreated while the app was backgrounded;
+        // if the vault is still unlocked in memory (auto-lock "Never"), keep
+        // the user logged in instead of forcing another login.
+        const stillUnlocked = await vaultStatus().catch(() => false)
+        if (stillUnlocked) {
+          vault.setUnlocked(true)
+          setScreen('accounts')
+          return
+        }
         const creds = await loadRememberMe()
         if (creds && !settings.biometric_enabled) {
           try {

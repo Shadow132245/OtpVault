@@ -26,6 +26,7 @@ pub fn run() {
             commands::auth::create_vault,
             commands::auth::unlock_vault,
             commands::auth::lock_vault,
+            commands::auth::vault_is_unlocked,
             commands::auth::verify_password,
             commands::email_auth::email_sign_up,
             commands::email_auth::email_sign_in,

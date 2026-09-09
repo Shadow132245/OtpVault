@@ -39,6 +39,17 @@ pub fn lock_vault(vault: State<'_, VaultManager>) -> Result<(), String> {
     Ok(())
 }
 
+/// Whether the vault is still unlocked in memory. Used so a reloaded
+/// frontend (e.g. Android webview recreated in the background) can restore
+/// the unlocked UI instead of forcing a login when auto-lock is "Never".
+#[tauri::command]
+pub fn vault_is_unlocked(vault: State<'_, VaultManager>) -> bool {
+    match vault.0.lock() {
+        Ok(g) => g.is_unlocked(),
+        Err(poisoned) => poisoned.into_inner().is_unlocked(),
+    }
+}
+
 #[tauri::command]
 pub fn verify_password(app: tauri::AppHandle, password: String) -> Result<bool, String> {
     Keychain::verify_password(&app, &password).map_err(|e| e.to_string())

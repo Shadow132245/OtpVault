@@ -158,10 +158,14 @@ fn show_biometric_prompt(
 }
 
 /// Runs the biometric prompt. The prompt is built and shown on the Android
-/// main thread (where the real Activity lives) via the app's main-thread
-/// dispatcher; this thread waits for the authentication result.
+/// main thread with the real Activity (obtained from wry's webview handle);
+/// this thread waits for the authentication result.
 #[cfg(target_os = "android")]
 fn run_biometric_prompt(app: &tauri::AppHandle) -> Result<bool, String> {
+    let webview = app
+        .get_webview("main")
+        .ok_or_else(|| "Webview not available".to_string())?;
+
     let (tx, rx) = std::sync::mpsc::channel::<(i32, i32)>();
     let prompt_tx = tx.clone();
 
@@ -174,38 +178,21 @@ fn run_biometric_prompt(app: &tauri::AppHandle) -> Result<bool, String> {
     let show_error = std::sync::Arc::new(std::sync::Mutex::new(None::<Result<(), String>>));
     let show_error_main = show_error.clone();
 
-    app.run_on_main_thread(move || {
-        let vm_ptr = JAVA_VM.load(std::sync::atomic::Ordering::Relaxed);
-        let result = if vm_ptr.is_null() {
-            Err("Android VM not initialized yet".to_string())
-        } else {
-            std::panic::catch_unwind(|| -> Result<(), String> {
-                let vm = unsafe { jni::JavaVM::from_raw(vm_ptr) }.map_err(|e| e.to_string())?;
-                let mut env = vm.attach_current_thread().map_err(|e| e.to_string())?;
-
-                let _ = env.exception_clear();
-                let activity = env
-                    .call_static_method(
-                        "android/app/ActivityThread",
-                        "currentActivity",
-                        "()Landroid/app/Activity;",
-                        &[],
-                    )
-                    .map_err(|e| format!("JNI currentActivity: {}", e))?
-                    .l()
-                    .map_err(|e| e.to_string())?;
-                let _ = env.exception_clear();
-                if activity.is_null() {
-                    return Err("Current Android activity not available".to_string());
+    webview
+        .with_webview(move |platform_webview| {
+            platform_webview.jni_handle().exec(move |env, activity, _webview| {
+                let result = std::panic::catch_unwind(|| {
+                    show_biometric_prompt(env, activity, callback_ptr)
+                })
+                .unwrap_or_else(|_| Err("Biometric prompt setup panicked".to_string()));
+                match &result {
+                    Ok(()) => log::info!("Android biometric prompt launched"),
+                    Err(e) => log::error!("Android biometric prompt setup failed: {}", e),
                 }
-
-                show_biometric_prompt(&mut env, &activity, callback_ptr)
-            })
-            .unwrap_or_else(|_| Err("Biometric prompt setup panicked".to_string()))
-        };
-        *show_error_main.lock().unwrap() = Some(result);
-    })
-    .map_err(|e| format!("Failed to run prompt on the main thread: {}", e))?;
+                *show_error_main.lock().unwrap() = Some(result);
+            });
+        })
+        .map_err(|e| format!("Failed to obtain webview handle: {}", e))?;
 
     if let Some(Err(e)) = show_error.lock().unwrap().take() {
         return Err(e);

@@ -223,3 +223,7 @@ export async function verifyPassword(password: string): Promise<boolean> {
 export async function onAppHidden(): Promise<void> {
   return invoke('on_app_hidden')
 }
+
+export async function vaultStatus(): Promise<boolean> {
+  return invoke('vault_is_unlocked')
+}
