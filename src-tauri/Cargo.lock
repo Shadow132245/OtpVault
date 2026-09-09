@@ -2993,7 +2993,6 @@ dependencies = [
  "totp-rs",
  "url",
  "uuid",
- "wry",
 ]
 
 [[package]]

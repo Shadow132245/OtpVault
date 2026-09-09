@@ -60,8 +60,8 @@ fn get_callback_class(env: &mut jni::JNIEnv<'_>) -> Result<(), String> {
 }
 
 /// Builds and launches the platform `BiometricPrompt` on the Android main
-/// thread (invoked from `wry::android::dispatch`, which provides the real
-/// Activity context). Java exceptions are always cleared so a failure can
+/// thread (invoked from `run_on_main_thread`, which provides access to the
+/// real Activity). Java exceptions are always cleared so a failure can
 /// never crash the app; errors are reported as Err.
 #[cfg(target_os = "android")]
 fn show_biometric_prompt(
@@ -157,10 +157,29 @@ fn show_biometric_prompt(
     result
 }
 
-/// Runs the biometric prompt. The prompt itself is shown on the Android UI
-/// thread via `wry::android::dispatch`; this thread waits for the result.
+/// Resolves the currently resumed Activity from the main thread.
 #[cfg(target_os = "android")]
-fn run_biometric_prompt() -> Result<bool, String> {
+fn get_current_activity(env: &mut jni::JNIEnv<'_>) -> Result<jni::objects::JObject, String> {
+    let _ = env.exception_clear();
+    let activity = env
+        .call_static_method(
+            "android/app/ActivityThread",
+            "currentActivity",
+            "()Landroid/app/Activity;",
+            &[],
+        )
+        .and_then(|v| v.l())
+        .ok()
+        .filter(|o| !o.is_null());
+    let _ = env.exception_clear();
+    activity.ok_or_else(|| "Current Android activity not available".to_string())
+}
+
+/// Runs the biometric prompt. The prompt is built and shown on the Android
+/// main thread (where the real Activity lives) via the app's main-thread
+/// dispatcher; this thread waits for the authentication result.
+#[cfg(target_os = "android")]
+fn run_biometric_prompt(app: &tauri::AppHandle) -> Result<bool, String> {
     let (tx, rx) = std::sync::mpsc::channel::<(i32, i32)>();
     let prompt_tx = tx.clone();
 
@@ -170,9 +189,29 @@ fn run_biometric_prompt() -> Result<bool, String> {
     });
     let callback_ptr = Box::into_raw(Box::new(callback)) as i64;
 
-    wry::android::dispatch(move |env, activity, _webview| {
-        let _ = show_biometric_prompt(env, activity, callback_ptr);
-    });
+    let show_error = std::sync::Arc::new(std::sync::Mutex::new(None::<Result<(), String>>));
+    let show_error_main = show_error.clone();
+
+    app.run_on_main_thread(move || {
+        let vm_ptr = JAVA_VM.load(std::sync::atomic::Ordering::Relaxed);
+        let result = if vm_ptr.is_null() {
+            Err("Android VM not initialized yet".to_string())
+        } else {
+            std::panic::catch_unwind(|| -> Result<(), String> {
+                let vm = unsafe { jni::JavaVM::from_raw(vm_ptr) }.map_err(|e| e.to_string())?;
+                let mut env = vm.attach_current_thread().map_err(|e| e.to_string())?;
+                let activity = get_current_activity(&mut env)?;
+                show_biometric_prompt(&mut env, &activity, callback_ptr)
+            })
+            .unwrap_or_else(|_| Err("Biometric prompt setup panicked".to_string()))
+        };
+        *show_error_main.lock().unwrap() = Some(result);
+    })
+    .map_err(|e| format!("Failed to run prompt on the main thread: {}", e))?;
+
+    if let Some(Err(e)) = show_error.lock().unwrap().take() {
+        return Err(e);
+    }
 
     let (error_code, _help_code) = rx
         .recv_timeout(std::time::Duration::from_secs(120))
@@ -334,7 +373,7 @@ fn biometric_supported_blocking() -> Result<bool, String> {
 }
 
 #[cfg(not(target_os = "android"))]
-fn run_biometric_prompt() -> Result<bool, String> {
+fn run_biometric_prompt(_app: &tauri::AppHandle) -> Result<bool, String> {
     Err("Biometric unlock is only available on mobile devices".into())
 }
 
@@ -403,7 +442,8 @@ pub async fn setup_biometric(
         return Err("Incorrect password".into());
     }
 
-    let verified = tauri::async_runtime::spawn_blocking(run_biometric_prompt)
+    let app2 = app.clone();
+    let verified = tauri::async_runtime::spawn_blocking(move || run_biometric_prompt(&app2))
         .await
         .map_err(|e| format!("Biometric prompt task failed: {}", e))?;
     if !verified? {
@@ -449,7 +489,8 @@ pub async fn unlock_with_biometric(app: AppHandle) -> Result<bool, String> {
         _ => return Ok(false),
     };
 
-    let allowed = tauri::async_runtime::spawn_blocking(run_biometric_prompt)
+    let app2 = app.clone();
+    let allowed = tauri::async_runtime::spawn_blocking(move || run_biometric_prompt(&app2))
         .await
         .map_err(|e| format!("Biometric prompt task failed: {}", e))?;
     if !allowed? {
