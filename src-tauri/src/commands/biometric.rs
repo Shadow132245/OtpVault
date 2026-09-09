@@ -183,7 +183,7 @@ fn run_biometric_prompt(app: &tauri::AppHandle) -> Result<bool, String> {
             platform_webview.jni_handle().exec(move |env, activity, _webview| {
                 let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                     show_biometric_prompt(env, activity, callback_ptr)
-                })
+                }))
                 .unwrap_or_else(|_| Err("Biometric prompt setup panicked".to_string()));
                 match &result {
                     Ok(()) => log::info!("Android biometric prompt launched"),
