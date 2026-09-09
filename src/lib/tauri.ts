@@ -219,3 +219,7 @@ export async function pullVaultFromCloud(): Promise<boolean> {
 export async function verifyPassword(password: string): Promise<boolean> {
   return invoke('verify_password', { password })
 }
+
+export async function onAppHidden(): Promise<void> {
+  return invoke('on_app_hidden')
+}

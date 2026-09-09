@@ -12,6 +12,10 @@
 #   public *;
 #}
 
+# The BiometricPrompt callback class and its native hook are looked up by
+# their exact names from Rust at runtime; never rename or strip them.
+-keep class com.otpvault.desktop.BiometricCallback { *; }
+
 # Uncomment this to preserve the line number information for
 # debugging stack traces.
 #-keepattributes SourceFile,LineNumberTable

@@ -29,6 +29,7 @@ import {
   unlockWithBiometric,
   moveAccount,
   biometricSupported as checkBiometricSupport,
+  onAppHidden,
 } from './lib/tauri'
 import type { AccountEntry, AddAccountPayload, AppSettings } from './types'
 
@@ -105,6 +106,21 @@ function App() {
   useEffect(() => {
     getSettings().then((s) => setAppSettings(s)).catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (!isMobileDevice) return
+    const onHidden = () => {
+      if (document.hidden || document.visibilityState === 'hidden') {
+        onAppHidden().catch(() => {})
+      }
+    }
+    document.addEventListener('visibilitychange', onHidden)
+    window.addEventListener('blur', onHidden)
+    return () => {
+      document.removeEventListener('visibilitychange', onHidden)
+      window.removeEventListener('blur', onHidden)
+    }
+  }, [isMobileDevice])
 
   useEffect(() => {
     if (vault.unlocked) {

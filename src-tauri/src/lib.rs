@@ -32,6 +32,7 @@ pub fn run() {
             commands::email_auth::save_remember_me,
             commands::email_auth::load_remember_me,
             commands::email_auth::clear_remember_me,
+            commands::auth::on_app_hidden,
             commands::accounts::get_accounts,
             commands::accounts::add_account,
             commands::accounts::delete_account,

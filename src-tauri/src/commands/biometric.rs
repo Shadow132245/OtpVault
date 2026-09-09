@@ -11,92 +11,190 @@ static JAVA_VM: std::sync::atomic::AtomicPtr<jni::sys::JavaVM> =
     std::sync::atomic::AtomicPtr::new(std::ptr::null_mut());
 
 #[cfg(target_os = "android")]
-static NDK_INIT_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
-
-#[cfg(target_os = "android")]
-static NDK_INIT_DONE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
-
-#[cfg(target_os = "android")]
 #[no_mangle]
 pub extern "system" fn JNI_OnLoad(vm: *mut jni::sys::JavaVM, _reserved: *mut std::ffi::c_void) -> i32 {
     JAVA_VM.store(vm, std::sync::atomic::Ordering::Relaxed);
     0x00010006 // JNI_VERSION_1_6
 }
 
-/// Initializes the global `ndk_context` once so robius-authentication's
-/// biometric prompt can find the Java VM and Activity/Application context.
 #[cfg(target_os = "android")]
-fn init_android_env() {
-    use std::sync::atomic::Ordering;
+static CALLBACK_CLASS: std::sync::OnceLock<jni::objects::GlobalRef> = std::sync::OnceLock::new();
 
-    if NDK_INIT_DONE.load(Ordering::Relaxed) {
-        return;
+/// Receive `BiometricCallback` results from Java.
+/// `callback_ptr_ptr` is a leaked pointer to a `Box<dyn Fn(i32, i32)>` given
+/// to Java at construction; this function takes ownership back and frees it.
+#[cfg(target_os = "android")]
+unsafe extern "C" fn rust_callback<'a>(
+    _env: jni::JNIEnv<'a>,
+    _obj: jni::objects::JObject<'a>,
+    callback_ptr_ptr: jni::sys::jlong,
+    error_code: jni::sys::jint,
+    help_code: jni::sys::jint,
+) {
+    let callback = unsafe { Box::from_raw(callback_ptr_ptr as *mut Box<dyn Fn(i32, i32)>) };
+    callback(error_code, help_code);
+}
+
+#[cfg(target_os = "android")]
+fn get_callback_class(env: &mut jni::JNIEnv<'_>) -> Result<(), String> {
+    use jni::NativeMethod;
+
+    if CALLBACK_CLASS.get().is_some() {
+        return Ok(());
     }
-    let _guard = match NDK_INIT_LOCK.lock() {
-        Ok(g) => g,
-        Err(poisoned) => poisoned.into_inner(),
-    };
-    if NDK_INIT_DONE.load(Ordering::Relaxed) {
-        return;
-    }
+    env.register_native_methods(
+        "com/otpvault/desktop/BiometricCallback",
+        &[NativeMethod {
+            name: "rustCallback".into(),
+            sig: "(JII)V".into(),
+            fn_ptr: rust_callback as *mut std::ffi::c_void,
+        }],
+    )
+    .map_err(|e| format!("JNI register_native_methods: {}", e))?;
+    let class = env
+        .find_class("com/otpvault/desktop/BiometricCallback")
+        .map_err(|e| format!("JNI find_class(BiometricCallback): {}", e))?;
+    let global = env.new_global_ref(&class).map_err(|e| e.to_string())?;
+    CALLBACK_CLASS.get_or_init(|| global);
+    Ok(())
+}
 
-    let outcome = std::panic::catch_unwind(|| -> Result<(), String> {
-        let vm_ptr = JAVA_VM.load(Ordering::Relaxed);
-        if vm_ptr.is_null() {
-            return Err("Android VM not initialized yet".to_string());
-        }
-        let vm = unsafe { jni::JavaVM::from_raw(vm_ptr) }.map_err(|e| e.to_string())?;
-        let mut env = vm.attach_current_thread().map_err(|e| e.to_string())?;
+/// Builds and launches the platform `BiometricPrompt` on the Android main
+/// thread (invoked from `wry::android::dispatch`, which provides the real
+/// Activity context). Java exceptions are always cleared so a failure can
+/// never crash the app; errors are reported as Err.
+#[cfg(target_os = "android")]
+fn show_biometric_prompt(
+    env: &mut jni::JNIEnv<'_>,
+    activity: &jni::objects::JObject<'_>,
+    callback_ptr: i64,
+) -> Result<(), String> {
+    use jni::objects::{JObject, JValue};
 
-        // Prefer the current Activity for the biometric dialog; fall back to
-        // the Application context if the Activity is not reachable.
-        let activity = env
-            .call_static_method(
-                "android/app/ActivityThread",
-                "currentActivity",
-                "()Landroid/app/Activity;",
-                &[],
+    let result = (|| -> Result<(), String> {
+        get_callback_class(env)?;
+
+        let instance = env
+            .new_object(
+                "com/otpvault/desktop/BiometricCallback",
+                "(J)V",
+                &[JValue::Long(callback_ptr)],
             )
-            .and_then(|v| v.l())
-            .ok()
-            .filter(|o| !o.is_null());
-        let _ = env.exception_clear();
+            .map_err(|e| format!("JNI new BiometricCallback: {}", e))?;
+        let instance_global = env.new_global_ref(&instance).map_err(|e| e.to_string())?;
 
-        let context = match activity {
-            Some(a) => a,
-            None => {
-                let application = env
-                    .call_static_method(
-                        "android/app/ActivityThread",
-                        "currentApplication",
-                        "()Landroid/app/Application;",
-                        &[],
-                    )
-                    .map_err(|e| format!("JNI currentApplication: {}", e))?
-                    .l()
-                    .map_err(|e| e.to_string())?;
-                if application.is_null() {
-                    return Err("Android application context not available yet".to_string());
-                }
-                application
-            }
-        };
+        let builder = env
+            .new_object(
+                "android/hardware/biometrics/BiometricPrompt$Builder",
+                "(Landroid/content/Context;)V",
+                &[JValue::Object(activity)],
+            )
+            .map_err(|e| format!("JNI new BiometricPrompt.Builder: {}", e))?;
 
-        // Promote to a global reference; intentionally leaked for the process lifetime.
-        let global = env.new_global_ref(&context).map_err(|e| e.to_string())?;
-        let ctx_ptr = global.as_raw() as *mut std::ffi::c_void;
-        std::mem::forget(global);
+        let title: JObject = env.new_string("OtpVault").map_err(|e| e.to_string())?.into();
+        env.call_method(
+            &builder,
+            "setTitle",
+            "(Ljava/lang/CharSequence;)Landroid/hardware/biometrics/BiometricPrompt$Builder;",
+            &[JValue::Object(&title)],
+        )
+        .map_err(|e| format!("JNI setTitle: {}", e))?;
 
-        unsafe {
-            ndk_context::initialize_android_context(vm_ptr as *mut std::ffi::c_void, ctx_ptr);
-        }
+        let subtitle: JObject = env.new_string("Unlock your vault").map_err(|e| e.to_string())?.into();
+        env.call_method(
+            &builder,
+            "setSubtitle",
+            "(Ljava/lang/CharSequence;)Landroid/hardware/biometrics/BiometricPrompt$Builder;",
+            &[JValue::Object(&subtitle)],
+        )
+        .map_err(|e| format!("JNI setSubtitle: {}", e))?;
+
+        // BiometricManager.Authenticators.BIOMETRIC_STRONG = 0x0f (fingerprint / face)
+        env.call_method(
+            &builder,
+            "setAllowedAuthenticators",
+            "(I)Landroid/hardware/biometrics/BiometricPrompt$Builder;",
+            &[JValue::Int(0x0f)],
+        )
+        .map_err(|e| format!("JNI setAllowedAuthenticators: {}", e))?;
+
+        let prompt = env
+            .call_method(&builder, "build", "()Landroid/hardware/biometrics/BiometricPrompt;", &[])
+            .map_err(|e| format!("JNI BiometricPrompt.build: {}", e))?
+            .l()
+            .map_err(|e| e.to_string())?;
+
+        // Keep the prompt and callback objects alive for the auth session.
+        let prompt_global = env.new_global_ref(&prompt).map_err(|e| e.to_string())?;
+        std::mem::forget(prompt_global);
+        std::mem::forget(instance_global);
+
+        let cancellation = env
+            .new_object("android/os/CancellationSignal", "()V", &[])
+            .map_err(|e| e.to_string())?;
+        let executor = env
+            .call_method(activity, "getMainExecutor", "()Ljava/util/concurrent/Executor;", &[])
+            .map_err(|e| format!("JNI getMainExecutor: {}", e))?
+            .l()
+            .map_err(|e| e.to_string())?;
+
+        env.call_method(
+            &prompt,
+            "authenticate",
+            "(Landroid/os/CancellationSignal;Ljava/util/concurrent/Executor;Landroid/hardware/biometrics/BiometricPrompt$AuthenticationCallback;)V",
+            &[
+                JValue::Object(&cancellation),
+                JValue::Object(&executor),
+                JValue::Object(&instance),
+            ],
+        )
+        .map_err(|e| format!("JNI BiometricPrompt.authenticate: {}", e))?;
         Ok(())
+    })();
+
+    // Never leave a pending Java exception on the main thread.
+    let _ = env.exception_clear();
+    result
+}
+
+/// Runs the biometric prompt. The prompt itself is shown on the Android UI
+/// thread via `wry::android::dispatch`; this thread waits for the result.
+#[cfg(target_os = "android")]
+fn run_biometric_prompt() -> Result<bool, String> {
+    let (tx, rx) = std::sync::mpsc::channel::<(i32, i32)>();
+    let prompt_tx = tx.clone();
+
+    // Hand the callback closure to Java as a raw pointer; rust_callback frees it.
+    let callback: Box<dyn Fn(i32, i32)> = Box::new(move |error_code, help_code| {
+        let _ = prompt_tx.send((error_code, help_code));
+    });
+    let callback_ptr = Box::into_raw(Box::new(callback)) as i64;
+
+    wry::android::dispatch(move |env, activity, _webview| {
+        let _ = show_biometric_prompt(env, activity, callback_ptr);
     });
 
-    match outcome {
-        Ok(Ok(())) => NDK_INIT_DONE.store(true, Ordering::Relaxed),
-        Ok(Err(e)) => log::warn!("ndk_context init skipped: {}", e),
-        Err(_) => log::warn!("ndk_context init panicked"),
+    let (error_code, _help_code) = rx
+        .recv_timeout(std::time::Duration::from_secs(120))
+        .map_err(|_| "Biometric prompt timed out".to_string())?;
+
+    if error_code == 0 {
+        Ok(true)
+    } else {
+        Err(prompt_error(error_code))
+    }
+}
+
+#[cfg(target_os = "android")]
+fn prompt_error(code: i32) -> String {
+    match code {
+        10 => "Biometric prompt was cancelled".to_string(),
+        9 | 7 => "Too many failed attempts, try again later".to_string(),
+        3 => "Biometric prompt timed out".to_string(),
+        12 => "No biometric hardware available".to_string(),
+        11 => "No fingerprints enrolled on this device".to_string(),
+        1 => "Biometric hardware is currently unavailable".to_string(),
+        _ => format!("Biometric authentication failed (code {})", code),
     }
 }
 
@@ -170,7 +268,6 @@ fn check_with_context(
 
 #[cfg(target_os = "android")]
 fn device_supports_biometrics() -> Result<bool, String> {
-    init_android_env();
     let outcome = std::panic::catch_unwind(|| -> Result<bool, String> {
         let vm_ptr = JAVA_VM.load(std::sync::atomic::Ordering::Relaxed);
         if vm_ptr.is_null() {
@@ -178,6 +275,16 @@ fn device_supports_biometrics() -> Result<bool, String> {
         }
         let vm = unsafe { jni::JavaVM::from_raw(vm_ptr) }.map_err(|e| e.to_string())?;
         let mut env = vm.attach_current_thread().map_err(|e| e.to_string())?;
+
+        // The platform BiometricPrompt needs API 28+; hide the option below that.
+        let sdk_int = env
+            .get_static_field("android/os/Build$VERSION", "SDK_INT", "I")
+            .map_err(|e| e.to_string())?
+            .i()
+            .map_err(|e| e.to_string())?;
+        if sdk_int < 28 {
+            return Ok(false);
+        }
 
         let application = env
             .call_static_method(
@@ -224,39 +331,6 @@ fn biometric_supported_blocking() -> Result<bool, String> {
 #[cfg(not(target_os = "android"))]
 fn biometric_supported_blocking() -> Result<bool, String> {
     Ok(false)
-}
-
-#[cfg(target_os = "android")]
-fn run_biometric_prompt() -> Result<bool, String> {
-    init_android_env();
-    use robius_authentication::{AndroidText, BiometricStrength, Context, PolicyBuilder, Text, WindowsText};
-
-    let policy = PolicyBuilder::new()
-        .biometrics(Some(BiometricStrength::Strong))
-        .password(false)
-        .companion(false)
-        .build()
-        .ok_or_else(|| "Failed to build biometric policy".to_string())?;
-
-    let text = Text {
-        android: AndroidText {
-            title: "OtpVault",
-            subtitle: Some("Unlock your vault"),
-            description: None,
-        },
-        apple: "Unlock your vault",
-        windows: WindowsText::new_truncated("OtpVault", "Unlock your vault"),
-    };
-
-    let (tx, rx) = std::sync::mpsc::channel();
-    Context::new(())
-        .authenticate(text, &policy, move |result| {
-            let _ = tx.send(result.is_ok());
-        })
-        .map_err(|e| format!("Failed to launch biometric prompt: {}", e))?;
-
-    rx.recv_timeout(std::time::Duration::from_secs(120))
-        .map_err(|_| "Biometric prompt timed out".to_string())
 }
 
 #[cfg(not(target_os = "android"))]

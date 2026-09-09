@@ -1,7 +1,7 @@
 use crate::crypto::keychain::Keychain;
 use crate::crypto::vault::{VaultData, VaultState, save_vault};
 use std::sync::Mutex;
-use tauri::State;
+use tauri::{Emitter, Manager, State};
 
 pub struct VaultManager(pub Mutex<VaultState>);
 
@@ -42,4 +42,30 @@ pub fn lock_vault(vault: State<'_, VaultManager>) -> Result<(), String> {
 #[tauri::command]
 pub fn verify_password(app: tauri::AppHandle, password: String) -> Result<bool, String> {
     Keychain::verify_password(&app, &password).map_err(|e| e.to_string())
+}
+
+/// Called from the frontend when the app is backgrounded/minimized on mobile.
+/// Mirrors the desktop "lock when the window is hidden" behavior: waits the
+/// configured auto-lock delay, then locks the vault if it is still unlocked.
+#[tauri::command]
+pub fn on_app_hidden(app: tauri::AppHandle) {
+    let settings = Keychain::load_settings(&app);
+    if !settings.lock_on_hide || settings.auto_lock_seconds <= 0 {
+        return;
+    }
+    let auto_lock_ms = settings.auto_lock_seconds * 1000;
+    tauri::async_runtime::spawn(async move {
+        std::thread::sleep(std::time::Duration::from_millis(auto_lock_ms));
+        if let Some(state) = app.try_state::<VaultManager>() {
+            let mut guard = match state.0.lock() {
+                Ok(g) => g,
+                Err(poisoned) => poisoned.into_inner(),
+            };
+            if guard.is_unlocked() {
+                guard.lock();
+                log::info!("Auto-lock: locked after app hidden");
+                let _ = app.emit("lock-vault", ());
+            }
+        }
+    });
 }
