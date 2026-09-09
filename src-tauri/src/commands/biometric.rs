@@ -3,6 +3,7 @@ use crate::commands::neon;
 use crate::crypto::keychain::Keychain;
 use crate::crypto::vault::{self, VaultState};
 use tauri::AppHandle;
+use tauri::Emitter;
 use tauri::Manager;
 use tauri::State;
 
@@ -19,6 +20,12 @@ pub extern "system" fn JNI_OnLoad(vm: *mut jni::sys::JavaVM, _reserved: *mut std
 
 #[cfg(target_os = "android")]
 static CALLBACK_CLASS: std::sync::OnceLock<jni::objects::GlobalRef> = std::sync::OnceLock::new();
+
+#[cfg(target_os = "android")]
+fn emit_stage(app: &tauri::AppHandle, stage: &str) {
+    log::info!("biometric stage: {stage}");
+    let _ = app.emit("biometric-stage", stage.to_string());
+}
 
 /// Receive `BiometricCallback` results from Java.
 /// `callback_ptr_ptr` is a leaked pointer to a `Box<dyn Fn(i32, i32)>` given
@@ -60,20 +67,22 @@ fn get_callback_class(env: &mut jni::JNIEnv<'_>) -> Result<(), String> {
 }
 
 /// Builds and launches the platform `BiometricPrompt` on the Android main
-/// thread (invoked from `run_on_main_thread`, which provides access to the
+/// thread (invoked from the main thread's JNI dispatch, which provides the
 /// real Activity). Java exceptions are always cleared so a failure can
-/// never crash the app; errors are reported as Err.
+/// never crash the app; errors are reported as Err. Each stage is reported
+/// to the frontend via the "biometric-stage" event so failures are visible.
 #[cfg(target_os = "android")]
 fn show_biometric_prompt(
     env: &mut jni::JNIEnv<'_>,
     activity: &jni::objects::JObject<'_>,
     callback_ptr: i64,
+    app: &tauri::AppHandle,
 ) -> Result<(), String> {
     use jni::objects::{JObject, JValue};
 
     let result = (|| -> Result<(), String> {
         get_callback_class(env)?;
-        log::info!("biometric: callback class ready");
+        emit_stage(app, "class-ok");
 
         let instance = env
             .new_object(
@@ -82,7 +91,7 @@ fn show_biometric_prompt(
                 &[JValue::Long(callback_ptr)],
             )
             .map_err(|e| format!("JNI new BiometricCallback: {}", e))?;
-        log::info!("biometric: callback instance created");
+        emit_stage(app, "callback-created");
         let instance_global = env.new_global_ref(&instance).map_err(|e| e.to_string())?;
 
         let builder = env
@@ -92,6 +101,7 @@ fn show_biometric_prompt(
                 &[JValue::Object(activity)],
             )
             .map_err(|e| format!("JNI new BiometricPrompt.Builder: {}", e))?;
+        emit_stage(app, "builder-created");
 
         let title: JObject = env.new_string("OtpVault").map_err(|e| e.to_string())?.into();
         env.call_method(
@@ -111,23 +121,34 @@ fn show_biometric_prompt(
         )
         .map_err(|e| format!("JNI setSubtitle: {}", e))?;
 
-        // BiometricManager.Authenticators.BIOMETRIC_STRONG = 0x0f (fingerprint / face)
-        env.call_method(
-            &builder,
-            "setAllowedAuthenticators",
-            "(I)Landroid/hardware/biometrics/BiometricPrompt$Builder;",
-            &[JValue::Int(0x0f)],
-        )
-        .map_err(|e| format!("JNI setAllowedAuthenticators: {}", e))?;
+        // setAllowedAuthenticators only exists on API 30+; below that the
+        // default authenticators apply (BIOMETRIC_WEAK + device credential).
+        let sdk_int = env
+            .get_static_field("android/os/Build$VERSION", "SDK_INT", "I")
+            .map_err(|e| e.to_string())?
+            .i()
+            .map_err(|e| e.to_string())?;
+        if sdk_int >= 30 {
+            // BiometricManager.Authenticators.BIOMETRIC_STRONG = 0x0f
+            env.call_method(
+                &builder,
+                "setAllowedAuthenticators",
+                "(I)Landroid/hardware/biometrics/BiometricPrompt$Builder;",
+                &[JValue::Int(0x0f)],
+            )
+            .map_err(|e| format!("JNI setAllowedAuthenticators: {}", e))?;
+        } else {
+            log::info!("biometric: SDK < 30, skipping setAllowedAuthenticators");
+        }
 
         let prompt = env
             .call_method(&builder, "build", "()Landroid/hardware/biometrics/BiometricPrompt;", &[])
             .map_err(|e| format!("JNI BiometricPrompt.build: {}", e))?
             .l()
             .map_err(|e| e.to_string())?;
+        emit_stage(app, "prompt-built");
 
         // Keep the prompt and callback objects alive for the auth session.
-        log::info!("biometric: prompt built");
         let prompt_global = env.new_global_ref(&prompt).map_err(|e| e.to_string())?;
         std::mem::forget(prompt_global);
         std::mem::forget(instance_global);
@@ -140,7 +161,7 @@ fn show_biometric_prompt(
             .map_err(|e| format!("JNI getMainExecutor: {}", e))?
             .l()
             .map_err(|e| e.to_string())?;
-        log::info!("biometric: main executor obtained");
+        emit_stage(app, "executor-ok");
 
         env.call_method(
             &prompt,
@@ -153,6 +174,7 @@ fn show_biometric_prompt(
             ],
         )
         .map_err(|e| format!("JNI BiometricPrompt.authenticate: {}", e))?;
+        emit_stage(app, "authenticate-ok");
         log::info!("biometric: BiometricPrompt.authenticate() accepted");
         Ok(())
     })();
@@ -183,6 +205,7 @@ fn run_biometric_prompt(app: &tauri::AppHandle) -> Result<bool, String> {
     let webview_window = app
         .get_webview_window("main")
         .ok_or_else(|| "Webview window not available".to_string())?;
+    emit_stage(app, "window-ok");
 
     let (tx, rx) = std::sync::mpsc::channel::<(i32, i32)>();
     let prompt_tx = tx.clone();
@@ -195,12 +218,15 @@ fn run_biometric_prompt(app: &tauri::AppHandle) -> Result<bool, String> {
 
     let show_error = std::sync::Arc::new(std::sync::Mutex::new(None::<Result<(), String>>));
     let show_error_main = show_error.clone();
+    let app_stage = app.clone();
 
     webview_window
         .with_webview(move |platform_webview| {
+            emit_stage(&app_stage, "with-webview-ran");
             platform_webview.jni_handle().exec(move |env, activity, _webview| {
+                emit_stage(&app_stage, "exec-ran");
                 let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                    show_biometric_prompt(env, activity, callback_ptr)
+                    show_biometric_prompt(env, activity, callback_ptr, &app_stage)
                 }))
                 .unwrap_or_else(|_| Err("Biometric prompt setup panicked".to_string()));
                 match &result {

@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { listen } from '@tauri-apps/api/event'
 import { Modal } from './Modal'
 import { Button } from './Button'
 import { setupBiometric } from '../../lib/tauri'
@@ -15,6 +16,24 @@ export function BiometricSetupModal({ open, onClose, onEnabled }: BiometricSetup
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [stage, setStage] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!open) return
+    setStage(null)
+    let disposed = false
+    let unlisten: (() => void) | undefined
+    listen<string>('biometric-stage', (e) => {
+      if (!disposed && typeof e.payload === 'string') setStage(e.payload)
+    }).then((fn) => {
+      if (disposed) fn()
+      else unlisten = fn
+    })
+    return () => {
+      disposed = true
+      unlisten?.()
+    }
+  }, [open])
 
   const handleClose = () => {
     setPassword('')
@@ -71,6 +90,11 @@ export function BiometricSetupModal({ open, onClose, onEnabled }: BiometricSetup
         {loading && (
           <p className="text-xs text-primary-500 dark:text-primary-400 text-center">
             {t('biometric.requires_finger')}
+          </p>
+        )}
+        {loading && stage && (
+          <p className="text-[10px] text-surface-400 dark:text-surface-500 text-center break-all">
+            stage: {stage}
           </p>
         )}
         <div className="flex gap-3 pt-2">
