@@ -163,8 +163,9 @@ fn show_biometric_prompt(
 #[cfg(target_os = "android")]
 fn run_biometric_prompt(app: &tauri::AppHandle) -> Result<bool, String> {
     let webview = app
-        .get_webview("main")
-        .ok_or_else(|| "Webview not available".to_string())?;
+        .get_webview_window("main")
+        .ok_or_else(|| "Webview window not available".to_string())?
+        .webview();
 
     let (tx, rx) = std::sync::mpsc::channel::<(i32, i32)>();
     let prompt_tx = tx.clone();
