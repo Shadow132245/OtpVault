@@ -162,10 +162,9 @@ fn show_biometric_prompt(
 /// this thread waits for the authentication result.
 #[cfg(target_os = "android")]
 fn run_biometric_prompt(app: &tauri::AppHandle) -> Result<bool, String> {
-    let webview = app
+    let webview_window = app
         .get_webview_window("main")
-        .ok_or_else(|| "Webview window not available".to_string())?
-        .webview();
+        .ok_or_else(|| "Webview window not available".to_string())?;
 
     let (tx, rx) = std::sync::mpsc::channel::<(i32, i32)>();
     let prompt_tx = tx.clone();
@@ -179,7 +178,7 @@ fn run_biometric_prompt(app: &tauri::AppHandle) -> Result<bool, String> {
     let show_error = std::sync::Arc::new(std::sync::Mutex::new(None::<Result<(), String>>));
     let show_error_main = show_error.clone();
 
-    webview
+    webview_window
         .with_webview(move |platform_webview| {
             platform_webview.jni_handle().exec(move |env, activity, _webview| {
                 let result = std::panic::catch_unwind(|| {
