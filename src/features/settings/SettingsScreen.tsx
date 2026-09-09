@@ -46,17 +46,18 @@ function SettingRow({ label, value, action }: { label: string; value?: string; a
 }
 
 function Toggle({ on, onChange, danger }: { on: boolean; onChange: (v: boolean) => void; danger?: boolean }) {
+  const isRtl = document.documentElement.dir === 'rtl'
   return (
     <button
       onClick={() => onChange(!on)}
       aria-checked={on}
       role="switch"
-      className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-primary-500 ${on ? (danger ? 'bg-red-500' : 'bg-primary-600') : 'bg-surface-300 dark:bg-surface-600'}`}
+      className={`relative w-11 h-6 flex items-center rounded-full transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-primary-500 ${on ? (danger ? 'bg-red-500' : 'bg-primary-600') : 'bg-surface-300 dark:bg-surface-600'}`}
     >
       <motion.div
-        animate={{ x: on ? 22 : 2 }}
+        animate={{ x: on ? (isRtl ? -20 : 20) : 0 }}
         transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-        className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+        className="mx-1 w-4 h-4 bg-white rounded-full shadow-sm"
       />
     </button>
   )
@@ -131,12 +132,12 @@ export function SettingsScreen({
               action={
                 <button
                   onClick={toggleTheme}
-                  className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-primary-500 ${theme === 'dark' ? 'bg-primary-600' : 'bg-surface-300 dark:bg-surface-600'}`}
+                  className={`relative w-11 h-6 flex items-center rounded-full transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-primary-500 ${theme === 'dark' ? 'bg-primary-600' : 'bg-surface-300 dark:bg-surface-600'}`}
                 >
                   <motion.div
-                    animate={{ x: theme === 'dark' ? 22 : 2 }}
+                    animate={{ x: theme === 'dark' ? (document.documentElement.dir === 'rtl' ? -20 : 20) : 0 }}
                     transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                    className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                    className="mx-1 w-4 h-4 bg-white rounded-full shadow-sm"
                   />
                 </button>
               }

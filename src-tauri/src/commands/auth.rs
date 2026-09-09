@@ -56,17 +56,19 @@ pub fn verify_password(app: tauri::AppHandle, password: String) -> Result<bool, 
 }
 
 /// Called from the frontend when the app is backgrounded/minimized on mobile.
-/// Mirrors the desktop "lock when the window is hidden" behavior: waits the
-/// configured auto-lock delay, then locks the vault if it is still unlocked.
+/// Mirrors the desktop "lock when the window is hidden" behavior: if enabled,
+/// locks the vault right away (independently of the auto-lock inactivity
+/// timer).
 #[tauri::command]
 pub fn on_app_hidden(app: tauri::AppHandle) {
     let settings = Keychain::load_settings(&app);
-    if !settings.lock_on_hide || settings.auto_lock_seconds <= 0 {
+    if !settings.lock_on_hide {
         return;
     }
-    let auto_lock_ms = settings.auto_lock_seconds * 1000;
     tauri::async_runtime::spawn(async move {
-        std::thread::sleep(std::time::Duration::from_millis(auto_lock_ms));
+        // Brief delay so the frontend can finish reacting to the hide event
+        // (it may also fire the lock-vault path itself).
+        std::thread::sleep(std::time::Duration::from_millis(300));
         if let Some(state) = app.try_state::<VaultManager>() {
             let mut guard = match state.0.lock() {
                 Ok(g) => g,

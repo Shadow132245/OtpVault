@@ -73,6 +73,7 @@ fn show_biometric_prompt(
 
     let result = (|| -> Result<(), String> {
         get_callback_class(env)?;
+        log::info!("biometric: callback class ready");
 
         let instance = env
             .new_object(
@@ -81,6 +82,7 @@ fn show_biometric_prompt(
                 &[JValue::Long(callback_ptr)],
             )
             .map_err(|e| format!("JNI new BiometricCallback: {}", e))?;
+        log::info!("biometric: callback instance created");
         let instance_global = env.new_global_ref(&instance).map_err(|e| e.to_string())?;
 
         let builder = env
@@ -125,6 +127,7 @@ fn show_biometric_prompt(
             .map_err(|e| e.to_string())?;
 
         // Keep the prompt and callback objects alive for the auth session.
+        log::info!("biometric: prompt built");
         let prompt_global = env.new_global_ref(&prompt).map_err(|e| e.to_string())?;
         std::mem::forget(prompt_global);
         std::mem::forget(instance_global);
@@ -137,6 +140,7 @@ fn show_biometric_prompt(
             .map_err(|e| format!("JNI getMainExecutor: {}", e))?
             .l()
             .map_err(|e| e.to_string())?;
+        log::info!("biometric: main executor obtained");
 
         env.call_method(
             &prompt,
@@ -149,10 +153,24 @@ fn show_biometric_prompt(
             ],
         )
         .map_err(|e| format!("JNI BiometricPrompt.authenticate: {}", e))?;
+        log::info!("biometric: BiometricPrompt.authenticate() accepted");
         Ok(())
     })();
 
-    // Never leave a pending Java exception on the main thread.
+    // Never leave a pending Java exception on the main thread; surface any
+    // pending exception here so the log explains why the dialog never showed.
+    if result.is_err() && !env.exception_check().unwrap_or(false) {
+        log::warn!("biometric: prompt setup failed without a pending Java exception");
+    }
+    if let Ok(true) = env.exception_check() {
+        match env.exception_describe() {
+            Ok(desc) => log::error!(
+                "biometric: pending Java exception: {}",
+                desc.message.as_deref().unwrap_or("(unknown)")
+            ),
+            Err(e) => log::error!("biometric: pending Java exception (describe failed: {})", e),
+        }
+    }
     let _ = env.exception_clear();
     result
 }
@@ -193,14 +211,15 @@ fn run_biometric_prompt(app: &tauri::AppHandle) -> Result<bool, String> {
             });
         })
         .map_err(|e| format!("Failed to obtain webview handle: {}", e))?;
+    log::info!("biometric: prompt posted to webview handle");
 
     if let Some(Err(e)) = show_error.lock().unwrap().take() {
         return Err(e);
     }
 
     let (error_code, _help_code) = rx
-        .recv_timeout(std::time::Duration::from_secs(120))
-        .map_err(|_| "Biometric prompt timed out".to_string())?;
+        .recv_timeout(std::time::Duration::from_secs(60))
+        .map_err(|_| "Biometric prompt timed out (the system dialog did not complete)".to_string())?;
 
     if error_code == 0 {
         Ok(true)
