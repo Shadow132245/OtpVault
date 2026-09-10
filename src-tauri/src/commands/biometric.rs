@@ -19,7 +19,7 @@ pub extern "system" fn JNI_OnLoad(vm: *mut jni::sys::JavaVM, _reserved: *mut std
 }
 
 #[cfg(target_os = "android")]
-static CALLBACK_CLASS: std::sync::OnceLock<jni::objects::GlobalRef> = std::sync::OnceLock::new();
+static CLASS_REF: std::sync::OnceLock<jni::objects::GlobalRef> = std::sync::OnceLock::new();
 
 #[cfg(target_os = "android")]
 fn emit_stage(app: &tauri::AppHandle, stage: &str) {
@@ -27,43 +27,24 @@ fn emit_stage(app: &tauri::AppHandle, stage: &str) {
     let _ = app.emit("biometric-stage", stage.to_string());
 }
 
-/// Receive `BiometricCallback` results from Java.
-/// `callback_ptr_ptr` is a leaked pointer to a `Box<dyn Fn(i32, i32)>` given
-/// to Java at construction; this function takes ownership back and frees it.
+/// Reads the auth result that `BiometricCallback` stored in its static
+/// fields. Returns -2 while the prompt is still pending, 0 on success,
+/// or a platform error code. Uses the class global reference captured on
+/// the main thread, because `FindClass` from an attached native thread
+/// cannot resolve application classes.
 #[cfg(target_os = "android")]
-unsafe extern "C" fn rust_callback<'a>(
-    _env: jni::JNIEnv<'a>,
-    _obj: jni::objects::JObject<'a>,
-    callback_ptr_ptr: jni::sys::jlong,
-    error_code: jni::sys::jint,
-    help_code: jni::sys::jint,
-) {
-    let callback = unsafe { Box::from_raw(callback_ptr_ptr as *mut Box<dyn Fn(i32, i32)>) };
-    callback(error_code, help_code);
-}
-
-#[cfg(target_os = "android")]
-fn get_callback_class(env: &mut jni::JNIEnv<'_>) -> Result<(), String> {
-    use jni::NativeMethod;
-
-    if CALLBACK_CLASS.get().is_some() {
-        return Ok(());
-    }
-    env.register_native_methods(
-        "com/otpvault/desktop/BiometricCallback",
-        &[NativeMethod {
-            name: "rustCallback".into(),
-            sig: "(JII)V".into(),
-            fn_ptr: rust_callback as *mut std::ffi::c_void,
-        }],
-    )
-    .map_err(|e| format!("JNI register_native_methods: {}", e))?;
-    let class = env
-        .find_class("com/otpvault/desktop/BiometricCallback")
-        .map_err(|e| format!("JNI find_class(BiometricCallback): {}", e))?;
-    let global = env.new_global_ref(&class).map_err(|e| e.to_string())?;
-    CALLBACK_CLASS.get_or_init(|| global);
-    Ok(())
+fn poll_result(vm: &jni::JavaVM) -> Result<i32, String> {
+    let class = CLASS_REF
+        .get()
+        .ok_or_else(|| "BiometricCallback class not initialized yet".to_string())?;
+    let mut env = vm.attach_current_thread().map_err(|e| e.to_string())?;
+    let code = env
+        .call_static_method(&class.as_obj(), "poll", "()I", &[])
+        .map_err(|e| format!("JNI BiometricCallback.poll: {}", e))?
+        .i()
+        .map_err(|e| e.to_string())?;
+    let _ = env.exception_clear();
+    Ok(code)
 }
 
 /// Builds and launches the platform `BiometricPrompt` on the Android main
@@ -75,21 +56,21 @@ fn get_callback_class(env: &mut jni::JNIEnv<'_>) -> Result<(), String> {
 fn show_biometric_prompt(
     env: &mut jni::JNIEnv<'_>,
     activity: &jni::objects::JObject<'_>,
-    callback_ptr: i64,
     app: &tauri::AppHandle,
 ) -> Result<(), String> {
     use jni::objects::{JObject, JValue};
 
     let result = (|| -> Result<(), String> {
-        get_callback_class(env)?;
-        emit_stage(app, "class-ok");
+        let class = env
+            .find_class("com/otpvault/desktop/BiometricCallback")
+            .map_err(|e| format!("JNI find_class(BiometricCallback): {}", e))?;
+        // Cache it so the polling thread never has to FindClass an app class.
+        let class_global = env.new_global_ref(&class).map_err(|e| e.to_string())?;
+        let _ = CLASS_REF.get_or_init(|| class_global);
+        emit_stage(app, "class-found");
 
         let instance = env
-            .new_object(
-                "com/otpvault/desktop/BiometricCallback",
-                "(J)V",
-                &[JValue::Long(callback_ptr)],
-            )
+            .new_object(&class, "()V", &[])
             .map_err(|e| format!("JNI new BiometricCallback: {}", e))?;
         emit_stage(app, "callback-created");
         let instance_global = env.new_global_ref(&instance).map_err(|e| e.to_string())?;
@@ -194,22 +175,13 @@ fn show_biometric_prompt(
 
 /// Runs the biometric prompt. The prompt is built and shown on the Android
 /// main thread with the real Activity (obtained from wry's webview handle);
-/// this thread waits for the authentication result.
+/// the auth result is polled from `BiometricCallback`'s static fields.
 #[cfg(target_os = "android")]
 fn run_biometric_prompt(app: &tauri::AppHandle) -> Result<bool, String> {
     let webview_window = app
         .get_webview_window("main")
         .ok_or_else(|| "Webview window not available".to_string())?;
     emit_stage(app, "window-ok");
-
-    let (tx, rx) = std::sync::mpsc::channel::<(i32, i32)>();
-    let prompt_tx = tx.clone();
-
-    // Hand the callback closure to Java as a raw pointer; rust_callback frees it.
-    let callback: Box<dyn Fn(i32, i32)> = Box::new(move |error_code, help_code| {
-        let _ = prompt_tx.send((error_code, help_code));
-    });
-    let callback_ptr = Box::into_raw(Box::new(callback)) as i64;
 
     let show_error = std::sync::Arc::new(std::sync::Mutex::new(None::<Result<(), String>>));
     let show_error_main = show_error.clone();
@@ -221,7 +193,7 @@ fn run_biometric_prompt(app: &tauri::AppHandle) -> Result<bool, String> {
             platform_webview.jni_handle().exec(move |env, activity, _webview| {
                 emit_stage(&app_stage, "exec-ran");
                 let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                    show_biometric_prompt(env, activity, callback_ptr, &app_stage)
+                    show_biometric_prompt(env, activity, &app_stage)
                 }))
                 .unwrap_or_else(|_| Err("Biometric prompt setup panicked".to_string()));
                 match &result {
@@ -238,14 +210,31 @@ fn run_biometric_prompt(app: &tauri::AppHandle) -> Result<bool, String> {
         return Err(e);
     }
 
-    let (error_code, _help_code) = rx
-        .recv_timeout(std::time::Duration::from_secs(60))
-        .map_err(|_| "Biometric prompt timed out (the system dialog did not complete)".to_string())?;
+    let vm_ptr = JAVA_VM.load(std::sync::atomic::Ordering::Relaxed);
+    if vm_ptr.is_null() {
+        return Err("Android VM not initialized yet".to_string());
+    }
+    let vm = unsafe { jni::JavaVM::from_raw(vm_ptr) }.map_err(|e| e.to_string())?;
 
-    if error_code == 0 {
-        Ok(true)
-    } else {
-        Err(prompt_error(error_code))
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(60);
+    loop {
+        std::thread::sleep(std::time::Duration::from_millis(100));
+        if std::time::Instant::now() >= deadline {
+            emit_stage(app, "timeout");
+            return Err("Biometric prompt timed out (the system dialog did not complete)".to_string());
+        }
+        match poll_result(&vm) {
+            Ok(-2) => continue,
+            Ok(0) => {
+                emit_stage(app, "result-ok");
+                return Ok(true);
+            }
+            Ok(code) => {
+                emit_stage(app, &format!("result-err-{}", code));
+                return Err(prompt_error(code));
+            }
+            Err(e) => return Err(e),
+        }
     }
 }
 

@@ -3,22 +3,23 @@ package com.otpvault.desktop;
 import android.hardware.biometrics.BiometricPrompt;
 
 /**
- * Receives results from the platform BiometricPrompt and forwards them to the
- * Rust layer through the native `rustCallback` method registered by Rust.
+ * Receives results from the platform BiometricPrompt and stores them in
+ * static fields. The Rust layer polls {@link #poll()} from a JNI-attached
+ * thread, so no runtime native-method registration is required.
  */
 public final class BiometricCallback extends BiometricPrompt.AuthenticationCallback {
 
-  private final long pointer;
+  private static volatile boolean hasResult;
+  private static volatile int lastErrorCode;
 
-  private native void rustCallback(long pointer, int errorCode, int helpCode);
-
-  public BiometricCallback(long pointer) {
-    this.pointer = pointer;
+  private static void onDone(int errorCode) {
+    lastErrorCode = errorCode;
+    hasResult = true;
   }
 
   @Override
   public void onAuthenticationError(int errorCode, CharSequence errString) {
-    rustCallback(pointer, errorCode, 0);
+    onDone(errorCode);
   }
 
   @Override
@@ -28,6 +29,18 @@ public final class BiometricCallback extends BiometricPrompt.AuthenticationCallb
 
   @Override
   public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
-    rustCallback(pointer, 0, 0);
+    onDone(0);
+  }
+
+  /**
+   * Returns the pending result and clears it, or -2 if there is none yet.
+   * Error code 0 means success.
+   */
+  public static int poll() {
+    if (!hasResult) {
+      return -2;
+    }
+    hasResult = false;
+    return lastErrorCode;
   }
 }

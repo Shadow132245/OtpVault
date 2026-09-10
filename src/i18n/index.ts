@@ -16,8 +16,13 @@ i18n
     interpolation: {
       escapeValue: false,
     },
+    //
+    // Engineered to start in English: the very first launch has no saved
+    // language, so we ignore the device locale (navigator) and fall back to
+    // 'en'. Once the user switches language the choice is persisted
+    // (localStorage) and respected on later launches.
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage'],
       caches: ['localStorage'],
     },
   })
