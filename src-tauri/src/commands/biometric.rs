@@ -185,13 +185,8 @@ fn show_biometric_prompt(
         log::warn!("biometric: prompt setup failed without a pending Java exception");
     }
     if let Ok(true) = env.exception_check() {
-        match env.exception_describe() {
-            Ok(desc) => log::error!(
-                "biometric: pending Java exception: {}",
-                desc.message.as_deref().unwrap_or("(unknown)")
-            ),
-            Err(e) => log::error!("biometric: pending Java exception (describe failed: {})", e),
-        }
+        log::error!("biometric: a Java exception was left pending (details on stderr below)");
+        let _ = env.exception_describe();
     }
     let _ = env.exception_clear();
     result
