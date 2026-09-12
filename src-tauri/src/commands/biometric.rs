@@ -34,12 +34,16 @@ fn emit_stage(app: &tauri::AppHandle, stage: &str) {
 /// cannot resolve application classes.
 #[cfg(target_os = "android")]
 fn poll_result(vm: &jni::JavaVM) -> Result<i32, String> {
-    let class = CLASS_REF
+    let class_global = CLASS_REF
         .get()
         .ok_or_else(|| "BiometricCallback class not initialized yet".to_string())?;
+    // The global ref outlives this call, so reusing its raw `jclass` handle
+    // never requires `FindClass` (which cannot see app classes from an
+    // attached native thread).
+    let class = unsafe { jni::objects::JClass::from_raw(class_global.as_raw() as jni::sys::jclass) };
     let mut env = vm.attach_current_thread().map_err(|e| e.to_string())?;
     let code = env
-        .call_static_method(&class.as_obj(), "poll", "()I", &[])
+        .call_static_method(class, "poll", "()I", &[])
         .map_err(|e| format!("JNI BiometricCallback.poll: {}", e))?
         .i()
         .map_err(|e| e.to_string())?;
