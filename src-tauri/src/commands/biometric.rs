@@ -210,8 +210,24 @@ fn run_biometric_prompt(app: &tauri::AppHandle) -> Result<bool, String> {
         .map_err(|e| format!("Failed to obtain webview handle: {}", e))?;
     log::info!("biometric: prompt posted to webview handle");
 
-    if let Some(Err(e)) = show_error.lock().unwrap().take() {
-        return Err(e);
+    // The setup closure runs asynchronously on the Android main thread, so
+    // wait until it has completed (Ok/Err) before doing anything else.
+    let setup_deadline = std::time::Instant::now() + std::time::Duration::from_secs(10);
+    loop {
+        if let Some(result) = show_error.lock().unwrap().take() {
+            match result {
+                Ok(()) => break,
+                Err(e) => {
+                    emit_stage(app, "setup-failed");
+                    return Err(e);
+                }
+            }
+        }
+        if std::time::Instant::now() >= setup_deadline {
+            emit_stage(app, "setup-timeout");
+            return Err("Biometric dialog could not be launched (setup timed out)".to_string());
+        }
+        std::thread::sleep(std::time::Duration::from_millis(50));
     }
 
     let vm_ptr = JAVA_VM.load(std::sync::atomic::Ordering::Relaxed);
