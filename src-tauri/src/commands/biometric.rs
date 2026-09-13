@@ -32,12 +32,19 @@ fn emit_stage(app: &tauri::AppHandle, stage: &str) {
 #[cfg(target_os = "android")]
 fn exception_message(env: &mut jni::JNIEnv<'_>) -> Option<String> {
     use jni::objects::JString;
-    let obj: jni::objects::JObject = env.exception_occurred().ok()??.into();
+    let throwable = match env.exception_occurred().ok()? {
+        t if t.is_null() => return None,
+        t => t,
+    };
+    let obj: jni::objects::JObject = throwable.into();
     let text = env
         .call_method(&obj, "toString", "()Ljava/lang/String;", &[])
         .ok()
         .and_then(|v| v.l().ok())
-        .and_then(|o| JString::from(o).as_rust_str(env).ok().map(|s| s.to_string()));
+        .and_then(|o| {
+            let s = JString::from(o);
+            env.get_string(&s).ok().and_then(|js| js.to_str().ok().map(|x| x.to_owned()))
+        });
     let _ = env.exception_clear();
     text
 }
