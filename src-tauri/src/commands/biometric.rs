@@ -27,6 +27,21 @@ fn emit_stage(app: &tauri::AppHandle, stage: &str) {
     let _ = app.emit("biometric-stage", stage.to_string());
 }
 
+/// Reads the message of the currently-pending Java exception (if any) and
+/// clears it, so the exact failure text can be shown in the UI.
+#[cfg(target_os = "android")]
+fn exception_message(env: &mut jni::JNIEnv<'_>) -> Option<String> {
+    use jni::objects::JString;
+    let obj: jni::objects::JObject = env.exception_occurred().ok()??.into();
+    let text = env
+        .call_method(&obj, "toString", "()Ljava/lang/String;", &[])
+        .ok()
+        .and_then(|v| v.l().ok())
+        .and_then(|o| JString::from(o).as_rust_str(env).ok().map(|s| s.to_string()));
+    let _ = env.exception_clear();
+    text
+}
+
 /// Reads the auth result that `BiometricCallback` stored in its static
 /// fields. Returns -2 while the prompt is still pending, 0 on success,
 /// or a platform error code. Uses the class global reference captured on
@@ -67,7 +82,10 @@ fn show_biometric_prompt(
     let result = (|| -> Result<(), String> {
         let class = env
             .find_class("com/otpvault/desktop/BiometricCallback")
-            .map_err(|e| format!("JNI find_class(BiometricCallback): {}", e))?;
+            .map_err(|e| {
+                let msg = exception_message(env).unwrap_or_default();
+                format!("JNI find_class(BiometricCallback): {} — {}", e, msg)
+            })?;
         // Cache it so the polling thread never has to FindClass an app class.
         let class_global = env.new_global_ref(&class).map_err(|e| e.to_string())?;
         let _ = CLASS_REF.get_or_init(|| class_global);
