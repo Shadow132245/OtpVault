@@ -82,8 +82,14 @@ jobs:
 
       - name: Set Android Version Info
         run: |
-          echo "tauri.android.versionCode=3" > src-tauri/gen/android/app/tauri.properties
-          echo "tauri.android.versionName=0.2.2" >> src-tauri/gen/android/app/tauri.properties
+          VERSION=$(python3 -c "import json;print(json.load(open('src-tauri/tauri.android.conf.json'))['version'])")
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+          PATCH=$(echo "$VERSION" | cut -d. -f3)
+          VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))
+          echo "tauri.android.versionCode=$VERSION_CODE" > src-tauri/gen/android/app/tauri.properties
+          echo "tauri.android.versionName=$VERSION" >> src-tauri/gen/android/app/tauri.properties
+          echo "Using Android version $VERSION (versionCode $VERSION_CODE)"
 
       - name: Generate Keystore and Patch Signing
         run: |

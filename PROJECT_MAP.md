@@ -2,7 +2,7 @@
 
 > A zero-knowledge, open-source 2FA authenticator — encrypted at rest, backed up to the cloud.
 > **Platforms**: Windows Desktop (MSI) | Android (APK) | PWA (Browser)
-> **Current Version**: v0.2.0
+> **Current Version**: v0.2.2
 
 ---
 
@@ -417,15 +417,17 @@ Both Rust and JS use identical parameters:
 
 | Item | Details |
 |---|---|
-| Permissions | CAMERA, INTERNET, WRITE_EXTERNAL_STORAGE |
+| Permissions | CAMERA, INTERNET, WRITE_EXTERNAL_STORAGE, REQUEST_INSTALL_PACKAGES (updater) |
 | Fullscreen | Immersive mode via WindowCompat (patched in onResume via `patch-android-fullscreen.py`) |
+| Biometric | `BiometricCallback.java` (static poll) + `BiometricClick.java` (negative button for API 28/29); classes loaded via app ClassLoader (`jni.rs::load_app_class`) |
 | QR Scanner | Continuous auto-scan via `requestAnimationFrame` + jsQR |
 | QR Optimization | JPEG quality 0.6, max 480px, ~30KB per frame (vs ~500KB PNG) |
 | QR Auto-Save | Calls `onSave` callback on detection → auto-adds account |
 | Vault Format | Per-account `secret_encrypted` (base64 salt+nonce+ciphertext) |
 | Cloud Sync | Rust HTTP client → Vercel API → Neon |
+| Self-Update | `UpdateInstaller.java` (DownloadManager) + `UpdateFileProvider.java` (content://) → system installer screen |
 | Config | `src-tauri/tauri.android.conf.json` |
-| Patches | `scripts/patch-android-permissions.py`, `scripts/patch-android-fullscreen.py` |
+| Patches | `scripts/patch-android-permissions.py`, `scripts/patch-android-fullscreen.py`, `scripts/patch-android-biometric.py`, `scripts/patch-android-updater.py` |
 | Icon | Separate Android icons in `src-tauri/icons/android/` (shield + lock, indigo gradient) |
 | Icon Sizes | mipmap-mdpi (48), hdpi (72), xhdpi (96), xxhdpi (144), xxxhdpi (192) |
 | Icon Script | `scripts/generate-android-icons.mjs` |
@@ -440,13 +442,16 @@ Both Rust and JS use identical parameters:
 | Workflow | Trigger | Platform | Output |
 |---|---|---|---|
 | `ci.yml` | Push/PR to main | Ubuntu | TypeScript check, Vite build |
-| `release.yml` | Push tag `v*` | Windows | MSI (x64 + x86) → GitHub Releases |
+| `release.yml` | Push tag `v*` | Windows + Ubuntu | MSI (x64 + x86) + APK (arm64 + armv7) → GitHub Releases + auto version bump-back to main |
 | `android-build.yml` | Push to main | Ubuntu | APK → GitHub Actions artifact |
-| `deploy.yml` | Push to main | Vercel | Auto-deploys `landing/` |
+| `deploy.yml` | Push to main | Vercel | Auto-deploys `landing/` (via Vercel Git integration) |
 
-### Release Flow (v* tag push)
-1. `release.yml` runs on Windows: builds MSI (x64 + x86), creates GitHub Release, uploads MSIs
-2. `android-build.yml` runs on Ubuntu: builds APK, copies Android icons, uploads APK as artifact
+### Release Flow (v* tag push — no manual version edits needed)
+1. `release.yml` reads the version from the tag itself: `v0.3.0` → `0.3.0`. Every checked-in version file is patched in CI for that build only:
+   - Windows job: `tauri.conf.json`, `package.json`, `Cargo.toml` → builds + brands MSIs (x64 + x86) → creates GitHub Release
+   - Android job: `tauri.android.conf.json`, `landing/version.json` → sets `tauri.properties` versionName/versionCode → builds + uploads APKs (arm64 + armv7) to the same Release
+2. `bump-back` job then updates the repo's own version files to the tag version and pushes to `main` (keeps repo versions in sync automatically).
+3. App checks GitHub `releases/latest` vs its own version → shows in-app update banner (desktop: opens MSI; Android: downloads + opens system installer, one tap to confirm).
 
 ### APK Download
 - Website: `https://otpvault1.vercel.app/OtpVault-APK.zip` (static file in `landing/`)
@@ -470,18 +475,20 @@ Both Rust and JS use identical parameters:
 | `src/features/add-account/` | AddAccountScreen (QR, manual, camera) |
 | `src/features/settings/` | SettingsScreen |
 | `src/features/vault-lock/` | VaultLockScreen |
+| `src/components/update/` | UpdateBanner (GitHub releases/latest check, semver compare, update button) |
 | `src/i18n/` | en.json + ar.json translations |
 | `src/styles/` | global.css (Tailwind) |
 | `src/types.ts` | TypeScript type definitions |
 | `src-tauri/` | Rust backend + Tauri config |
-| `src-tauri/src/commands/` | Rust commands: auth, accounts, backup, email_auth, neon |
+| `src-tauri/src/commands/` | Rust commands: auth, accounts, backup, email_auth, neon, jni (classloader helpers), updater (install_apk_update) |
 | `src-tauri/src/crypto/` | vault.rs (encrypt/decrypt), keychain.rs (storage, verify_password) |
 | `src-tauri/src/totp/` | generator.rs (totp-rs + data-encoding) |
 | `src-tauri/src/sync/` | neon_http.rs (HTTP client → Vercel API) |
 | `src-tauri/icons/` | Desktop icons (OV monogram) |
 | `src-tauri/icons/android/` | Android icons (shield + lock) |
+| `src-tauri/android-overlay/java/com/otpvault/desktop/` | `BiometricCallback.java`, `BiometricClick.java`, `UpdateInstaller.java`, `UpdateFileProvider.java` (copied into the project by patch scripts) |
 | `src-tauri/tauri.conf.json` | Desktop config |
-| `src-tauri/tauri.android.conf.json` | Android config |
+| `src-tauri/tauri.android.conf.json` | Android config (owns the Android version) |
 | `landing/` | PWA + Landing page (Vercel) |
 | `landing/index.html` | Main HTML (landing + app shell) |
 | `landing/api/vault.ts` | Vercel serverless API (Neon DB) |
@@ -502,10 +509,13 @@ Both Rust and JS use identical parameters:
 | `scripts/generate-android-icons.mjs` | Android icon generation (shield + lock) |
 | `scripts/make-ico.py` | ICO file generation from PNGs |
 | `scripts/brand-msi.ps1` | MSI branding (icon replacement) |
-| `scripts/patch-android-permissions.py` | Camera/storage permissions |
+| `scripts/patch-android-permissions.py` | Camera/storage/install permissions |
 | `scripts/patch-android-fullscreen.py` | Immersive mode via WindowCompat |
+| `scripts/patch-android-biometric.py` | Biometric prompt classes + proguard keeps |
+| `scripts/patch-android-updater.py` | Self-update installer classes + manifest provider + proguard keeps |
 | `scripts/patch-signing.py` | Android keystore signing |
-| `.github/workflows/` | CI/CD pipelines |
+| `scripts/bump-version.cjs` | Version file sync (package.json, tauri.conf.json, tauri.android.conf.json, Cargo.toml, landing/version.json) — used by release `bump-back` job |
+| `.github/workflows/` | CI/CD pipelines (ci, release, android-build) |
 
 ---
 
@@ -546,6 +556,8 @@ Both Rust and JS use identical parameters:
 
 | Version | Date | Tag | Changes |
 |---|---|---|---|
+| **v0.2.2** | Sep 2026 | `v0.2.2` | Working biometric unlock (app ClassLoader + API 28/29 negative button), "Never" auto-lock honored everywhere, in-app update banner + Android self-update, tag-driven versioning (no manual version edits), English-first locale, CI Android SDK license fix |
+| **v0.2.1** | Sep 2026 | `v0.2.1` | Biometric unlock on Android (poll-based JNI bridge), update-notifier groundwork, CI Android job in `release.yml` |
 | **v0.2.0** | Aug 2026 | `v0.2.0` | Delete confirmation with password verification (all platforms), Android icon redesign (shield+lock) |
 | **v0.1.9** | Aug 2026 | `v0.1.9` | QR auto-scan rewrite, fullscreen fix, real-time cloud sync, mobile optimization, responsive OTP display, APK download on website |
 | **v0.1.8** | Aug 2026 | `v0.1.8` | Android Tauri app, cross-platform sync, format conversion (PWA ↔ Android) |
@@ -576,7 +588,13 @@ Both Rust and JS use identical parameters:
 | Vault lock screen | ✅ DONE | Email/password unlock |
 | Account list + OTP display | ✅ DONE | Responsive, mobile-optimized OTPDisplay |
 | Add account (manual + QR) | ✅ DONE | Camera auto-scan (Android), file upload, manual entry |
-| Settings screen | ✅ DONE | Language, theme, export/import, lock, logout |
+| Settings screen | ✅ DONE | Language, theme, export/import, lock (incl. "Never"), logout |
+| Biometric unlock (Android) | ✅ DONE | Poll-based JNI bridge; classes loaded via app ClassLoader; negative button on API 28/29 |
+| "Never" auto-lock | ✅ DONE | Disables timer + lock-on-hide entirely (`auto_lock_seconds <= 0`) |
+| In-app update notifier | ✅ DONE | `UpdateBanner` checks GitHub `releases/latest`, semver compare, per-platform action |
+| Android self-update | ✅ DONE | System `DownloadManager` → `UpdateFileProvider` → OS installer (one-tap confirm; silent install not allowed by Android) |
+| Tag-driven versioning | ✅ DONE | Version always taken from the git tag; repo version files re-synced to main automatically |
+| CI Android SDK licenses | ✅ DONE | `sdkmanager --licenses` replaces `android-actions/setup-android@v3` (was failing) |
 | System tray (Desktop) | ✅ DONE | Show/Hide, Lock, Quit |
 | QR code scanning | ✅ DONE | Desktop: rqrr, Android: jsQR continuous auto-scan, PWA: jsQR |
 | App icons | ✅ DONE | Desktop: OV monogram, Android: shield+lock |
