@@ -29,7 +29,7 @@
 
 ---
 
-## ✨ What's New in v0.2.2
+## ✨ What's New in v0.2.3
 
 | Feature | What it means for you |
 |---------|------------------------|
@@ -158,7 +158,8 @@ No installation needed — just visit [otpvault1.vercel.app](https://otpvault1.v
 
 | Version | Date | Changes |
 |---------|------|---------|
-| **v0.2.2** | Sep 2026 | Biometric unlock (Android), one-tap auto-update (Windows + Android), "Never" auto-lock, tag-driven release versions, English-first UI |
+| **v0.2.3** | Sep 2026 | Biometric unlock (Android), "Never" auto-lock,English-first UI |
+| **v0.2.2** | Sep 2026 |one-tap auto-update (Windows + Android),tag-driven release versions|
 | **v0.2.1** | Sep 2026 | Update-notifier groundwork, Android release APKs attached to GitHub Releases |
 | **v0.2.0** | Aug 2026 | Delete confirmation with password verification (all platforms), Android icon redesign (shield + lock) |
 | **v0.1.9** | Aug 2026 | QR auto-scan rewrite, fullscreen fix, real-time cloud sync, mobile optimization |
