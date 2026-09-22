@@ -16,7 +16,7 @@
     <a href="https://github.com/Shadow132245/OtpVault/releases/latest">
       <img src="https://img.shields.io/badge/Download_for_Windows-6366f1?style=for-the-badge&logo=windows&logoColor=white" alt="Download for Windows"/>
     </a>
-    <a href="https://otpvault1.vercel.app/OtpVault-APK.zip">
+    <a href="https://github.com/Shadow132245/OtpVault/releases">
       <img src="https://img.shields.io/badge/Download_APK_Android-3DDC84?style=for-the-badge&logo=android&logoColor=white" alt="Download APK for Android"/>
     </a>
     <a href="https://otpvault1.vercel.app">
