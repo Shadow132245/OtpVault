@@ -8,7 +8,7 @@
   [![License: MIT](https://img.shields.io/badge/License-MIT-indigo.svg)](LICENSE)
   [![Windows](https://img.shields.io/badge/Windows-0078D6?logo=windows)](https://github.com/Shadow132245/OtpVault/releases/latest)
   [![PWA](https://img.shields.io/badge/PWA-Supported-blue?logo=pwa)](https://otpvault1.vercel.app)
-  [![Android](https://img.shields.io/badge/Android-3DDC84?logo=android)](https://otpvault1.vercel.app/OtpVault-APK.zip)
+  [![Android](https://img.shields.io/badge/Android-3DDC84?logo=android)](https://github.com/Shadow132245/OtpVault/releases)
 
   <br>
 
