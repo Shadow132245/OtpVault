@@ -443,15 +443,16 @@ Both Rust and JS use identical parameters:
 |---|---|---|---|
 | `ci.yml` | Push/PR to main | Ubuntu | TypeScript check, Vite build |
 | `release.yml` | Push tag `v*` | Windows + Ubuntu | MSI (x64 + x86) + APK (arm64 + armv7) → GitHub Releases + auto version bump-back to main |
+| `auto-release.yml` | Push to main | Windows + Ubuntu | Builds MSI + APK on every main push, then auto-creates a **new** release with a bumped tag (`0.2.2` → `v0.2.3`) + syncs repo version to main |
 | `android-build.yml` | Push to main | Ubuntu | APK → GitHub Actions artifact |
 | `deploy.yml` | Push to main | Vercel | Auto-deploys `landing/` (via Vercel Git integration) |
 
-### Release Flow (v* tag push — no manual version edits needed)
-1. `release.yml` reads the version from the tag itself: `v0.3.0` → `0.3.0`. Every checked-in version file is patched in CI for that build only:
-   - Windows job: `tauri.conf.json`, `package.json`, `Cargo.toml` → builds + brands MSIs (x64 + x86) → creates GitHub Release
-   - Android job: `tauri.android.conf.json`, `landing/version.json` → sets `tauri.properties` versionName/versionCode → builds + uploads APKs (arm64 + armv7) to the same Release
-2. `bump-back` job then updates the repo's own version files to the tag version and pushes to `main` (keeps repo versions in sync automatically).
-3. App checks GitHub `releases/latest` vs its own version → shows in-app update banner (desktop: opens MSI; Android: downloads + opens system installer, one tap to confirm).
+### Release Flow
+**Automatic (`auto-release.yml`)** — push to main → builds MSI + APK → computes the next version from the repo (`0.2.2` → `0.2.3`) → releases it under a brand-new tag and bumps the repo files back to main. `release.yml`'s guard skips duplicates when a tag matches main's version.
+
+**Manual (`release.yml`)** — push `v0.3.0` by hand → reads the version from the tag, builds MSI + APK, no manual version edits needed.
+
+The app checks GitHub `releases/latest` vs its own version → in-app update banner (desktop: opens MSI; Android: downloads + opens system installer, one tap to confirm).
 
 ### APK Download
 - Website: `https://otpvault1.vercel.app/OtpVault-APK.zip` (static file in `landing/`)

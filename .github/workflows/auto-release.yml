@@ -1,36 +1,47 @@
-name: Release
+name: Auto Release
 
 on:
   push:
-    tags:
-      - "v*"
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - '**/*.md'
+      - 'landing/OtpVault-APK.zip'
+  workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: auto-release
+  cancel-in-progress: false
+
 jobs:
-  guard:
+  version:
     runs-on: ubuntu-latest
     outputs:
-      skip: ${{ steps.check.outputs.skip }}
+      version: ${{ steps.v.outputs.version }}
+      tag: ${{ steps.v.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
-      - name: Skip when this tag was auto-released (version already on main)
-        id: check
-        run: |
-          TAG="${{ github.ref_name }}"
-          TAG="${TAG#v}"
-          MAIN=$(python3 -c "import json;print(json.load(open('src-tauri/tauri.conf.json'))['version'])")
-          echo "tag=$TAG main=$MAIN"
-          if [ "$TAG" = "$MAIN" ]; then
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
 
-  build:
-    needs: guard
-    if: needs.guard.outputs.skip != 'true'
+      - name: Compute next version from the repo
+        id: v
+        run: |
+          CURRENT=$(python3 -c "import json;print(json.load(open('src-tauri/tauri.conf.json'))['version'])")
+          NEXT=$(python3 -c "import json;a,b,c=map(int,json.load(open('src-tauri/tauri.conf.json'))['version'].split('.'));print(f'{a}.{b}.{c+1}')")
+          echo "CURRENT=$CURRENT"
+          echo "NEXT=$NEXT"
+          echo "version=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "tag=v$NEXT" >> "$GITHUB_OUTPUT"
+
+  build-windows:
+    needs: version
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: powershell
     strategy:
       matrix:
         arch: [x64, x86]
@@ -40,17 +51,21 @@ jobs:
           - arch: x86
             rust-target: i686-pc-windows-msvc
 
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: powershell
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Add Rust targets
+      - name: Set version from next-version job
         run: |
-          rustup target add x86_64-pc-windows-msvc i686-pc-windows-msvc
+          $v = "${{ needs.version.outputs.version }}"
+          echo "VERSION=$v" >> $env:GITHUB_ENV
+          (Get-Content src-tauri/tauri.conf.json) -replace '"version": ".*"', "`"version`": `"$v`"" | Set-Content src-tauri/tauri.conf.json
+          (Get-Content package.json) -replace '"version": ".*"', "`"version`": `"$v`"" | Set-Content package.json
+          (Get-Content src-tauri/Cargo.toml) -replace '^version = ".*"', "version = `"$v`"" | Set-Content src-tauri/Cargo.toml
+          (Get-Content src-tauri/tauri.android.conf.json) -replace '"version": ".*"', "`"version`": `"$v`"" | Set-Content src-tauri/tauri.android.conf.json
+          (Get-Content landing/version.json) -replace '"version": ".*"', "`"version`": `"$v`"" | Set-Content landing/version.json
+
+      - name: Add Rust targets
+        run: rustup target add x86_64-pc-windows-msvc i686-pc-windows-msvc
 
       - name: Cache npm
         uses: actions/cache@v4
@@ -65,18 +80,6 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
           key: cargo-registry-${{ hashFiles('src-tauri/Cargo.lock') }}
-
-      - name: Get version from tag
-        id: version
-        run: |
-          $tag = "${{ github.ref_name }}"
-          $v = $tag -replace '^v', ''
-          echo "VERSION=$v" >> $env:GITHUB_ENV
-          (Get-Content src-tauri/tauri.conf.json) -replace '"version": ".*"', "`"version`": `"$v`"" | Set-Content src-tauri/tauri.conf.json
-          (Get-Content package.json) -replace '"version": ".*"', "`"version`": `"$v`"" | Set-Content package.json
-          (Get-Content src-tauri/Cargo.toml) -replace '^version = ".*"', "version = `"$v`"" | Set-Content src-tauri/Cargo.toml
-          (Get-Content src-tauri/tauri.android.conf.json) -replace '"version": ".*"', "`"version`": `"$v`"" | Set-Content src-tauri/tauri.android.conf.json
-          (Get-Content landing/version.json) -replace '"version": ".*"', "`"version`": `"$v`"" | Set-Content landing/version.json
 
       - name: Install npm dependencies
         run: npm ci
@@ -94,17 +97,15 @@ jobs:
       - name: Brand MSI
         run: pwsh -File scripts\brand-msi.ps1 -MsiPath "OtpVault_${env:VERSION}_${{ matrix.arch }}_en-US.msi"
 
-      - name: Create Release and Upload Asset
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Upload MSI artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: OtpVault_${{ env.VERSION }}_${{ matrix.arch }}_en-US.msi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: msi-${{ matrix.arch }}
+          path: OtpVault_${{ env.VERSION }}_${{ matrix.arch }}_en-US.msi
+          if-no-files-found: error
 
-  android:
-    needs: [build, guard]
-    if: needs.guard.outputs.skip != 'true'
+  build-android:
+    needs: version
     runs-on: ubuntu-latest
     env:
       ANDROID_HOME: /usr/local/lib/android/sdk
@@ -148,16 +149,13 @@ jobs:
           done
           ls "$SDK/licenses" 2>/dev/null || echo "no licenses dir"
 
-      - name: Get version from tag
-        id: version
+      - name: Get version and set version code
         run: |
-          TAG="${{ github.ref_name }}"
-          VERSION="${TAG#v}"
-          echo "VERSION=$VERSION"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          VERSION="${{ needs.version.outputs.version }}"
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           MINOR=$(echo "$VERSION" | cut -d. -f2)
           PATCH=$(echo "$VERSION" | cut -d. -f3)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))" >> $GITHUB_ENV
           sed -i "s|\"version\": \"[^\"]*\"|\"version\": \"$VERSION\"|" src-tauri/tauri.android.conf.json
           sed -i "s|\"version\": \"[^\"]*\"|\"version\": \"$VERSION\"|" landing/version.json
@@ -202,41 +200,54 @@ jobs:
       - name: Build Release APKs
         run: npx tauri android build --target aarch64 --target armv7
 
-      - name: Upload APK to Release
-        uses: softprops/action-gh-release@v1
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
         with:
-          files: src-tauri/gen/android/**/*.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: apk
+          path: src-tauri/gen/android/**/*.apk
+          if-no-files-found: error
 
-  bump-back:
-    needs: [build, android, guard]
-    if: needs.guard.outputs.skip != 'true'
+  release:
+    needs: [version, build-windows, build-android]
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download MSI + APK artifacts
+        uses: actions/download-artifact@v4
         with:
-          ref: main
+          path: artifacts
 
-      - name: Compute version from tag
-        id: version
-        run: |
-          VERSION="${{ github.ref_name }}"
-          VERSION="${VERSION#v}"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Bump repository version files to the release version
+        run: node scripts/bump-version.cjs "${{ needs.version.outputs.version }}"
 
-      - name: Bump repository version files to match the tag
-        run: node scripts/bump-version.cjs "$VERSION"
-
-      - name: Commit and push the version bump
+      - name: Commit and push the version bump (skip workflows)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add package.json src-tauri/tauri.conf.json src-tauri/tauri.android.conf.json src-tauri/Cargo.toml landing/version.json
           if git diff --cached --quiet; then
             echo "Version files already up to date - no commit needed"
-            exit 0
+          else
+            git commit -m "chore(release): bump version to ${{ needs.version.outputs.version }} [skip ci]"
+            git push origin main
           fi
-          git commit -m "chore(release): bump version to $VERSION [skip ci]"
-          git push origin main
+
+      - name: Create Release v${{ needs.version.outputs.version }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.version.outputs.tag }}
+          target_commitish: main
+          name: OtpVault v${{ needs.version.outputs.version }}
+          body: |
+            ## OtpVault v${{ needs.version.outputs.version }}
+
+            Auto-generated release from the latest build on **main**.
+
+            **Changes since the previous release** are visible in the [commit history](https://github.com/Shadow132245/OtpVault/commits/${{ needs.version.outputs.tag }}).
+          files: |
+            artifacts/**/*.msi
+            artifacts/**/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
