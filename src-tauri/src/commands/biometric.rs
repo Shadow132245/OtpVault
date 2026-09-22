@@ -27,6 +27,14 @@ fn emit_stage(app: &tauri::AppHandle, stage: &str) {
     let _ = app.emit("biometric-stage", stage.to_string());
 }
 
+/// Formats a JNI error with the message of the pending Java exception (if
+/// any), so the exact reason shows up in the UI instead of an opaque text.
+#[cfg(target_os = "android")]
+fn jerr(env: &mut jni::JNIEnv<'_>, prefix: &str, e: jni::errors::Error) -> String {
+    let msg = crate::commands::jni::exception_message(env).unwrap_or_default();
+    format!("{}: {} — {}", prefix, e, msg)
+}
+
 /// Reads the auth result that `BiometricCallback` stored in its static
 /// fields. Returns -2 while the prompt is still pending, 0 on success,
 /// or a platform error code. Uses the class global reference captured on
@@ -124,18 +132,6 @@ fn show_biometric_prompt(
             log::info!("biometric: SDK < 30, skipping setAllowedAuthenticators");
         }
 
-        let prompt = env
-            .call_method(&builder, "build", "()Landroid/hardware/biometrics/BiometricPrompt;", &[])
-            .map_err(|e| format!("JNI BiometricPrompt.build: {}", e))?
-            .l()
-            .map_err(|e| e.to_string())?;
-        emit_stage(app, "prompt-built");
-
-        // Keep the prompt and callback objects alive for the auth session.
-        let prompt_global = env.new_global_ref(&prompt).map_err(|e| e.to_string())?;
-        std::mem::forget(prompt_global);
-        std::mem::forget(instance_global);
-
         let cancellation = env
             .new_object("android/os/CancellationSignal", "()V", &[])
             .map_err(|e| e.to_string())?;
@@ -145,6 +141,42 @@ fn show_biometric_prompt(
             .l()
             .map_err(|e| e.to_string())?;
         emit_stage(app, "executor-ok");
+
+        if sdk_int < 30 {
+            // On API 28/29 BiometricPrompt requires a negative (cancel)
+            // button; build() throws IllegalStateException without one.
+            let cancel_text: JObject = env.new_string("Cancel").map_err(|e| e.to_string())?.into();
+            let click_class =
+                crate::commands::jni::load_app_class(env, activity, "com/otpvault/desktop/BiometricClick")?;
+            let click = env
+                .new_object(&click_class, "()V", &[])
+                .map_err(|e| format!("JNI new BiometricClick: {}", e))?;
+            env.call_method(
+                &builder,
+                "setNegativeButton",
+                "(Ljava/lang/CharSequence;Ljava/util/concurrent/Executor;Landroid/content/DialogInterface$OnClickListener;)Landroid/hardware/biometrics/BiometricPrompt$Builder;",
+                &[
+                    JValue::Object(&cancel_text),
+                    JValue::Object(&executor),
+                    JValue::Object(&click),
+                ],
+            )
+            .map_err(|e| jerr(env, "JNI setNegativeButton", e))?;
+            let _ = env.new_global_ref(&click).map_err(|e| e.to_string())?;
+            log::info!("biometric: set negative button for SDK < 30");
+        }
+
+        let prompt = env
+            .call_method(&builder, "build", "()Landroid/hardware/biometrics/BiometricPrompt;", &[])
+            .map_err(|e| jerr(env, "JNI BiometricPrompt.build", e))?
+            .l()
+            .map_err(|e| e.to_string())?;
+        emit_stage(app, "prompt-built");
+
+        // Keep the prompt and callback objects alive for the auth session.
+        let prompt_global = env.new_global_ref(&prompt).map_err(|e| e.to_string())?;
+        std::mem::forget(prompt_global);
+        std::mem::forget(instance_global);
 
         env.call_method(
             &prompt,
@@ -156,7 +188,7 @@ fn show_biometric_prompt(
                 JValue::Object(&instance),
             ],
         )
-        .map_err(|e| format!("JNI BiometricPrompt.authenticate: {}", e))?;
+        .map_err(|e| jerr(env, "JNI BiometricPrompt.authenticate", e))?;
         emit_stage(app, "authenticate-ok");
         log::info!("biometric: BiometricPrompt.authenticate() accepted");
         Ok(())

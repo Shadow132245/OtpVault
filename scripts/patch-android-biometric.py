@@ -3,32 +3,33 @@ import os
 import shutil
 
 def patch_biometric(android_dir):
-    overlay = os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "src-tauri",
-        "android-overlay",
-        "java",
-        "com",
-        "otpvault",
-        "desktop",
-        "BiometricCallback.java",
-    )
-    target = os.path.join(
-        android_dir,
-        "app",
-        "src",
-        "main",
-        "java",
-        "com",
-        "otpvault",
-        "desktop",
-        "BiometricCallback.java",
-    )
+    for java_file in ("BiometricCallback.java", "BiometricClick.java"):
+        overlay = os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            "src-tauri",
+            "android-overlay",
+            "java",
+            "com",
+            "otpvault",
+            "desktop",
+            java_file,
+        )
+        target = os.path.join(
+            android_dir,
+            "app",
+            "src",
+            "main",
+            "java",
+            "com",
+            "otpvault",
+            "desktop",
+            java_file,
+        )
 
-    os.makedirs(os.path.dirname(target), exist_ok=True)
-    shutil.copyfile(overlay, target)
-    print(f"Copied {overlay} -> {target}")
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        shutil.copyfile(overlay, target)
+        print(f"Copied {overlay} -> {target}")
 
     rules = os.path.join(android_dir, "app", "proguard-rules.pro")
     keep_rule = "-keep class com.otpvault.desktop.BiometricCallback { *; }"
@@ -40,6 +41,7 @@ def patch_biometric(android_dir):
             f.write("\n# The BiometricPrompt callback class and its native hook are looked up by\n")
             f.write("# their exact names from Rust at runtime; never rename or strip them.\n")
             f.write(keep_rule + "\n")
+            f.write("-keep class com.otpvault.desktop.BiometricClick { *; }\n")
         print(f"Added proguard keep rule to {rules}")
     else:
         print("Proguard keep rule already present")
