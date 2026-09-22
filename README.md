@@ -29,6 +29,18 @@
 
 ---
 
+## ✨ What's New in v0.2.2
+
+| Feature | What it means for you |
+|---------|------------------------|
+| 🔐 **Biometric unlock (Android)** | Unlock the vault with your **fingerprint or face** via the native `BiometricPrompt` — no typing, no compromise |
+| ⬆️ **One-tap auto-update** | OtpVault checks GitHub for a new release and shows an in-app banner — **Windows** and **Android** |
+| 🛡️ **"Never" auto-lock** | Set auto-lock to *Never* — the vault stays open until you lock it manually |
+| 🏷️ **Tag-driven releases** | Every release version comes straight from the Git tag (`v0.3.0` → `0.3.0`) — for the MSI **and** the APK, no manual edits |
+| 🎨 **English-first UI** | Clean English default with flawless Arabic/English (RTL) switching |
+
+---
+
 ## Features ✨
 
 | Feature | Description |
@@ -38,6 +50,9 @@
 | 📸 **QR Scan** | Add accounts via camera, image upload, or manual entry |
 | 📤 **Export / Import** | Full vault export/import as encrypted JSON |
 | 🌐 **RTL Support** | Arabic + English interface |
+| 🔐 **Biometric Unlock** | Android fingerprint & face unlock via the system `BiometricPrompt` |
+| ⬆️ **One-tap Updates** | In-app update banner (Windows + Android) — downloads and installs the latest release |
+| 🛡️ **Flexible Auto-Lock** | Auto-lock timer with a *Never* option that fully disables auto-locking |
 | 🖥️ **Windows Desktop** | Native MSI installer built with Rust &amp; Tauri |
 | 📱 **Android APK** | Native Android app via Tauri v2 — camera QR scanning, fullscreen mode |
 | 🌐 **PWA (Browser)** | Runs on any browser — Windows, Android, macOS, Linux — install as an app |
@@ -143,6 +158,9 @@ No installation needed — just visit [otpvault1.vercel.app](https://otpvault1.v
 
 | Version | Date | Changes |
 |---------|------|---------|
+| **v0.2.2** | Sep 2026 | Biometric unlock (Android), one-tap auto-update (Windows + Android), "Never" auto-lock, tag-driven release versions, English-first UI |
+| **v0.2.1** | Sep 2026 | Update-notifier groundwork, Android release APKs attached to GitHub Releases |
+| **v0.2.0** | Aug 2026 | Delete confirmation with password verification (all platforms), Android icon redesign (shield + lock) |
 | **v0.1.9** | Aug 2026 | QR auto-scan rewrite, fullscreen fix, real-time cloud sync, mobile optimization |
 | **v0.1.8** | Aug 2026 | Android Tauri app, cross-platform sync, format conversion (PWA ↔ Android) |
 | **v0.1.7** | Aug 2026 | QR file upload validation, Arabic i18n for Android, camera permissions |

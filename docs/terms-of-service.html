@@ -1,187 +1,462 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Terms of Service - OtpVault</title>
 <style>
+  :root {
+    --primary: #6366f1;
+    --primary-deep: #4f46e5;
+    --accent: #a78bfa;
+    --cyan: #22d3ee;
+    --bg: #0b0f1f;
+    --bg-soft: #12162a;
+    --card: rgba(255, 255, 255, 0.055);
+    --card-border: rgba(255, 255, 255, 0.09);
+    --text: #e6e9f5;
+    --muted: #9aa3c0;
+    --radius: 20px;
+    --shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.55);
+  }
+  html[data-theme="light"] {
+    --bg: #f6f7ff;
+    --bg-soft: #ffffff;
+    --card: rgba(99, 102, 241, 0.045);
+    --card-border: rgba(99, 102, 241, 0.14);
+    --text: #101532;
+    --muted: #5b6480;
+    --shadow: 0 20px 50px -20px rgba(79, 70, 229, 0.18);
+  }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background: #f8fafc;
-    color: #1e293b;
-    line-height: 1.7;
-    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(1200px 700px at 12% -10%, rgba(99, 102, 241, 0.28), transparent 55%),
+      radial-gradient(1000px 600px at 100% 10%, rgba(167, 139, 250, 0.20), transparent 55%),
+      radial-gradient(900px 700px at 55% 110%, rgba(34, 211, 238, 0.12), transparent 55%),
+      var(--bg);
+    background-attachment: fixed;
+    line-height: 1.75;
+    min-height: 100vh;
+    transition: background 0.4s ease, color 0.4s ease;
   }
-  .header {
-    background: linear-gradient(135deg, #6366f1, #4f46e5);
-    padding: 40px 24px;
-    text-align: center;
+
+  .orb { position: fixed; border-radius: 50%; filter: blur(110px); opacity: 0.5; z-index: 0; pointer-events: none; }
+  .orb-1 { width: 420px; height: 420px; background: #6366f1; top: -120px; right: -80px; animation: drift 18s ease-in-out infinite; }
+  .orb-2 { width: 360px; height: 360px; background: #a78bfa; bottom: -140px; left: -100px; animation: drift 22s ease-in-out infinite reverse; }
+  .orb-3 { width: 260px; height: 260px; background: #22d3ee; top: 42%; left: 55%; opacity: 0.28; animation: drift 26s ease-in-out infinite; }
+  @keyframes drift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(40px, -30px) scale(1.08); }
+    66% { transform: translate(-30px, 24px) scale(0.95); }
   }
-  .header h1 {
-    color: #fff;
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
+
+  #progress { position: fixed; top: 0; left: 0; height: 3px; width: 0; z-index: 60;
+    background: linear-gradient(90deg, #6366f1, #a78bfa, #22d3ee); box-shadow: 0 0 12px rgba(99,102,241,0.7); }
+
+  .nav {
+    position: sticky; top: 12px; z-index: 50; margin: 18px auto 0; padding: 12px 20px;
+    max-width: 880px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    background: color-mix(in srgb, var(--bg-soft) 72%, transparent);
+    border: 1px solid var(--card-border); border-radius: 16px; backdrop-filter: blur(18px);
+    box-shadow: var(--shadow);
   }
-  .header p {
-    color: rgba(255,255,255,0.8);
-    font-size: 14px;
-    margin-top: 8px;
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; letter-spacing: 0.2px; }
+  .brand svg { width: 30px; height: 30px; filter: drop-shadow(0 4px 10px rgba(99,102,241,0.5)); }
+  .nav-controls { display: flex; align-items: center; gap: 8px; }
+  .nav-btn {
+    border: 1px solid var(--card-border); background: var(--card); color: var(--text); cursor: pointer;
+    padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600;
+    transition: all 0.25s ease; display: flex; align-items: center; gap: 6px;
   }
-  .lang-bar {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 16px;
+  .nav-btn:hover { transform: translateY(-1px); border-color: rgba(99,102,241,0.5); background: rgba(99,102,241,0.12); }
+  .nav-btn.active { background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; border-color: transparent; box-shadow: 0 6px 18px -6px rgba(99,102,241,0.6); }
+  .icon-only { padding: 8px 10px; }
+
+  .hero { position: relative; z-index: 1; text-align: center; padding: 64px 20px 28px; }
+  .hero .shield-float { display: inline-block; animation: floaty 4s ease-in-out infinite; }
+  .hero svg { width: 96px; height: 96px; filter: drop-shadow(0 14px 34px rgba(99,102,241,0.45)); }
+  @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  .hero h1 {
+    font-size: clamp(30px, 6vw, 46px); font-weight: 800; letter-spacing: -0.6px; line-height: 1.15; margin-top: 14px;
+    background: linear-gradient(100deg, #c7d2fe 0%, #a5b4fc 25%, #818cf8 50%, #a78bfa 75%, #67e8f9 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   }
-  .lang-bar button {
-    padding: 6px 16px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.1);
-    color: #fff;
-    border-radius: 8px;
-    font-size: 13px;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s;
+  html[data-theme="light"] .hero h1 { background: linear-gradient(100deg, #3730a3, #4f46e5 50%, #7c3aed); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero .subtitle { color: var(--muted); font-size: 15px; margin-top: 10px; }
+  .hero .meta { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--text);
+    background: var(--card); border: 1px solid var(--card-border); padding: 7px 14px; border-radius: 999px;
+    backdrop-filter: blur(8px);
   }
-  .lang-bar button:hover { background: rgba(255,255,255,0.2); }
-  .lang-bar button.active { background: #fff; color: #4f46e5; border-color: #fff; }
-  .content {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 40px 24px 80px;
+  .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+
+  .wrap { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; padding: 8px 20px 60px; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius);
+    padding: 24px; margin-bottom: 18px; backdrop-filter: blur(14px); box-shadow: var(--shadow);
+    opacity: 0; transform: translateY(26px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.22,1,0.36,1), border-color 0.3s ease;
   }
-  .section {
-    margin-bottom: 28px;
+  .card.in { opacity: 1; transform: translateY(0); }
+  .card:hover { border-color: rgba(99,102,241,0.45); }
+  .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .chip {
+    flex-shrink: 0; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; font-size: 19px;
+    background: linear-gradient(135deg, #6366f1, #a78bfa); box-shadow: 0 8px 20px -6px rgba(99,102,241,0.55);
   }
-  .section h2 {
-    font-size: 15px;
-    font-weight: 600;
-    color: #0f172a;
-    margin-bottom: 8px;
+  .card h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; }
+  .card p { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+  .card p:last-child { margin-bottom: 0; }
+  .card a { color: #818cf8; text-decoration: none; border-bottom: 1px dashed rgba(129,140,248,0.55); }
+  html[data-theme="light"] .card a { color: #4f46e5; }
+  .card a:hover { color: #a5b4fc; }
+
+  .contact-card { border: 1px solid rgba(99,102,241,0.5); background: linear-gradient(160deg, rgba(99,102,241,0.12), rgba(167,139,250,0.06)); }
+  .email-row {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 16px 0;
+    background: rgba(0,0,0,0.25); border: 1px solid var(--card-border); border-radius: 12px; padding: 6px 8px 6px 14px;
   }
-  .section p {
-    font-size: 14px;
-    color: #475569;
-    line-height: 1.7;
+  html[data-theme="light"] .email-row { background: #fff; }
+  .email { font-family: "SFMono-Regular", Consolas, "Courier New", monospace; font-size: 14px; word-break: break-all; flex: 1; }
+  .email a { color: #a5b4fc; border: none; }
+  html[data-theme="light"] .email a { color: #4f46e5; }
+  .copy-btn {
+    border: none; cursor: pointer; padding: 8px 14px; border-radius: 9px; font-size: 12px; font-weight: 700;
+    background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff;
+    display: inline-flex; align-items: center; gap: 6px; transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
+  .copy-btn:hover { transform: translateY(-1px) scale(1.03); box-shadow: 0 8px 20px -6px rgba(99,102,241,0.6); }
+  .copy-btn:active { transform: scale(0.97); }
+  .note {
+    display: flex; gap: 12px; margin-top: 14px; padding: 14px 16px; border-radius: 14px;
+    background: rgba(34, 211, 238, 0.08); border: 1px solid rgba(34, 211, 238, 0.28);
+  }
+  .note .info { font-size: 18px; }
+  .note strong { color: var(--text); font-size: 13.5px; }
+  .note p { color: var(--muted); font-size: 13px; margin-top: 2px; }
+
   .footer {
-    text-align: center;
-    padding: 24px;
-    border-top: 1px solid #e2e8f0;
-    font-size: 12px;
-    color: #94a3b8;
+    position: relative; z-index: 1; text-align: center; padding: 30px 20px 46px; color: var(--muted); font-size: 13px;
   }
-  .footer a { color: #6366f1; text-decoration: none; }
-  .footer a:hover { text-decoration: underline; }
-  .hidden { display: none; }
-  .last-updated {
-    text-align: center;
-    font-size: 13px;
-    color: #94a3b8;
-    margin-top: 8px;
+  .footer .links { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
+  .footer .links a {
+    color: var(--muted); text-decoration: none; border: 1px solid var(--card-border); background: var(--card);
+    padding: 8px 16px; border-radius: 999px; font-weight: 600; font-size: 12.5px; transition: all 0.25s ease;
+  }
+  .footer .links a:hover { color: #fff; border-color: rgba(99,102,241,0.6); background: rgba(99,102,241,0.18); transform: translateY(-2px); }
+  html[data-theme="light"] .footer .links a:hover { color: #4f46e5; }
+  .footer .heart { color: #f472b6; }
+
+  #toTop {
+    position: fixed; bottom: 22px; inset-inline-end: 22px; z-index: 50; width: 44px; height: 44px; border-radius: 12px;
+    display: grid; place-items: center; cursor: pointer; border: 1px solid var(--card-border);
+    background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; font-size: 18px;
+    opacity: 0; pointer-events: none; transform: translateY(12px); transition: all 0.3s ease; box-shadow: 0 10px 24px -8px rgba(99,102,241,0.6);
+  }
+  #toTop.show { opacity: 1; pointer-events: auto; transform: translateY(0); }
+  #toTop:hover { transform: translateY(-3px); }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 80px); z-index: 70;
+    background: rgba(16, 21, 50, 0.92); color: #e6e9f5; border: 1px solid rgba(99,102,241,0.4);
+    padding: 10px 20px; border-radius: 999px; font-size: 13px; font-weight: 600; backdrop-filter: blur(10px);
+    opacity: 0; transition: all 0.35s cubic-bezier(0.22,1,0.36,1); box-shadow: 0 12px 30px -10px rgba(0,0,0,0.5);
+  }
+  #toast.show { transform: translate(-50%, 0); opacity: 1; }
+
+  .hidden { display: none !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    .card { opacity: 1; transform: none; }
+  }
+  @media (max-width: 560px) {
+    .nav { margin-top: 8px; }
+    .card { padding: 18px; }
   }
 </style>
 </head>
 <body>
+<div id="progress"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
 
-<div class="header">
+<nav class="nav">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#a78bfa"/>
+        </linearGradient>
+      </defs>
+      <path d="M12 2l7 3v6c0 5-3.2 8.4-7 11-3.8-2.6-7-6-7-11V5l7-3z" fill="url(#g)"/>
+      <path d="M9 12l2 2 4-4.5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span>OtpVault</span>
+  </div>
+  <div class="nav-controls">
+    <button class="nav-btn" id="btn-en" onclick="switchLang('en')">English</button>
+    <button class="nav-btn" id="btn-ar" onclick="switchLang('ar')">العربية</button>
+    <button class="nav-btn icon-only" id="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <span class="shield-float">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="sg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#818cf8"/><stop offset="1" stop-color="#c084fc"/>
+        </linearGradient>
+      </defs>
+      <path d="M12 2l8 3v6.5c0 5.2-3.3 8.8-8 11.5-4.7-2.7-8-6.3-8-11.5V5l8-3z" fill="url(#sg)" stroke="rgba(255,255,255,0.5)" stroke-width="1"/>
+      <path d="M8.5 12.2l2.4 2.4 4.6-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </span>
   <h1 id="title">Terms of Service</h1>
-  <p id="subtitle">OtpVault — Secure 2FA Authenticator</p>
-  <p class="last-updated" id="updated">Last updated: June 2026</p>
-  <div class="lang-bar">
-    <button id="btn-en" class="active" onclick="switchLang('en')">English</button>
-    <button id="btn-ar" onclick="switchLang('ar')">العربية</button>
+  <p class="subtitle" id="subtitle">The rules of the road — using OtpVault on Windows, Android and the browser.</p>
+  <div class="meta">
+    <span class="pill"><span class="dot"></span><span id="status">Zero-Knowledge</span></span>
+    <span class="pill">🔐 AES-256-GCM</span>
+    <span class="pill">🧪 Argon2id</span>
+    <span class="pill" id="updatedPill">📅 Updated: Sep 2026</span>
   </div>
-</div>
+</header>
 
-<div class="content" id="content-en">
-  <div class="section">
-    <h2>Acceptance of Terms</h2>
-    <p>By creating an account and using OtpVault, you agree to these Terms of Service. If you do not agree, do not use the service.</p>
-  </div>
-  <div class="section">
-    <h2>Description of Service</h2>
-    <p>OtpVault is a desktop two-factor authentication (2FA) manager that stores your TOTP secrets in an encrypted local vault with optional cloud backup. The app runs locally on your device.</p>
-  </div>
-  <div class="section">
-    <h2>User Responsibilities</h2>
-    <p>You are responsible for maintaining the confidentiality of your email and password. You are solely responsible for all activities that occur under your account. You must notify us immediately of any unauthorized use of your account.</p>
-  </div>
-  <div class="section">
-    <h2>Security</h2>
-    <p>Your vault is encrypted with a key derived from your password. We cannot recover your vault if you forget your password. It is your responsibility to remember your password.</p>
-  </div>
-  <div class="section">
-    <h2>Limitation of Liability</h2>
-    <p>OtpVault is provided "as is" without warranty of any kind. The authors are not liable for any damages arising from the use of this software, including but not limited to loss of access to accounts.</p>
-  </div>
-  <div class="section">
-    <h2>Open Source</h2>
-    <p>OtpVault is open-source software. The source code is publicly available on GitHub for transparency. You may review, compile, and verify the software yourself.</p>
-  </div>
-  <div class="section">
-    <h2>Changes to Terms</h2>
-    <p>We reserve the right to modify these terms at any time. Continued use of the app after changes constitutes acceptance of the new terms.</p>
-  </div>
-  <div class="section">
-    <h2>Termination</h2>
-    <p>We reserve the right to suspend or terminate your account at any time for violations of these terms or for any other reason.</p>
-  </div>
-</div>
+<main class="wrap">
 
-<div class="content hidden" id="content-ar" dir="rtl">
-  <div class="section">
-    <h2>قبول الشروط</h2>
-    <p>بإنشاء حساب واستخدام OtpVault، فإنك توافق على شروط الخدمة هذه. إذا كنت لا توافق، فلا تستخدم الخدمة.</p>
-  </div>
-  <div class="section">
-    <h2>وصف الخدمة</h2>
-    <p>OtpVault هو مدير للتحقق بخطوتين (2FA) لسطح المكتب يخزّن أسرار TOTP الخاصة بك في خزنة مشفرة محلياً مع نسخ احتياطي سحابي اختياري. يعمل التطبيق محلياً على جهازك.</p>
-  </div>
-  <div class="section">
-    <h2>مسؤوليات المستخدم</h2>
-    <p>أنت مسؤول عن الحفاظ على سرية بريدك الإلكتروني وكلمة المرور. أنت المسؤول الوحيد عن جميع الأنشطة التي تحدث تحت حسابك. يجب عليك إخطارنا فوراً بأي استخدام غير مصرح به لحسابك.</p>
-  </div>
-  <div class="section">
-    <h2>الأمان</h2>
-    <p>خزنتك مشفرة بمفتاح مشتق من كلمة المرور الخاصة بك. لا يمكننا استعادة خزنتك إذا نسيت كلمة المرور. من مسؤوليتك تذكر كلمة المرور الخاصة بك.</p>
-  </div>
-  <div class="section">
-    <h2>حدود المسؤولية</h2>
-    <p>OtpVault يُقدّم "كما هو" دون أي ضمان. المؤلفون غير مسؤولين عن أي أضرار ناتجة عن استخدام هذا البرنامج، بما في ذلك على سبيل المثال لا الحصر فقدان الوصول إلى الحسابات.</p>
-  </div>
-  <div class="section">
-    <h2>المصدر المفتوح</h2>
-    <p>OtpVault هو برنامج مفتوح المصدر. كود المصدر متاح للعموم على GitHub للشفافية. يمكنك مراجعة البرنامج وتجميعه والتحقق منه بنفسك.</p>
-  </div>
-  <div class="section">
-    <h2>تغييرات الشروط</h2>
-    <p>نحتفظ بالحق في تعديل هذه الشروط في أي وقت. الاستمرار في استخدام التطبيق بعد التغييرات يعتبر قبولاً للشروط الجديدة.</p>
-  </div>
-  <div class="section">
-    <h2>إنهاء الخدمة</h2>
-    <p>نحتفظ بالحق في تعليق أو إنهاء حسابك في أي وقت بسبب انتهاك هذه الشروط أو لأي سبب آخر.</p>
-  </div>
-</div>
+  <!-- EN content -->
+  <div id="content-en">
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">✅</span><h2>Acceptance of Terms</h2></div>
+      <p>By creating an account and using OtpVault — on Windows, Android, or the browser PWA — you agree to these Terms of Service. If you do not agree, please do not use the service.</p>
+    </div>
 
-<div class="footer">
-  <a href="https://github.com/Shadow132245/OtpVault">OtpVault on GitHub</a> &mdash; Open Source
-</div>
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">📱</span><h2>Description of Service</h2></div>
+      <p>OtpVault is a two-factor authentication (2FA) app that stores your TOTP secrets in a <strong>zero-knowledge encrypted vault</strong>. It runs natively on Windows (MSI), on Android (APK), and in any modern browser (PWA). Optional cloud sync backs up your encrypted vault across your devices.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">🙋</span><h2>User Responsibilities</h2></div>
+      <p>You are responsible for keeping your email and password confidential, and for all activity that happens under your account. Because OtpVault is zero-knowledge, <strong>your password cannot be recovered or reset by anyone</strong> — if you lose it, your encrypted vault is unrecoverable. Keep it safe.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">🛡️</span><h2>Security and Biometric Unlock</h2></div>
+      <p>Your vault is protected with AES-256-GCM, with the key derived from your password using Argon2id. On Android you may optionally unlock with fingerprint/face via the system BiometricPrompt. You are responsible for controlling who can use your device and your biometrics to unlock the vault.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">⚖️</span><h2>Acceptable Use</h2></div>
+      <p>You agree not to misuse the service, attempt to disrupt it, abuse the cloud sync endpoints, or use OtpVault for any unlawful purpose. You also agree not to attempt to extract other users' data from the service.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">⬆️</span><h2>Updates and Availability</h2></div>
+      <p>OtpVault is updated through GitHub Releases. On Windows and Android, in-app update prompts install the latest official version. Cloud sync requires an internet connection; core TOTP generation works fully offline.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">📖</span><h2>Open Source</h2></div>
+      <p>OtpVault is open-source software released under the <strong>MIT license</strong>. The entire source code is public on GitHub — you may review, compile, and verify every build yourself.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">🚫</span><h2>Limitation of Liability</h2></div>
+      <p>OtpVault is provided "as is" without warranty of any kind, express or implied. The developers are not liable for any damages arising from the use of this software, including but not limited to lost account access, data loss, or missed codes.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">🔄</span><h2>Changes to Terms</h2></div>
+      <p>We may update these terms from time to time. Changes are announced through the app and the repository. Continued use of the service after changes take effect constitutes acceptance of the new terms.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">⛔</span><h2>Termination</h2></div>
+      <p>We may suspend or terminate an account that violates these terms or disrupts the service. You may stop using OtpVault at any time and delete your account — including all associated data — directly from the app.</p>
+    </div>
+
+    <div class="card contact-card reveal" id="contact-en">
+      <div class="card-head"><span class="chip">📧</span><h2>Contact</h2></div>
+      <p>Questions about these terms, or anything else? This is the developer's direct line:</p>
+      <div class="email-row">
+        <span class="email"><a id="mail-en" href="mailto:fghfghffdgfhfgh@gmail.com">fghfghffdgfhfgh@gmail.com</a></span>
+        <button class="copy-btn" data-email="fghfghffdgfhfgh@gmail.com">📋 Copy</button>
+      </div>
+      <div class="note">
+        <span class="info">💡</span>
+        <div>
+          <strong>A quick note about this email:</strong>
+          <p>This address may look like a random string of letters, but it is simply the <strong>developer's personal email address</strong> — not a suspicious or auto-generated one. It is the official way to reach us.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AR content -->
+  <div id="content-ar" dir="rtl" class="hidden">
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">✅</span><h2>قبول الشروط</h2></div>
+      <p>بإنشاء حساب واستخدام OtpVault — على ويندوز أو أندرويد أو PWA المتصفح — فإنك توافق على شروط الخدمة هذه. إذا كنت لا توافق، يرجى عدم استخدام الخدمة.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">📱</span><h2>وصف الخدمة</h2></div>
+      <p>OtpVault هو تطبيق للتحقق بخطوتين (2FA) يخزّن أسرار TOTP الخاصة بك في <strong>خزنة مشفّرة بالكامل (Zero-Knowledge)</strong>. يعمل أصلياً على ويندوز (MSI) وعلى أندرويد (APK) وفي أي متصفح حديث (PWA). النسخ الاحتياطي السحابي الاختياري يزامن خزنتك المشفّرة بين أجهزتك.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">🙋</span><h2>مسؤوليات المستخدم</h2></div>
+      <p>أنت مسؤول عن الحفاظ على سرية بريدك الإلكتروني وكلمة المرور، وعن جميع الأنشطة التي تتم تحت حسابك. ولأن OtpVault لا يعرف كلمة مرورك (Zero-Knowledge)، <strong>فلا يمكن لأحد استعادة كلمة المرور أو إعادة تعيينها</strong> — إذا فقدتها، تصبح خزنتك المشفّرة غير قابلة للاستعادة. احتفظ بها بأمان.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">🛡️</span><h2>الأمان وفتح القفل البيومتري</h2></div>
+      <p>خزنتك محمية بتقنية AES-256-GCM، والمفتاح يُشتق من كلمة المرور باستخدام Argon2id. على أندرويد يمكنك اختيارياً فتح القفل ببصمة الإصبع أو الوجه عبر BiometricPrompt الخاص بالنظام. أنت مسؤول عن التحكم في من يستخدم جهازك وبياناتك البيومترية لفتح الخزنة.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">⚖️</span><h2>الاستخدام المقبول</h2></div>
+      <p>أنت توافق على عدم إساءة استخدام الخدمة أو محاولة تعطيلها أو إساءة استخدام نقاط المزامنة السحابية، وعدم استخدام OtpVault لأي غرض غير قانوني، وعدم محاولة استخراج بيانات مستخدمين آخرين من الخدمة.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">⬆️</span><h2>التحديثات والتوفر</h2></div>
+      <p>يتم تحديث OtpVault عبر GitHub Releases. على ويندوز وأندرويد، تثبّت مطالبات التحديث داخل التطبيق أحدث نسخة رسمية. المزامنة السحابية تحتاج اتصالاً بالإنترنت؛ بينما يعمل توليد أكواد TOTP الأساسي بالكامل دون اتصال.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">📖</span><h2>المصدر المفتوح</h2></div>
+      <p>OtpVault برنامج مفتوح المصدر يُرخّص بموجب <strong>رخصة MIT</strong>. كامل كود المصدر متاح للعموم على GitHub — يمكنك مراجعة البرنامج وتجميعه والتحقق من كل بناء بنفسك.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">🚫</span><h2>حدود المسؤولية</h2></div>
+      <p>OtpVault يُقدَّم "كما هو" دون أي ضمان من أي نوع، صريح أو ضمني. المطوّرون غير مسؤولين عن أي أضرار ناتجة عن استخدام هذا البرنامج، بما في ذلك على سبيل المثال لا الحصر فقدان الوصول إلى الحسابات أو فقدان البيانات أو الأكواد الفائتة.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">🔄</span><h2>تغييرات الشروط</h2></div>
+      <p>قد نحدّث هذه الشروط من وقت لآخر. يتم الإعلان عن التغييرات عبر التطبيق والمستودع. استمرارك في استخدام الخدمة بعد سريان التغييرات يعني قبولك للشروط الجديدة.</p>
+    </div>
+
+    <div class="card reveal">
+      <div class="card-head"><span class="chip">⛔</span><h2>إنهاء الخدمة</h2></div>
+      <p>قد نعلّق أو ننهي حساباً يخالف هذه الشروط أو يعطّل الخدمة. يمكنك التوقف عن استخدام OtpVault في أي وقت وحذف حسابك — بما في ذلك جميع البيانات المرتبطة — مباشرة من التطبيق.</p>
+    </div>
+
+    <div class="card contact-card reveal" id="contact-ar">
+      <div class="card-head"><span class="chip">📧</span><h2>الاتصال بنا</h2></div>
+      <p>لديك أسئلة حول هذه الشروط أو أي شيء آخر؟ هذا هو خط المطوّر المباشر:</p>
+      <div class="email-row">
+        <span class="email"><a id="mail-ar" href="mailto:fghfghffdgfhfgh@gmail.com">fghfghffdgfhfgh@gmail.com</a></span>
+        <button class="copy-btn" data-email="fghfghffdgfhfgh@gmail.com">📋 نسخ</button>
+      </div>
+      <div class="note">
+        <span class="info">💡</span>
+        <div>
+          <strong>ملاحظة سريعة حول هذا البريد:</strong>
+          <p>قد يبدو هذا العنوان كسلسلة حروف عشوائية، لكنه مجرد <strong>البريد الشخصي للمطوّر</strong> — وليس بريداً مشبوهاً أو مولّداً تلقائياً. إنه الطريقة الرسمية للتواصل معنا.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <div class="links">
+    <a href="https://github.com/Shadow132245/OtpVault" target="_blank" rel="noopener">🔗 &nbsp;GitHub</a>
+    <a href="https://otpvault1.vercel.app" target="_blank" rel="noopener">🌐 &nbsp;Open the app</a>
+    <a href="https://otpvault1.vercel.app/OtpVault-APK.zip" target="_blank" rel="noopener">📱 &nbsp;Download APK</a>
+  </div>
+  <div>OtpVault &middot; Zero-knowledge 2FA &middot; Open Source <span class="heart">❤</span></div>
+</footer>
+
+<button id="toTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">↑</button>
+<div id="toast"></div>
 
 <script>
-function switchLang(lang) {
-  document.getElementById('content-en').classList.toggle('hidden', lang !== 'en');
-  document.getElementById('content-ar').classList.toggle('hidden', lang !== 'ar');
-  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
-  document.getElementById('btn-ar').classList.toggle('active', lang === 'ar');
-  document.documentElement.lang = lang;
-  document.getElementById('title').textContent = lang === 'en' ? 'Terms of Service' : 'شروط الخدمة';
-  document.getElementById('subtitle').textContent = lang === 'en' ? 'OtpVault — Secure 2FA Authenticator' : 'OtpVault — مدير رموز التحقق الآمن';
-  document.getElementById('updated').textContent = lang === 'en' ? 'Last updated: June 2026' : 'آخر تحديث: يونيو 2026';
-}
+  var LS_THEME = 'ov-legal-theme', LS_LANG = 'ov-legal-lang';
+  var CONTACT = 'fghfghffdgfhfgh@gmail.com';
+
+  function initTheme() {
+    var t = localStorage.getItem(LS_THEME) || 'dark';
+    document.documentElement.dataset.theme = t;
+    document.getElementById('theme-btn').textContent = t === 'dark' ? '🌙' : '☀️';
+  }
+  function toggleTheme() {
+    var t = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = t;
+    localStorage.setItem(LS_THEME, t);
+    document.getElementById('theme-btn').textContent = t === 'dark' ? '🌙' : '☀️';
+  }
+
+  function switchLang(lang) {
+    document.getElementById('content-en').classList.toggle('hidden', lang !== 'en');
+    document.getElementById('content-ar').classList.toggle('hidden', lang !== 'ar');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.getElementById('btn-ar').classList.toggle('active', lang === 'ar');
+    document.documentElement.lang = lang;
+    localStorage.setItem(LS_LANG, lang);
+    revealAll();
+  }
+
+  function onScroll() {
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    var p = max > 0 ? (h.scrollTop / max) : 0;
+    document.getElementById('progress').style.width = (p * 100) + '%';
+    document.getElementById('toTop').classList.toggle('show', h.scrollTop > 600);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.08 });
+  function revealAll() {
+    document.querySelectorAll('.card.reveal').forEach(function (el) { io.observe(el); });
+  }
+
+  var toastTimer = null;
+  function toast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2000);
+  }
+
+  document.querySelectorAll('.copy-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var email = btn.dataset.email || CONTACT;
+      function done() {
+        var isAr = document.documentElement.lang === 'ar';
+        btn.textContent = isAr ? '✓ تم النسخ' : '✓ Copied';
+        toast(isAr ? 'تم نسخ البريد الإلكتروني' : 'Email address copied');
+        setTimeout(function () { btn.textContent = isAr ? '📋 نسخ' : '📋 Copy'; }, 2000);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(email).then(done).catch(function () { legacyCopy(email); done(); });
+      } else { legacyCopy(email); done(); }
+    });
+  });
+  function legacyCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  initTheme();
+  var saved = localStorage.getItem(LS_LANG) || 'en';
+  switchLang(saved);
 </script>
 </body>
 </html>
