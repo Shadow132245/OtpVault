@@ -41,8 +41,16 @@ jobs:
         with:
           ndk-version: r26b
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Accept Android SDK Licenses
+        run: |
+          SDK="$ANDROID_HOME"
+          for TOOLS_DIR in "$SDK/cmdline-tools/latest" "$SDK/cmdline-tools/16.0" "$SDK/cmdline-tools"; do
+            if [ -x "$TOOLS_DIR/bin/sdkmanager" ]; then
+              echo "Accepting licenses via $TOOLS_DIR/bin/sdkmanager"
+              yes | "$TOOLS_DIR/bin/sdkmanager" --licenses || true
+            fi
+          done
+          ls "$SDK/licenses" 2>/dev/null || echo "no licenses dir"
 
       - name: Clean and Initialize Tauri Android
         run: |
