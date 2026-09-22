@@ -3,6 +3,8 @@ pub mod auth;
 pub mod backup;
 pub mod biometric;
 pub mod email_auth;
+pub mod jni;
 pub mod neon_http;
 pub mod settings;
+pub mod updater;
 pub use neon_http as neon;

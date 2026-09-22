@@ -58,11 +58,17 @@ pub fn verify_password(app: tauri::AppHandle, password: String) -> Result<bool, 
 /// Called from the frontend when the app is backgrounded/minimized on mobile.
 /// Mirrors the desktop "lock when the window is hidden" behavior: if enabled,
 /// locks the vault right away (independently of the auto-lock inactivity
-/// timer).
+/// timer). Selecting "Never" for the auto-lock timer disables every
+/// automatic locking path, including this one.
 #[tauri::command]
 pub fn on_app_hidden(app: tauri::AppHandle) {
     let settings = Keychain::load_settings(&app);
     if !settings.lock_on_hide {
+        return;
+    }
+    // "Never" (0 seconds) means the vault must never auto-lock.
+    if settings.auto_lock_seconds <= 0 {
+        log::info!("on_app_hidden: auto-lock is Never; not locking");
         return;
     }
     tauri::async_runtime::spawn(async move {

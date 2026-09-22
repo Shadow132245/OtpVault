@@ -209,5 +209,11 @@
     "requires_finger": "Place your finger on the sensor to confirm",
     "verification_failed": "Fingerprint verification failed or was cancelled",
     "disable": "Disable"
+  },
+  "update": {
+    "available": "New version available ({{version}})",
+    "button": "Update",
+    "downloading": "Downloading…",
+    "check_failed": "Could not start the update"
   }
 }

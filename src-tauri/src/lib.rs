@@ -68,6 +68,7 @@ pub fn run() {
             commands::biometric::setup_biometric,
             commands::biometric::disable_biometric,
             commands::biometric::unlock_with_biometric,
+            commands::updater::install_apk_update,
             qr_scanner::scan_qr_file,
             qr_scanner::scan_qr_bytes,
         ])

@@ -8,6 +8,7 @@ import { AddAccountScreen } from './features/add-account/AddAccountScreen'
 import { SettingsScreen } from './features/settings/SettingsScreen'
 import { TrashScreen } from './features/trash/TrashScreen'
 import { HelpGuideModal } from './components/help/HelpGuideModal'
+import UpdateBanner from './components/update/UpdateBanner'
 import { useVault } from './hooks/useVault'
 import { save, open } from '@tauri-apps/plugin-dialog'
 import {
@@ -341,6 +342,7 @@ function App() {
           <button className="ml-3 text-green-500 hover:text-green-700" onClick={() => setSuccess(null)}>x</button>
         </div>
       )}
+      <UpdateBanner isMobile={isMobileDevice} />
       <AnimatePresence mode="wait">
         {screen === 'onboarding' && (
           <motion.div key="onboarding" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>

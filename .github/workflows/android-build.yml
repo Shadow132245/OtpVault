@@ -66,6 +66,9 @@ jobs:
       - name: Patch Android Biometric Prompt
         run: python3 scripts/patch-android-biometric.py src-tauri/gen/android
 
+      - name: Patch Android Updater
+        run: python3 scripts/patch-android-updater.py src-tauri/gen/android
+
       - name: Patch Android Fullscreen/Immersive Mode
         run: python3 scripts/patch-android-fullscreen.py src-tauri/gen/android
 

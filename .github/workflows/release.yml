@@ -77,3 +77,99 @@ jobs:
           files: OtpVault_${{ env.VERSION }}_${{ matrix.arch }}_en-US.msi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  android:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Frontend Dependencies
+        run: npm install
+
+      - name: Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android, armv7-linux-androideabi
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26b
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Get version from tag
+        id: version
+        run: |
+          TAG="${{ github.ref_name }}"
+          VERSION="${TAG#v}"
+          echo "VERSION=$VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+          PATCH=$(echo "$VERSION" | cut -d. -f3)
+          echo "VERSION_CODE=$((MAJOR * 10000 + MINOR * 100 + PATCH))" >> $GITHUB_ENV
+
+      - name: Clean and Initialize Tauri Android
+        run: |
+          rm -rf src-tauri/gen/android
+          npx tauri android init
+
+      - name: Copy Android Icons
+        run: |
+          RES="src-tauri/gen/android/app/src/main/res"
+          cp src-tauri/icons/android/mipmap-mdpi.png "$RES/mipmap-mdpi/ic_launcher.png"
+          cp src-tauri/icons/android/mipmap-hdpi.png "$RES/mipmap-hdpi/ic_launcher.png"
+          cp src-tauri/icons/android/mipmap-xhdpi.png "$RES/mipmap-xhdpi/ic_launcher.png"
+          cp src-tauri/icons/android/mipmap-xxhdpi.png "$RES/mipmap-xxhdpi/ic_launcher.png"
+          cp src-tauri/icons/android/mipmap-xxxhdpi.png "$RES/mipmap-xxxhdpi/ic_launcher.png"
+          cp src-tauri/icons/android/mipmap-xxxhdpi.png "$RES/mipmap-xxxhdpi/ic_launcher_round.png"
+
+      - name: Patch Android Permissions
+        run: python3 scripts/patch-android-permissions.py src-tauri/gen/android/app/src/main/AndroidManifest.xml src-tauri/gen/android/app/src/main/java/com/otpvault/desktop/MainActivity.kt
+
+      - name: Patch Android Biometric Prompt
+        run: python3 scripts/patch-android-biometric.py src-tauri/gen/android
+
+      - name: Patch Android Updater
+        run: python3 scripts/patch-android-updater.py src-tauri/gen/android
+
+      - name: Patch Android Fullscreen/Immersive Mode
+        run: python3 scripts/patch-android-fullscreen.py src-tauri/gen/android
+
+      - name: Set Android Version Info
+        run: |
+          echo "tauri.android.versionCode=${{ env.VERSION_CODE }}" > src-tauri/gen/android/app/tauri.properties
+          echo "tauri.android.versionName=${{ env.VERSION }}" >> src-tauri/gen/android/app/tauri.properties
+
+      - name: Generate Keystore and Patch Signing
+        run: |
+          keytool -genkeypair -v -keystore src-tauri/gen/android/app/otpvault.keystore -alias otpvault -keyalg RSA -keysize 2048 -validity 10000 -storepass otpvault123 -keypass otpvault123 -dname "CN=OtpVault, OU=Dev, O=OtpVault, L=Unknown, ST=Unknown, C=US"
+          python3 scripts/patch-signing.py src-tauri/gen/android/app/build.gradle.kts
+
+      - name: Build Release APKs
+        run: npx tauri android build --target aarch64 --target armv7
+
+      - name: Upload APK to Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: src-tauri/gen/android/**/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

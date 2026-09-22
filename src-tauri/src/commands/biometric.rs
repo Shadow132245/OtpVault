@@ -27,28 +27,6 @@ fn emit_stage(app: &tauri::AppHandle, stage: &str) {
     let _ = app.emit("biometric-stage", stage.to_string());
 }
 
-/// Reads the message of the currently-pending Java exception (if any) and
-/// clears it, so the exact failure text can be shown in the UI.
-#[cfg(target_os = "android")]
-fn exception_message(env: &mut jni::JNIEnv<'_>) -> Option<String> {
-    use jni::objects::JString;
-    let throwable = match env.exception_occurred().ok()? {
-        t if t.is_null() => return None,
-        t => t,
-    };
-    let obj: jni::objects::JObject = throwable.into();
-    let text = env
-        .call_method(&obj, "toString", "()Ljava/lang/String;", &[])
-        .ok()
-        .and_then(|v| v.l().ok())
-        .and_then(|o| {
-            let s = JString::from(o);
-            env.get_string(&s).ok().and_then(|js| js.to_str().ok().map(|x| x.to_owned()))
-        });
-    let _ = env.exception_clear();
-    text
-}
-
 /// Reads the auth result that `BiometricCallback` stored in its static
 /// fields. Returns -2 while the prompt is still pending, 0 on success,
 /// or a platform error code. Uses the class global reference captured on
@@ -87,13 +65,8 @@ fn show_biometric_prompt(
     use jni::objects::{JObject, JValue};
 
     let result = (|| -> Result<(), String> {
-        let class = env
-            .find_class("com/otpvault/desktop/BiometricCallback")
-            .map_err(|e| {
-                let msg = exception_message(env).unwrap_or_default();
-                format!("JNI find_class(BiometricCallback): {} — {}", e, msg)
-            })?;
-        // Cache it so the polling thread never has to FindClass an app class.
+        let class = crate::commands::jni::load_app_class(env, activity, "com/otpvault/desktop/BiometricCallback")?;
+        // Cache it so the polling thread never has to look the class up again.
         let class_global = env.new_global_ref(&class).map_err(|e| e.to_string())?;
         let _ = CLASS_REF.get_or_init(|| class_global);
         emit_stage(app, "class-found");

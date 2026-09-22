@@ -209,5 +209,11 @@
     "requires_finger": "ضع إصبعك على مستشعر الجهاز للتأكيد",
     "verification_failed": "فشل التحقق ببصمة الإصبع أو تم الإلغاء",
     "disable": "إيقاف"
+  },
+  "update": {
+    "available": "يوجد إصدار جديد ({{version}})",
+    "button": "تحديث",
+    "downloading": "جارٍ التنزيل…",
+    "check_failed": "تعذر بدء التحديث"
   }
 }
