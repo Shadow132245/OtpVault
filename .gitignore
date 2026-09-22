@@ -37,3 +37,6 @@ __pycache__/
 # Mobile (unused)
 mobile/
 mobile-temp/
+
+# Local project map (keep local, never push)
+/PROJECT_MAP.md
