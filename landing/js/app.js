@@ -67,7 +67,13 @@ window.App = {
       exportDesc: 'Download encrypted vault', importBackup: 'Import Backup',
       importDesc: 'Restore from backup file', export: 'Export', import: 'Import',
       language: 'Language', about: 'About', copyright: 'Copyright',
-      lockVault: 'Lock Vault', logOut: 'Log Out', welcome: 'Welcome to OtpVault',
+      lockVault: 'Lock Vault', logOut: 'Log Out',
+      security: 'Security',
+      autoLock: 'Auto Lock',
+      autoLockDesc: 'Automatically lock the vault after a period of inactivity.',
+      lockNever: 'Never', lockMin1: '1 minute', lockMin5: '5 minutes',
+      lockMin15: '15 minutes', lockMin30: '30 minutes', lockMin60: '1 hour',
+      vaultAutoLocked: 'Vault locked automatically', welcome: 'Welcome to OtpVault',
       secureManager: 'Your secure 2FA code manager', signUp: 'Sign Up',
       logIn: 'Log In', createVault: 'Create Vault', unlockVault: 'Unlock Vault',
       emailAddr: 'Email address', password: 'Password (min 4 characters)',
@@ -82,9 +88,28 @@ window.App = {
       noVaultExport: 'No vault to export', invalidBackup: 'Invalid backup file',
       wrongBackupPass: 'Wrong password', backupImported: 'Backup imported!',
       importFailed: 'Failed to import. Wrong password?', invalidVault: 'Invalid vault data',
-      deleteConfirm: 'Delete Account', deleteConfirmMsg: 'Are you sure you want to delete this account? This action cannot be undone.',
+      deleteConfirm: 'Delete Account', deleteConfirmMsg: 'Are you sure you want to delete this account? It will be moved to Trash for 14 days.',
       deleteConfirmPass: 'Enter your password to confirm', deleteWrongPass: 'Incorrect password',
       deleteCancel: 'Cancel', deleteDelete: 'Delete', deleteVerifying: 'Verifying...',
+      appearance: 'Appearance', theme: 'Theme', themeDark: 'Dark', themeLight: 'Light',
+      localOnly: 'Local-only Mode', localOnlyDesc: 'Disable cloud sync and keep the vault on this device only.',
+      lockOnHide: 'Lock on Hide', lockOnHideDesc: 'Lock the vault when the app is hidden or the page is exited.',
+      help: 'Help', helpOpen: 'Open Help', helpGuide: 'How to use OtpVault',
+      helpStep1: '1. Create your vault with a strong password (min 4 characters). It is encrypted end-to-end and never leaves your device unencrypted.',
+      helpStep2: '2. Add accounts by scanning a QR code from your authenticator app or entering a secret key manually.',
+      helpStep3: '3. Tap any account to copy its 6-digit code. Codes refresh automatically every 30 seconds.',
+      helpStep4: '4. Use folders and tags to organize accounts. Delete an account moves it to Trash for 14 days before permanent removal.',
+      helpStep5: '5. Backup regularly via Export Backup, or use cloud sync. Local-only mode disables cloud entirely.',
+      folders: 'Folders', allAccounts: 'All Accounts', unassigned: 'Unassigned',
+      trash: 'Trash', emptyTrash: 'Empty Trash', restore: 'Restore', deleteForever: 'Delete Forever',
+      trashEmpty: 'Trash is empty', trashEmptyDesc: 'Deleted accounts appear here for 14 days.',
+      restoreSuccess: 'Account restored', purgeSuccess: 'Account deleted permanently',
+      deleteForeverConfirm: 'Delete this account permanently? This cannot be undone.',
+      emptyTrashConfirm: 'Delete all accounts in the trash permanently?',
+      edit: 'Edit', editAccount: 'Edit Account', saveChanges: 'Save Changes',
+      tags: 'Tags', tagsHint: 'Comma separated', folderLabel: 'Folder', newFolder: 'New Folder',
+      movedTo: 'Moved to', addedFolder: 'Folder created', folderExists: 'Folder already exists',
+      changed: 'Changes saved', searchNoResults: 'No results found',
     },
     ar: {
       myAccounts: '\u062d\u0633\u0627\u0628\u0627\u062a\u064a', addAccount: '\u0625\u0636\u0627\u0641\u0629 \u062d\u0633\u0627\u0628', settings: '\u0627\u0644\u0625\u0639\u062f\u0627\u062f\u0627\u062a',
@@ -101,8 +126,14 @@ window.App = {
       importDesc: '\u0627\u0633\u062a\u0639\u0627\u062f\u0629 \u0645\u0646 \u0645\u0644\u0641 \u0627\u0644\u0646\u0633\u062e\u0629', export: '\u062a\u0635\u062f\u064a\u0631', import: '\u0627\u0633\u062a\u0639\u0645\u0627\u0644',
       language: '\u0627\u0644\u0644\u063a\u0629', about: '\u062d\u0648\u0644', copyright: '\u0627\u0644\u062d\u0642\u0648\u0642',
       lockVault: '\u0642\u0641\u0644 \u0627\u0644\u062e\u0632\u0646', logOut: '\u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062e\u0631\u0648\u062c',
+      security: '\u0627\u0644\u0623\u0645\u0627\u0646',
+      autoLock: '\u0642\u0641\u0644 \u062a\u0644\u0642\u0627\u0626\u064a',
+      autoLockDesc: '\u064a\u0642\u0641\u0644 \u0627\u0644\u062e\u0632\u0646\u0629 \u062a\u0644\u0642\u0627\u0626\u064a\u064b\u0627 \u0628\u0639\u062f \u0639\u062f\u0645 \u0627\u0644\u0646\u0634\u0627\u0637',
+      lockNever: '\u0644\u0627 \u064a\u0642\u0641\u0644 (\u0645\u0648\u0635\u0649 \u0628\u0647)', lockMin1: '\u062f\u0642\u064a\u0642\u0629 \u0648\u0627\u062d\u062f\u0629',
+      lockMin5: '5 \u062f\u0642\u0627\u0626\u0642', lockMin15: '15 \u062f\u0642\u064a\u0642\u0629',
+      lockMin30: '30 \u062f\u0642\u064a\u0642\u0629', lockMin60: '\u0633\u0627\u0639\u0629 \u0648\u0627\u062d\u062f\u0629',
       welcome: '\u0645\u0631\u062d\u0628\u064b\u0627 \u0628\u0643 \u0641\u064a OtpVault',
-      secureManager: '\u0645\u062f\u064a\u0631 \u0623\u0645\u0648\u0627\u0646 \u0627\u0644u062a\u062d\u0642\u0642 2FA \u0627\u0644u0623u0645u0646',
+      secureManager: '\u0645\u062f\u064a\u0631 \u0623\u0645\u0627\u0646 \u0627\u0644\u062a\u062d\u0642\u0642 2FA \u0627\u0644\u0622\u0645\u0646',
       signUp: '\u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062d\u0633\u0627\u0628', logIn: '\u062a\u0633\u062c\u064a\u0644 \u0627\u0644\u062f\u062e\u0648\u0644',
       createVault: '\u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u062e\u0632\u0646', unlockVault: '\u0641\u062a\u062d \u0627\u0644\u062e\u0632\u0646',
       emailAddr: '\u0639\u0646\u0648\u0627\u0646 \u0627\u0644\u0628\u0631\u064a\u062f \u0627\u0644\u0625\u0644\u0643\u062a\u0631\u0648\u0646\u064a',
@@ -110,7 +141,7 @@ window.App = {
       rememberMe: '\u062a\u0630\u0643\u0631\u0646\u064a', alreadyHave: '\u0644\u062f\u064a\u0643 \u062d\u0633\u0627\u0628 \u0628\u0627\u0644\u0641\u0639\u0644\u061f',
       dontHave: '\u0644\u064a\u0633 \u0644\u062f\u064a\u0643 \u062d\u0633\u0627\u0628\u061f',
       fillAll: '\u064a\u0631\u062c\u0649 \u0645\u0644\u0621 \u0627\u0644\u062d\u0642\u0648\u0644',
-      minLength: '\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u0644\u0627 \u0628\u062f\u0621 \u0639\u0646 4 \u0623\u062d\u0631\u0641',
+      minLength: '\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u0644\u0627 \u0628\u062f \u0623\u0646 \u062a\u0643\u0648\u0646 4 \u0623\u062d\u0631\u0641 \u0639\u0644\u0649 \u0627\u0644\u0623\u0642\u0644',
       agreeTerms: '\u064a\u0631\u062c\u0649 \u0627\u0644\u0645\u0648\u0627\u0641\u0642\u0629 \u0639\u0644\u0649 \u0634\u0631\u0648\u0637 \u0627\u0644\u062e\u062f\u0645\u0629',
       copied: '\u062a\u0645 \u0627\u0644\u0646\u0633\u062e!', copyFailed: '\u0641\u0634\u0644 \u0627\u0644\u0646\u0633\u062e', deleted: '\u062a\u0645 \u062d\u0630\u0641 \u0627\u0644\u062d\u0633\u0627\u0628',
       accountAdded: '\u062a\u0645\u062a \u0625\u0636\u0627\u0641\u0629 \u0627\u0644\u062d\u0633\u0627\u0628!', notValid: '\u0631\u0645\u0632 QR \u063a\u064a\u0631 \u0635\u0627\u0644\u062d',
@@ -126,12 +157,31 @@ window.App = {
       importFailed: '\u0641\u0634\u0644 \u0627\u0644\u0627\u0633\u062a\u0639\u0645\u0627\u0644. \u0643\u0644\u0645\u0629 \u0645\u0631\u0648\u0631 \u063a\u064a\u0631 \u0635\u0627\u0644\u062d\u0629\u061f',
       invalidVault: '\u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u062e\u0632\u0646 \u063a\u064a\u0631 \u0635\u0627\u0644\u062d\u0629',
       deleteConfirm: '\u062d\u0630\u0641 \u0627\u0644\u062d\u0633\u0627\u0628',
-      deleteConfirmMsg: '\u0647\u0644 \u0623\u0646\u062a \u0645\u062a\u0623\u0643\u062f \u0645\u0646 \u062d\u0630\u0641 \u0647\u0630\u0627 \u0627\u0644\u062d\u0633\u0627\u0628\u061f \u0647\u0630\u0647 \u0627\u0644\u0639\u0645\u0644\u064a\u0629 \u063a\u064a\u0631 \u0642\u0627\u0628\u0644\u0629 \u0644\u0644\u062a\u0631\u0627\u062c\u0639.',
+      deleteConfirmMsg: '\u0647\u0644 \u0623\u0646\u062a \u0645\u062a\u0623\u0643\u062f \u0645\u0646 \u062d\u0630\u0641 \u0647\u0630\u0627 \u0627\u0644\u062d\u0633\u0627\u0628\u061f \u0633\u064a\u0646\u062a\u0642\u0644 \u0625\u0644\u0649 \u0627\u0644\u0645\u0647\u0645\u0644\u0627\u062a \u0644\u0645\u062f\u0629 14 \u064a\u0648\u0645\u0627\u064b.',
       deleteConfirmPass: '\u0623\u062f\u062e\u0644 \u0643\u0644\u0645\u0629 \u0645\u0631\u0648\u0631\u0643 \u0644\u0644\u062a\u0623\u0643\u064a\u062f',
       deleteWrongPass: '\u0643\u0644\u0645\u0629 \u0627\u0644\u0645\u0631\u0648\u0631 \u063a\u064a\u0631 \u0635\u0627\u0644\u062d\u0629',
       deleteCancel: '\u0625\u0644\u063a\u0627\u0621',
       deleteDelete: '\u062d\u0630\u0641',
       deleteVerifying: '\u062c\u0627\u0631\u064a \u0627\u0644\u062a\u062d\u0642\u0642...',
+      appearance: '\u0627\u0644\u0645\u0638\u0647\u0631', theme: '\u0627\u0644\u0645\u0638\u0647\u0631', themeDark: '\u062f\u0627\u0643\u0646', themeLight: '\u0641\u0627\u062a\u062d',
+      localOnly: '\u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u0645\u062d\u0644\u064a \u0641\u0642\u0637', localOnlyDesc: '\u062a\u0639\u0637\u064a\u0644 \u0627\u0644\u0645\u0632\u0627\u0645\u0646\u0629 \u0627\u0644\u0633\u062d\u0627\u0628\u064a\u0629 \u0648\u0627\u0644\u0627\u062d\u062a\u0641\u0627\u0638 \u0628\u0627\u0644\u062e\u0632\u0646\u0629 \u0641\u064a \u0647\u0630\u0627 \u0627\u0644\u062c\u0647\u0627\u0632 \u0641\u0642\u0637.',
+      lockOnHide: '\u0627\u0644\u0642\u0641\u0644 \u0639\u0646\u062f \u0627\u0644\u0625\u062e\u0641\u0627\u0621', lockOnHideDesc: '\u0642\u0641\u0644 \u0627\u0644\u062e\u0632\u0646\u0629 \u0639\u0646\u062f \u0625\u062e\u0641\u0627\u0621 \u0627\u0644\u062a\u0637\u0628\u064a\u0642 \u0623\u0648 \u0627\u0644\u062e\u0631\u0648\u062c \u0645\u0646 \u0627\u0644\u0635\u0641\u062d\u0629.',
+      help: '\u0627\u0644\u0645\u0633\u0627\u0639\u062f\u0629', helpOpen: '\u0641\u062a\u062d \u0627\u0644\u0645\u0633\u0627\u0639\u062f\u0629', helpGuide: '\u0643\u064a\u0641\u064a\u0629 \u0627\u0633\u062a\u062e\u062f\u0627\u0645 OtpVault',
+      helpStep1: '1. \u0623\u0646\u0634\u0626 \u062e\u0632\u0646\u062a\u0643 \u0628\u0643\u0644\u0645\u0629 \u0645\u0631\u0648\u0631 \u0642\u0648\u064a\u0629 (\u062d\u062f \u0623\u0642\u0644 4 \u0623\u062d\u0631\u0641). \u062a\u064f\u0634\u0641\u0651\u0631 \u0628\u0646\u0638\u0627\u0645 \u062a\u0634\u0641\u064a\u0631 \u0643\u0627\u0645\u0644 \u0648\u0644\u0627 \u062a\u063a\u0627\u062f\u0631 \u062c\u0647\u0627\u0632\u0643 \u0628\u062f\u0648\u0646 \u062a\u0634\u0641\u064a\u0631.',
+      helpStep2: '2. \u0623\u0636\u0641 \u0627\u0644\u062d\u0633\u0627\u0628\u0627\u062a \u0628\u0645\u0633\u062d \u0631\u0645\u0632 QR \u0645\u0646 \u062a\u0637\u0628\u064a\u0642 \u0627\u0644\u0645\u0635\u0627\u062f\u0642 2FA \u0623\u0648 \u0628\u0625\u062f\u062e\u0627\u0644 \u0645\u0641\u062a\u0627\u062d \u0627\u0644\u0633\u0631 \u064a\u062f\u0648\u064a\u0627\u064b.',
+      helpStep3: '3. \u0627\u0636\u063a\u0637 \u0639\u0644\u0649 \u0623\u064a \u062d\u0633\u0627\u0628 \u0644\u0646\u0633\u062e \u0631\u0645\u0632\u0647 \u0645\u0646 6 \u0623\u0631\u0642\u0627\u0645. \u062a\u062a\u062d\u062f\u062b \u0627\u0644\u0631\u0645\u0648\u0632 \u062a\u0644\u0642\u0627\u0626\u064a\u0627\u064b \u0643\u0644 30 \u062b\u0627\u0646\u064a\u0629.',
+      helpStep4: '4. \u0627\u0633\u062a\u062e\u062f\u0645 \u0627\u0644\u0645\u062c\u0644\u062f\u0627\u062a \u0648\u0627\u0644\u0648\u0633\u0648\u0645 \u0644\u062a\u0646\u0638\u064a\u0645 \u0627\u0644\u062d\u0633\u0627\u0628\u0627\u062a. \u062d\u0630\u0641 \u0623\u064a \u062d\u0633\u0627\u0628 \u064a\u0646\u0642\u0644\u0647 \u0644\u0644\u0645\u0647\u0645\u0644\u0627\u062a \u0644\u0645\u062f\u0629 14 \u064a\u0648\u0645\u0627\u064b \u0642\u0628\u0644 \u0627\u0644\u062d\u0630\u0641 \u0627\u0644\u062f\u0627\u0626\u0645.',
+      helpStep5: '5. \u0627\u062d\u062a\u0641\u0638 \u0628\u0646\u0633\u062e\u0629 \u0627\u062d\u062a\u064a\u0627\u0637\u064a\u0629 \u0645\u0646 \u062e\u0644\u0627\u0644 \u0627\u0644\u062a\u0635\u062f\u064a\u0631\u060c \u0623\u0648 \u0627\u0633\u062a\u062e\u062f\u0645 \u0627\u0644\u0645\u0632\u0627\u0645\u0646\u0629 \u0627\u0644\u0633\u062d\u0627\u0628\u064a\u0629. \u0627\u0644\u0648\u0636\u0639 \u0627\u0644\u0645\u062d\u0644\u064a \u064a\u0639\u0637\u0644 \u0627\u0644\u0633\u062d\u0627\u0628\u0629 \u062a\u0645\u0627\u0645\u0627\u064b.',
+      folders: '\u0627\u0644\u0645\u062c\u0644\u062f\u0627\u062a', allAccounts: '\u062c\u0645\u064a\u0639 \u0627\u0644\u062d\u0633\u0627\u0628\u0627\u062a', unassigned: '\u062f\u0648\u0646 \u0645\u062c\u0644\u062f',
+      trash: '\u0627\u0644\u0645\u0647\u0645\u0644\u0627\u062a', emptyTrash: '\u062a\u0641\u0631\u064a\u063a \u0627\u0644\u0645\u0647\u0645\u0644\u0627\u062a', restore: '\u0627\u0633\u062a\u0639\u0627\u062f\u0629', deleteForever: '\u062d\u0630\u0641 \u062f\u0627\u0626\u0645',
+      trashEmpty: '\u0627\u0644\u0645\u0647\u0645\u0644\u0627\u062a \u0641\u0627\u0631\u063a\u0629', trashEmptyDesc: '\u062a\u0638\u0647\u0631 \u0627\u0644\u062d\u0633\u0627\u0628\u0627\u062a \u0627\u0644\u0645\u062d\u0630\u0648\u0641\u0629 \u0647\u0646\u0627 \u0644\u0645\u062f\u0629 14 \u064a\u0648\u0645\u0627\u064b.',
+      restoreSuccess: '\u062a\u0645\u062a \u0627\u0633\u062a\u0639\u0627\u062f\u0629 \u0627\u0644\u062d\u0633\u0627\u0628', purgeSuccess: '\u062a\u0645 \u062d\u0630\u0641 \u0627\u0644\u062d\u0633\u0627\u0628 \u0628\u0634\u0643\u0644 \u062f\u0627\u0626\u0645',
+      deleteForeverConfirm: '\u062d\u0630\u0641 \u0647\u0630\u0627 \u0627\u0644\u062d\u0633\u0627\u0628 \u0628\u0634\u0643\u0644 \u062f\u0627\u0626\u0645\u061f \u0644\u0627 \u064a\u0645\u0643\u0646 \u0627\u0644\u062a\u0631\u0627\u062c\u0639.',
+      emptyTrashConfirm: '\u062d\u0630\u0641 \u062c\u0645\u064a\u0639 \u0627\u0644\u062d\u0633\u0627\u0628\u0627\u062a \u0641\u064a \u0627\u0644\u0645\u0647\u0645\u0644\u0627\u062a \u0628\u0634\u0643\u0644 \u062f\u0627\u0626\u0645\u061f',
+      edit: '\u062a\u0639\u062f\u064a\u0644', editAccount: '\u062a\u0639\u062f\u064a\u0644 \u0627\u0644\u062d\u0633\u0627\u0628', saveChanges: '\u062d\u0641\u0638 \u0627\u0644\u062a\u063a\u064a\u064a\u0631\u0627\u062a',
+      tags: '\u0627\u0644\u0648\u0633\u0648\u0645', tagsHint: '\u0645\u0631\u062d\u0644\u0629 \u0628\u0641\u0627\u0635\u0644\u0629', folderLabel: '\u0627\u0644\u0645\u062c\u0644\u062f', newFolder: '\u0645\u062c\u0644\u062f \u062c\u062f\u064a\u062f',
+      movedTo: '\u0646\u0642\u0644 \u0625\u0644\u0649', addedFolder: '\u062a\u0645 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0645\u062c\u0644\u062f', folderExists: '\u0627\u0644\u0645\u062c\u0644\u062f \u0645\u0648\u062c\u0648\u062f \u0628\u0627\u0644\u0641\u0639\u0644',
+      changed: '\u062a\u0645 \u062d\u0641\u0638 \u0627\u0644\u062a\u063a\u064a\u064a\u0631\u0627\u062a', searchNoResults: '\u0644\u0627 \u062a\u0648\u062c\u062f \u0646\u062a\u0627\u0626\u062c',
     }
   },
 
@@ -141,7 +191,10 @@ window.App = {
   },
 
   init() {
-    document.documentElement.classList.add('dark');
+    this.theme = StorageService.loadTheme();
+    this.localOnly = StorageService.loadLocalOnly();
+    this.lockOnHide = StorageService.loadLockOnHide();
+    this.applyTheme();
     const remember = StorageService.loadRememberMe();
     if (remember && StorageService.isInitialized()) {
       this.email = remember.email;
@@ -152,6 +205,76 @@ window.App = {
       });
     }
     this._startTOTPUpdater();
+    this._initAutoLock();
+    fetch('version.json').then(r => r.json()).then(d => { this.siteVersion = d.version; }).catch(() => { this.siteVersion = '0.2.2'; });
+  },
+
+  applyTheme() {
+    document.documentElement.classList.toggle('dark', this.theme !== 'light');
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      meta.content = (this.theme === 'light' && this.screen !== 'landing') ? '#f5f5f5' : '#0b0d1a';
+    }
+  },
+
+  setTheme(theme) {
+    this.theme = theme === 'light' ? 'light' : 'dark';
+    StorageService.saveTheme(this.theme);
+    this.applyTheme();
+    this._renderSettings();
+  },
+
+  setLocalOnly(v) {
+    this.localOnly = !!v;
+    StorageService.saveLocalOnly(this.localOnly);
+    if (this.localOnly) this._stopCloudSync();
+    else if (this.password) this._startCloudSync();
+  },
+
+  setLockOnHide(v) {
+    this.lockOnHide = !!v;
+    StorageService.saveLockOnHide(this.lockOnHide);
+  },
+
+  // ===== AUTO LOCK =====
+  autoLockSecondsVal() {
+    const s = this.autoLockSeconds || 0;
+    return s <= 0 ? 0 : s;
+  },
+
+  _initAutoLock() {
+    this.autoLockSeconds = StorageService.loadAutoLockSeconds();
+    if (this.autoLockSeconds === null) { this.autoLockSeconds = 0; StorageService.saveAutoLockSeconds(0); }
+    const events = ['click', 'keydown', 'pointerdown', 'pointermove', 'touchstart', 'scroll', 'wheel'];
+    events.forEach(ev => window.addEventListener(ev, () => this._resetAutoLockTimer(), { passive: true }));
+    document.addEventListener('visibilitychange', () => this._onVisibilityChange());
+    window.addEventListener('pagehide', () => { if (this.lockOnHide !== false) this._lockIfNeeded(); });
+  },
+
+  _onVisibilityChange() {
+    if (document.hidden && this.lockOnHide !== false) this._lockIfNeeded();
+  },
+
+  _resetAutoLockTimer() {
+    const s = this.autoLockSecondsVal();
+    if (!s || !this.password) return;
+    if (this._lockTimer) clearTimeout(this._lockTimer);
+    this._lockTimer = setTimeout(() => this._lockVault(), s * 1000);
+  },
+
+  _lockIfNeeded() {
+    const s = this.autoLockSecondsVal();
+    if (!s || !this.password) return;
+    if (this._lockTimer) { clearTimeout(this._lockTimer); this._lockTimer = null; }
+    this._lockVault();
+  },
+
+  setAutoLockSeconds(v) {
+    const n = parseInt(v, 10) || 0;
+    this.autoLockSeconds = n;
+    StorageService.saveAutoLockSeconds(n);
+    if (this._lockTimer) { clearTimeout(this._lockTimer); this._lockTimer = null; }
+    this._resetAutoLockTimer();
   },
 
   navigate(screen) {
@@ -173,9 +296,12 @@ window.App = {
     }
 
     if (screen === 'onboarding') this._renderAuth();
-    else if (screen === 'accounts') this._renderAccounts();
+    else if (screen === 'accounts') { this._renderAccounts(); this._resetAutoLockTimer(); }
     else if (screen === 'add-account') this._renderAddAccount();
     else if (screen === 'settings') this._renderSettings();
+    else if (screen === 'help') this._renderHelp();
+    else if (screen === 'trash') this._renderTrash();
+    else if (screen === 'edit-account') this._renderEditAccount();
   },
 
   // ===== AUTH =====
@@ -296,19 +422,21 @@ window.App = {
   async _doSignup() {
     const errEl = document.getElementById('auth-error');
     const btn = document.getElementById('auth-submit');
-    try {
-      const row = await NeonAPI.fetchVault(this.email);
-      if (row) {
-        errEl.textContent = 'This email is already registered. Please sign in instead.';
-        btn.disabled = false; btn.innerHTML = 'Create Vault';
-        return;
-      }
-    } catch (e) {
-      if (!e.message.includes('404') && !e.message.includes('Not found')) {
-        if (!e.message.includes('Failed to fetch') && !e.message.includes('NetworkError')) {
-          errEl.textContent = 'Server error. Please try again.';
+    if (!this.localOnly) {
+      try {
+        const row = await NeonAPI.fetchVault(this.email);
+        if (row) {
+          errEl.textContent = 'This email is already registered. Please sign in instead.';
           btn.disabled = false; btn.innerHTML = 'Create Vault';
           return;
+        }
+      } catch (e) {
+        if (!e.message.includes('404') && !e.message.includes('Not found')) {
+          if (!e.message.includes('Failed to fetch') && !e.message.includes('NetworkError')) {
+            errEl.textContent = 'Server error. Please try again.';
+            btn.disabled = false; btn.innerHTML = 'Create Vault';
+            return;
+          }
         }
       }
     }
@@ -318,6 +446,18 @@ window.App = {
   async _doSignin() {
     const errEl = document.getElementById('auth-error');
     const btn = document.getElementById('auth-submit');
+    if (this.localOnly) {
+      if (!StorageService.isInitialized()) {
+        errEl.textContent = 'No local vault found. Please sign up first.';
+        btn.disabled = false; btn.innerHTML = this._t('unlockVault');
+        return;
+      }
+      StorageService.saveEmail(this.email);
+      if (this._rememberMe) StorageService.saveRememberMe(this.email, this.password);
+      await this._loadLocalVault();
+      this.navigate('accounts');
+      return;
+    }
     try {
       const row = await NeonAPI.fetchVault(this.email);
       const testPayload = row.test_payload || row.testPayload || '';
@@ -364,7 +504,7 @@ window.App = {
     StorageService.saveVaultData(encrypted);
     StorageService.saveRememberMe(this.email, this.password);
 
-    try { await NeonAPI.uploadVault(this.email, salt, testPayload, encrypted); } catch {}
+    if (!this.localOnly) { try { await NeonAPI.uploadVault(this.email, salt, testPayload, encrypted); } catch {} }
 
     this.accounts = [];
     this.navigate('accounts');
@@ -397,6 +537,7 @@ window.App = {
         }
       }
       this.accounts = accounts;
+      if (this._purgeExpiredTrash()) changed = true;
       if (changed) {
         const vaultJson = JSON.stringify({ version: 1, accounts: this.accounts });
         const enc = await CryptoService.encryptVault(vaultJson, this.password, salt);
@@ -410,12 +551,15 @@ window.App = {
     const vaultJson = JSON.stringify({ version: 1, accounts: this.accounts });
     const encrypted = await CryptoService.encryptVault(vaultJson, this.password, salt);
     StorageService.saveVaultData(encrypted);
-    try { await NeonAPI.uploadVault(this.email, salt, StorageService.loadTestPayload() || '', encrypted); } catch {}
+    if (!this.localOnly) {
+      try { await NeonAPI.uploadVault(this.email, salt, StorageService.loadTestPayload() || '', encrypted); } catch {}
+    }
   },
 
   _syncIntervalId: null,
 
   _startCloudSync() {
+    if (this.localOnly) return;
     if (this._syncIntervalId) clearInterval(this._syncIntervalId);
     this._pullFromCloud();
     this._syncIntervalId = setInterval(() => this._pullFromCloud(), 3000);
@@ -426,7 +570,7 @@ window.App = {
   },
 
   async _pullFromCloud() {
-    if (!this.email || !this.password) return;
+    if (this.localOnly || !this.email || !this.password) return;
     try {
       const row = await NeonAPI.fetchVault(this.email);
       if (!row) return;
@@ -466,6 +610,8 @@ window.App = {
           digits: acc.digits || 6, step: acc.step || 30,
           icon: acc.icon || '', createdAt: acc.createdAt || acc.created_at || '',
           updatedAt: acc.updatedAt || acc.updated_at || '',
+          folder: acc.folder || '', tags: acc.tags || [],
+          deleted: acc.deleted || false, deletedAt: acc.deletedAt || '',
         };
         this.accounts.push(a);
         changed = true;
@@ -523,8 +669,28 @@ window.App = {
         <input type="text" placeholder="${this._t('search')}" value="${(this._searchQuery||'').replace(/"/g,'&quot;')}" oninput="App._searchQuery=this.value;App._renderAccounts()"
           class="w-full pl-10 pr-11 py-2.5 text-sm rounded-xl bg-surface-800 border border-surface-700 text-surface-100 placeholder-surface-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
         <button onclick="App.navigate('add-account')" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-primary-500 hover:bg-primary-600 text-white flex items-center justify-center transition-colors">${SVG.plus}</button>
-      </div>
-      <div class="flex flex-col gap-5">`;
+      </div>`;
+
+    const folders = this._allFolders();
+    if (folders.length > 0 || this._folderQuery) {
+      html += `<div class="flex items-center gap-2 mb-5 overflow-x-auto pb-1">
+        <button onclick="App._folderQuery=null;App._renderAccounts()" class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-all shrink-0 ${!this._folderQuery ? 'bg-primary-500 text-white shadow-sm' : 'bg-surface-700 text-surface-400 hover:text-surface-200'}">${this._t('allAccounts')}</button>
+        ${folders.map(f => `<button data-folder="${esc(f)}" onclick="App._pickFolder(this.dataset.folder)" class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg transition-all shrink-0 ${this._folderQuery === f ? 'bg-primary-500 text-white shadow-sm' : 'bg-surface-700 text-surface-400 hover:text-surface-200'}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>${esc(f)}</button>`).join('')}
+        <button onclick="App._newFolder()" class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-700 text-surface-400 hover:text-surface-200 hover:bg-surface-600 transition-all shrink-0">${SVG.plus} ${this._t('newFolder')}</button>
+      </div>`;
+    } else {
+      html += `<button onclick="App._newFolder()" class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-700 text-surface-400 hover:text-surface-200 hover:bg-surface-600 transition-all mb-5"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> ${this._t('newFolder')}</button>`;
+    }
+
+    if (filtered.length === 0) {
+      html += `<div class="text-center py-16">
+        <p class="text-surface-400 text-sm">${this._t('searchNoResults')}</p>
+      </div>`;
+      main.innerHTML = html;
+      return;
+    }
+
+    html += '<div class="flex flex-col gap-5">';
 
     for (const letter of sortedKeys) {
       if (sortedKeys.length > 1) {
@@ -543,6 +709,7 @@ window.App = {
   },
 
   _searchQuery: '',
+  _folderQuery: null,
 
   _renderOTP(a, idx) {
     const color = issuerColor(a.issuer);
@@ -556,6 +723,10 @@ window.App = {
             <div class="flex-1 min-w-0">
               <p class="font-semibold text-surface-100 truncate text-sm">${esc(a.issuer||'Unknown')}</p>
               <p class="text-xs text-surface-500 truncate mt-0.5">${esc(a.accountName||'')}</p>
+              ${(a.folder || (a.tags && a.tags.length)) ? `<div class="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                ${a.folder ? `<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-primary-950 text-primary-500 text-[10px] font-medium"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>${esc(a.folder)}</span>` : ''}
+                ${(a.tags || []).slice(0, 3).map(t => `<span class="inline-flex items-center px-1.5 py-0.5 rounded-md bg-surface-700/50 text-surface-400 text-[10px] font-medium">${esc(t)}</span>`).join('')}
+              </div>` : ''}
             </div>
             <div class="flex items-center gap-4">
               <span class="font-mono font-bold text-xl tracking-[0.15em] text-surface-100 tabular-nums" id="code-${idx}">------</span>
@@ -575,7 +746,10 @@ window.App = {
             <div class="h-full bg-primary-500 rounded-full" id="bar-${idx}" style="width:100%;transition:width .5s linear,background .2s;"></div>
           </div>
         </div>
-        <button onclick="event.stopPropagation();App.deleteAccount(${idx})" class="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-surface-700 border border-surface-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-950 group">
+        <button onclick="event.stopPropagation();App.editAccount(${idx})" class="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-surface-700 border border-surface-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-primary-950 group">
+          <svg class="w-3 h-3 text-primary-400 group-hover:text-primary-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </button>
+        <button onclick="event.stopPropagation();App.deleteAccount(${idx})" class="absolute -top-1.5 -right-10 w-6 h-6 rounded-full bg-surface-700 border border-surface-600 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-red-950 group">
           <svg class="w-3 h-3 text-red-400 group-hover:text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>`;
@@ -583,10 +757,36 @@ window.App = {
 
   _getFiltered() {
     const q = (this._searchQuery || '').toLowerCase();
-    if (!q) return this.accounts;
-    return this.accounts.filter(a =>
-      (a.issuer || '').toLowerCase().includes(q) || (a.accountName || '').toLowerCase().includes(q)
+    let list = this.accounts.filter(a => !a.deleted);
+    if (this._folderQuery) {
+      list = list.filter(a => (a.folder || '') === this._folderQuery);
+    }
+    if (!q) return list;
+    return list.filter(a =>
+      (a.issuer || '').toLowerCase().includes(q) || (a.accountName || '').toLowerCase().includes(q) ||
+      (a.tags || []).some(t => String(t).toLowerCase().includes(q))
     );
+  },
+
+  _allFolders() {
+    const set = new Set();
+    for (const a of this.accounts) if (!a.deleted && a.folder) set.add(a.folder);
+    return [...set].sort();
+  },
+
+  _newFolder() {
+    const name = prompt(this._t('newFolder') + ':');
+    if (!name || !name.trim()) return;
+    const folder = name.trim();
+    if (this._allFolders().includes(folder)) return this._toast(this._t('folderExists'), 'error');
+    this._toast(this._t('addedFolder') + ': ' + folder, 'success');
+    this._folderQuery = folder;
+    this._renderAccounts();
+  },
+
+  _pickFolder(folder) {
+    this._folderQuery = folder || null;
+    this._renderAccounts();
   },
 
   _startTOTPUpdater() {
@@ -598,14 +798,14 @@ window.App = {
     const circumference = 2 * Math.PI * 13;
     for (let i = 0; i < this.accounts.length; i++) {
       const a = this.accounts[i];
-      if (!a.secret) continue;
+      if (!a.secret || a.deleted) continue;
       const codeEl = document.getElementById(`code-${i}`);
       const ringEl = document.getElementById(`ring-${i}`);
       const timerEl = document.getElementById(`timer-${i}`);
       const barEl = document.getElementById(`bar-${i}`);
       if (!codeEl) continue;
       try {
-        const result = await TOTP.generate(a.secret, a.digits || 6, a.step || 30);
+        const result = await TOTP.generate(a.secret, a.digits || 6, a.step || 30, a.algorithm || 'SHA1');
         codeEl.textContent = result.code.replace(/(.{3})/g, '$1 ').trim();
         const pct = result.remaining / result.period;
         if (ringEl) ringEl.style.strokeDashoffset = String(circumference * (1 - pct));
@@ -626,7 +826,7 @@ window.App = {
   async copyCode(idx) {
     const a = this.accounts[idx];
     try {
-      const result = await TOTP.generate(a.secret, a.digits || 6, a.step || 30);
+      const result = await TOTP.generate(a.secret, a.digits || 6, a.step || 30, a.algorithm || 'SHA1');
       await navigator.clipboard.writeText(result.code);
       const el = document.getElementById(`copy-${idx}`);
       if (el) el.innerHTML = SVG.check;
@@ -639,6 +839,185 @@ window.App = {
     const acc = this.accounts[idx];
     const name = acc ? `${acc.issuer} (${acc.accountName || acc.account_name || ''})` : '';
     this._showDeleteConfirm(name, idx);
+  },
+
+  _purgeExpiredTrash() {
+    const days = 14 * 24 * 60 * 60 * 1000;
+    let changed = false;
+    for (let i = this.accounts.length - 1; i >= 0; i--) {
+      const a = this.accounts[i];
+      if (a.deleted && a.deletedAt) {
+        if ((Date.now() - new Date(a.deletedAt).getTime()) > days) {
+          this.accounts.splice(i, 1);
+          changed = true;
+        }
+      } else if (a.deleted) {
+        this.accounts.splice(i, 1);
+        changed = true;
+      }
+    }
+    return changed;
+  },
+
+  restoreAccount(idx) {
+    const a = this.accounts[idx];
+    if (!a) return;
+    delete a.deleted;
+    delete a.deletedAt;
+    this._saveVault().then(() => {
+      this._toast(this._t('restoreSuccess'), 'success');
+      this._renderTrash();
+    });
+  },
+
+  async purgeAccount(idx) {
+    if (!confirm(this._t('deleteForeverConfirm'))) return;
+    this.accounts.splice(idx, 1);
+    await this._saveVault();
+    this._toast(this._t('purgeSuccess'), 'success');
+    this._renderTrash();
+  },
+
+  async emptyTrash() {
+    if (!confirm(this._t('emptyTrashConfirm'))) return;
+    this.accounts = this.accounts.filter(a => !a.deleted);
+    await this._saveVault();
+    this._toast(this._t('purgeSuccess'), 'success');
+    this._renderTrash();
+  },
+
+  _renderTrash() {
+    document.getElementById('app-header-inner').innerHTML = `
+      <div class="flex items-center gap-2">
+        <button onclick="App.navigate('settings')" class="btn-icon -ml-1.5 w-9 h-9 flex items-center justify-center rounded-xl transition-colors duration-150 text-surface-500 hover:text-surface-300 hover:bg-surface-700">${SVG.back}</button>
+        <h1 class="text-base font-semibold text-surface-100">${this._t('trash')}</h1>
+      </div>
+      <div class="flex items-center gap-1"></div>`;
+
+    const trashed = this.accounts.filter(a => a.deleted);
+    let html = '';
+    if (trashed.length > 3) {
+      html += `<button onclick="App.emptyTrash()" class="w-full mb-4 px-4 py-2.5 text-sm font-medium rounded-xl bg-red-600/10 text-red-500 hover:bg-red-600/20 transition-colors">${this._t('emptyTrash')}</button>`;
+    }
+    if (trashed.length === 0) {
+      html += `<div class="text-center py-16">
+        <p class="text-surface-400 text-sm mb-1">${this._t('trashEmpty')}</p>
+        <p class="text-xs text-surface-500">${this._t('trashEmptyDesc')}</p>
+      </div>`;
+    } else {
+      html += `<div class="flex flex-col gap-2">`;
+      for (let i = 0; i < this.accounts.length; i++) {
+        const a = this.accounts[i];
+        if (!a.deleted) continue;
+        const color = issuerColor(a.issuer);
+        const initial = (a.issuer || '?')[0].toUpperCase();
+        html += `
+          <div class="flex items-center gap-4 p-4 bg-surface-800 rounded-2xl border border-surface-700 shadow-card">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm ${color}">${initial}</div>
+            <div class="flex-1 min-w-0">
+              <p class="font-semibold text-surface-100 truncate text-sm">${esc(a.issuer||'Unknown')}</p>
+              <p class="text-xs text-surface-500 truncate mt-0.5">${esc(a.accountName||'')}</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <button onclick="App.restoreAccount(${i})" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary-600 text-white shadow-sm hover:bg-primary-700 transition-colors">${this._t('restore')}</button>
+              <button onclick="App.purgeAccount(${i})" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-red-600/10 text-red-500 hover:bg-red-600/20 transition-colors">${this._t('deleteForever')}</button>
+            </div>
+          </div>`;
+      }
+      html += '</div>';
+    }
+    document.getElementById('app-main').innerHTML = html;
+  },
+
+  _renderHelp() {
+    document.getElementById('app-header-inner').innerHTML = `
+      <div class="flex items-center gap-2">
+        <button onclick="App.navigate('settings')" class="btn-icon -ml-1.5 w-9 h-9 flex items-center justify-center rounded-xl transition-colors duration-150 text-surface-500 hover:text-surface-300 hover:bg-surface-700">${SVG.back}</button>
+        <h1 class="text-base font-semibold text-surface-100">${this._t('help')}</h1>
+      </div>
+      <div class="flex items-center gap-1"></div>`;
+
+    document.getElementById('app-main').innerHTML = `
+      <div class="flex flex-col gap-4 animate-fade-in">
+        <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card p-5">
+          <h2 class="text-sm font-semibold text-surface-100 mb-3">${this._t('helpGuide')}</h2>
+          <div class="flex flex-col gap-3">
+            <p class="text-sm text-surface-300 leading-relaxed">${this._t('helpStep1')}</p>
+            <p class="text-sm text-surface-300 leading-relaxed">${this._t('helpStep2')}</p>
+            <p class="text-sm text-surface-300 leading-relaxed">${this._t('helpStep3')}</p>
+            <p class="text-sm text-surface-300 leading-relaxed">${this._t('helpStep4')}</p>
+            <p class="text-sm text-surface-300 leading-relaxed">${this._t('helpStep5')}</p>
+          </div>
+        </div>
+      </div>`;
+  },
+
+  editAccount(idx) {
+    this._editingIdx = idx;
+    this.navigate('edit-account');
+  },
+
+  _renderEditAccount() {
+    const a = this.accounts[this._editingIdx];
+    if (!a) { this.navigate('accounts'); return; }
+    document.getElementById('app-header-inner').innerHTML = `
+      <div class="flex items-center gap-2">
+        <button onclick="App.navigate('accounts')" class="btn-icon -ml-1.5 w-9 h-9 flex items-center justify-center rounded-xl transition-colors duration-150 text-surface-500 hover:text-surface-300 hover:bg-surface-700">${SVG.back}</button>
+        <h1 class="text-base font-semibold text-surface-100">${this._t('editAccount')}</h1>
+      </div>
+      <div class="flex items-center gap-1"></div>`;
+
+    const folders = this._allFolders();
+    document.getElementById('app-main').innerHTML = `
+      <div class="flex flex-col gap-5 pt-4 animate-fade-in">
+        <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card p-5">
+          <div class="flex flex-col gap-4">
+            <div>
+              <label class="text-xs font-medium text-surface-400 block mb-1.5">${this._t('issuer')}</label>
+              <input type="text" id="edit-issuer" value="${(a.issuer||'').replace(/"/g,'&quot;')}"
+                class="w-full px-3 py-2.5 rounded-xl border border-surface-600 bg-surface-800 text-surface-100 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-surface-400 block mb-1.5">${this._t('accountName')}</label>
+              <input type="text" id="edit-account-name" value="${(a.accountName||'').replace(/"/g,'&quot;')}"
+                class="w-full px-3 py-2.5 rounded-xl border border-surface-600 bg-surface-800 text-surface-100 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-surface-400 block mb-1.5">${this._t('folderLabel')}</label>
+              <select id="edit-folder" class="w-full px-3 py-2.5 rounded-xl border border-surface-600 bg-surface-800 text-surface-100 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
+                <option value="">${this._t('unassigned')}</option>
+                ${folders.map(f => `<option value="${esc(f)}" ${a.folder === f ? 'selected' : ''}>${esc(f)}</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-surface-400 block mb-1.5">${this._t('tags')}</label>
+              <input type="text" id="edit-tags" value="${(a.tags||[]).join(', ').replace(/"/g,'&quot;')}" placeholder="${this._t('tagsHint')}"
+                class="w-full px-3 py-2.5 rounded-xl border border-surface-600 bg-surface-800 text-surface-100 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-500/20 transition-all">
+            </div>
+          </div>
+        </div>
+        <button onclick="App._saveEdit()" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3 text-base font-medium rounded-xl transition-all duration-150 bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-sm shadow-primary-600/20 select-none">
+          ${SVG.save} ${this._t('saveChanges')}
+        </button>
+      </div>`;
+  },
+
+  async _saveEdit() {
+    const a = this.accounts[this._editingIdx];
+    if (!a) return;
+    const issuer = document.getElementById('edit-issuer').value.trim();
+    const accountName = document.getElementById('edit-account-name').value.trim();
+    const folder = document.getElementById('edit-folder').value.trim();
+    const tags = (document.getElementById('edit-tags').value.split(',') || [])
+      .map(t => t.trim()).filter(Boolean);
+    if (issuer) a.issuer = issuer;
+    a.accountName = accountName;
+    a.folder = folder || '';
+    a.tags = tags;
+    a.updatedAt = new Date().toISOString();
+    await this._saveVault();
+    this._toast(this._t('changed'), 'success');
+    this.navigate('accounts');
   },
 
   _showDeleteConfirm(name, idx) {
@@ -690,7 +1069,8 @@ window.App = {
         }
         if (valid) {
           close();
-          this.accounts.splice(idx, 1);
+          this.accounts[idx].deleted = true;
+          this.accounts[idx].deletedAt = new Date().toISOString();
           await this._saveVault();
           this._renderAccounts();
           this._pullFromCloud();
@@ -834,6 +1214,7 @@ window.App = {
       algorithm: document.getElementById('add-algo').value,
       digits: parseInt(document.getElementById('add-digits').value),
       step: parseInt(document.getElementById('add-step').value),
+      folder: '', tags: [], deleted: false, deletedAt: '',
       icon: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     });
     await this._saveVault();
@@ -856,6 +1237,7 @@ window.App = {
             id: uuid(), issuer: parsed.issuer || 'Unknown', accountName: parsed.accountName || '',
             secret: parsed.secret, algorithm: parsed.algorithm || 'SHA1',
             digits: parsed.digits || 6, step: parsed.period || 30,
+            folder: '', tags: [], deleted: false, deletedAt: '',
             icon: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
           });
           await this._saveVault();
@@ -942,6 +1324,19 @@ window.App = {
         </div>
 
         <div>
+          <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 px-1 mb-3">${this._t('appearance')}</p>
+          <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card divide-y divide-surface-700/50 overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-3.5">
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">${this._t('theme')}</span></div>
+              <div class="flex items-center gap-2 shrink-0">
+                <button class="px-3 py-1.5 text-xs font-medium rounded-lg ${this.theme === 'light' ? 'bg-primary-600 text-white shadow-sm' : 'text-surface-400 hover:text-surface-200 hover:bg-surface-700'}" onclick="App.setTheme('light')">${this._t('themeLight')}</button>
+                <button class="px-3 py-1.5 text-xs font-medium rounded-lg ${this.theme === 'dark' ? 'bg-primary-600 text-white shadow-sm' : 'text-surface-400 hover:text-surface-200 hover:bg-surface-700'}" onclick="App.setTheme('dark')">${this._t('themeDark')}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
           <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 px-1 mb-3">${this._t('exportBackup').split(' ')[0]}</p>
           <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card divide-y divide-surface-700/50 overflow-hidden">
             <div class="flex items-center justify-between px-4 py-3.5">
@@ -956,10 +1351,61 @@ window.App = {
         </div>
 
         <div>
+          <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 px-1 mb-3">${this._t('security')}</p>
+          <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card divide-y divide-surface-700/50 overflow-hidden">
+            <div class="flex flex-col gap-2 px-4 py-3.5">
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">${this._t('autoLock')}</span><span class="text-xs text-surface-400 mt-0.5">${this._t('autoLockDesc')}</span></div>
+              <div class="flex items-center gap-2 shrink-0">
+                <select id="auto-lock-select" onchange="App.setAutoLockSeconds(this.value)" class="w-full px-3 py-2 text-sm font-medium rounded-lg bg-surface-900 text-surface-100 border border-surface-700 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500/40">
+                  <option value="0" ${!this.autoLockSeconds ? 'selected' : ''}>${this._t('lockNever')}</option>
+                  <option value="60" ${this.autoLockSeconds === 60 ? 'selected' : ''}>${this._t('lockMin1')}</option>
+                  <option value="300" ${this.autoLockSeconds === 300 ? 'selected' : ''}>${this._t('lockMin5')}</option>
+                  <option value="900" ${this.autoLockSeconds === 900 ? 'selected' : ''}>${this._t('lockMin15')}</option>
+                  <option value="1800" ${this.autoLockSeconds === 1800 ? 'selected' : ''}>${this._t('lockMin30')}</option>
+                  <option value="3600" ${this.autoLockSeconds === 3600 ? 'selected' : ''}>${this._t('lockMin60')}</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex items-center justify-between px-4 py-3.5">
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">${this._t('lockOnHide')}</span><span class="text-xs text-surface-400 mt-0.5">${this._t('lockOnHideDesc')}</span></div>
+              <button onclick="App.setLockOnHide(!App.lockOnHide)" class="relative w-11 h-6 rounded-full transition-colors duration-150 shrink-0 ${this.lockOnHide ? 'bg-primary-500' : 'bg-surface-700'}">
+                <span class="absolute top-0.5 ${document.documentElement.dir === 'rtl' ? 'right-0.5' : 'left-0.5'} w-5 h-5 rounded-full bg-white shadow transition-all duration-150" style="${this.lockOnHide ? (document.documentElement.dir === 'rtl' ? 'transform: translateX(-20px)' : 'transform: translateX(20px)') : ''}"></span>
+              </button>
+            </div>
+            <div class="flex items-center justify-between px-4 py-3.5">
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">${this._t('localOnly')}</span><span class="text-xs text-surface-400 mt-0.5">${this._t('localOnlyDesc')}</span></div>
+              <button onclick="App.setLocalOnly(!App.localOnly)" class="relative w-11 h-6 rounded-full transition-colors duration-150 shrink-0 ${this.localOnly ? 'bg-primary-500' : 'bg-surface-700'}">
+                <span class="absolute top-0.5 ${document.documentElement.dir === 'rtl' ? 'right-0.5' : 'left-0.5'} w-5 h-5 rounded-full bg-white shadow transition-all duration-150" style="${this.localOnly ? (document.documentElement.dir === 'rtl' ? 'transform: translateX(-20px)' : 'transform: translateX(20px)') : ''}"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 px-1 mb-3">${this._t('help')}</p>
+          <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card divide-y divide-surface-700/50 overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-3.5">
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">${this._t('helpGuide')}</span></div>
+              <button onclick="App.navigate('help')" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary-600 text-white shadow-sm hover:bg-primary-700 transition-colors">${this._t('helpOpen')}</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 px-1 mb-3">${this._t('trash')}</p>
+          <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card divide-y divide-surface-700/50 overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-3.5">
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">${this._t('trash')}</span><span class="text-xs text-surface-400 mt-0.5">${this._t('trashEmptyDesc')}</span></div>
+              <button onclick="App.navigate('trash')" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-surface-100 text-surface-700 hover:bg-surface-200 dark:bg-surface-700 dark:text-surface-200 dark:hover:bg-surface-600">${this._t('trash')}</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
           <p class="text-xs font-semibold tracking-wider uppercase text-surface-500 px-1 mb-3">${this._t('about')}</p>
           <div class="bg-surface-800 rounded-2xl border border-surface-700 shadow-card divide-y divide-surface-700/50 overflow-hidden">
             <div class="flex items-center justify-between px-4 py-3.5">
-              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">OtpVault</span><span class="text-xs text-surface-400 mt-0.5">v0.1.6</span></div>
+              <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">OtpVault</span><span class="text-xs text-surface-400 mt-0.5">v${this.siteVersion || '0.2.2'}</span></div>
             </div>
             <div class="flex items-center justify-between px-4 py-3.5">
               <div class="flex flex-col"><span class="text-sm font-medium text-surface-100">${this._t('copyright')}</span><span class="text-xs text-surface-400 mt-0.5">EuroMoscow Developments</span></div>

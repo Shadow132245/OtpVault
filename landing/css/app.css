@@ -38,3 +38,30 @@ body {
 @media (max-width: 640px) {
   .card-hover { cursor: pointer; }
 }
+
+/* Light theme overrides — active when <html> lacks .dark (Tailwind darkMode: 'class').
+   Scoped to the app shell; the marketing landing stays dark. */
+html:not(.dark) #app-shell .bg-surface-950 { background-color: #f5f5f5; }
+html:not(.dark) #app-shell .bg-surface-900 { background-color: #ffffff; }
+html:not(.dark) #app-shell .bg-surface-900\/80 { background-color: rgba(255,255,255,.85); }
+html:not(.dark) #app-shell .bg-surface-800 { background-color: #ffffff; }
+html:not(.dark) #app-shell .bg-surface-700 { background-color: #e5e5e5; }
+html:not(.dark) #app-shell .bg-surface-700\/50 { background-color: rgba(229,229,229,.5); }
+html:not(.dark) #app-shell .bg-surface-100 { background-color: #171717; }
+html:not(.dark) #app-shell .text-surface-100 { color: #171717; }
+html:not(.dark) #app-shell .text-surface-200 { color: #262626; }
+html:not(.dark) #app-shell .text-surface-300 { color: #404040; }
+html:not(.dark) #app-shell .text-surface-400 { color: #525252; }
+html:not(.dark) #app-shell .text-surface-500 { color: #737373; }
+html:not(.dark) #app-shell .text-surface-600 { color: #a3a3a3; }
+html:not(.dark) #app-shell .border-surface-600 { border-color: #d4d4d4; }
+html:not(.dark) #app-shell .border-surface-700 { border-color: #e5e5e5; }
+html:not(.dark) #app-shell .border-surface-700\/50 { border-color: rgba(229,229,229,.5); }
+html:not(.dark) #app-shell .border-surface-800\/60 { border-color: rgba(229,229,229,.6); }
+html:not(.dark) #app-shell .bg-primary-950 { background-color: #eef2ff; }
+html:not(.dark) #app-shell .placeholder-surface-400::placeholder { color: #a3a3a3; }
+html:not(.dark) #app-shell .placeholder-surface-500::placeholder { color: #a3a3a3; }
+html:not(.dark) #app-shell .stroke-surface-700 { stroke: #d4d4d4; }
+html:not(.dark) #app-shell .btn-icon:hover { background: #e5e5e5; }
+html:not(.dark) #app-shell .toast { box-shadow: 0 8px 24px rgb(0 0 0 / 0.1); }
+html:not(.dark) #app-shell::-webkit-scrollbar-thumb { background: #d4d4d4; }

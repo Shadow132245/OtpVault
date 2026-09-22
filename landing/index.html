@@ -269,6 +269,29 @@ tailwind.config = {
     .mockup-item .code { font-size: 16px; }
     .step-arrow { display: none; }
   }
+
+  .update-notice {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: rgba(99,102,241,.12);
+    border-bottom: 1px solid rgba(99,102,241,.25);
+    color: #c7c9d4;
+    font-size: 13px;
+  }
+  .update-notice-icon { color: #818cf8; flex-shrink: 0; }
+  .update-notice-text { flex: 1; }
+  .update-notice-close {
+    background: transparent;
+    border: none;
+    color: #6c7284;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 6px;
+  }
+  .update-notice-close:hover { color: #e5e7eb; background: rgba(255,255,255,.06); }
 </style>
 </head>
 <body>
@@ -276,6 +299,12 @@ tailwind.config = {
 <canvas id="particles"></canvas>
 
 <div id="landing-page">
+<!-- Outdated version notice (informational only; site updates manually) -->
+<div id="update-notice" class="update-notice" hidden>
+  <span class="update-notice-icon">⟳</span>
+  <span data-i18n="notice.oldVersion" class="update-notice-text">This site is running an older version. It is being updated and continues to work normally.</span>
+  <button class="update-notice-close" onclick="this.closest('#update-notice').hidden = true" aria-label="Dismiss">✕</button>
+</div>
 <!-- Nav -->
 <nav>
   <div class="logo">
@@ -537,6 +566,7 @@ i18n.en = {
   'footer.github': 'GitHub', 'footer.license': 'License', 'footer.bug': 'Report a Bug',
   'footer.download': 'Download', 'footer.privacy': 'Privacy Policy', 'footer.terms': 'Terms of Service',
   'footer.copyright': '\u00a9 2026 OtpVault. MIT License. Built with Rust & Tauri. EuroMoscow Developments',
+  'notice.oldVersion': 'This site is running an older version. It is being updated and continues to work normally.',
 };
 i18n.ar = {
   'nav.features': '\u0627\u0644\u0645\u0645\u064a\u0632\u0627\u062a', 'nav.how': '\u0643\u064a\u0641 \u064a\u0639\u0645\u0644', 'nav.github': 'GitHub', 'nav.download': '\u062a\u062d\u0645\u064a\u0644',
@@ -567,6 +597,7 @@ i18n.ar = {
   'footer.github': 'GitHub', 'footer.license': '\u0627\u0644\u062a\u0631\u062e\u064a\u0635', 'footer.bug': '\u0627\u0644\u0625\u0628\u0644\u0627\u063a \u0639\u0646 \u062e\u0637\u0623',
   'footer.download': '\u062a\u062d\u0645\u064a\u0644', 'footer.privacy': '\u0633\u064a\u0627\u0633\u0629 \u0627\u0644\u062e\u0635\u0648\u0635\u064a\u0629', 'footer.terms': '\u0634\u0631\u0648\u0637 \u0627\u0644\u062e\u062f\u0645\u0629',
   'footer.copyright': '\u00a9 2026 OtpVault. \u0631\u062e\u0635\u0629 MIT. \u0645\u0628\u0646\u064a \u0628\u0640 Rust \u0648 Tauri. EuroMoscow Developments',
+  'notice.oldVersion': '\u0647\u0630\u0627 \u0627\u0644\u0645\u0648\u0642\u0639 \u064a\u0639\u0645\u0644 \u0628\u0646\u0633\u062e\u0629 \u0642\u062f\u064a\u0645\u0629. \u062c\u0627\u0631\u064a \u062a\u062d\u062f\u064a\u062b\u0647 \u0648\u064a\u0639\u0645\u0644 \u0628\u0643\u0641\u0627\u0621\u0629.',
 };
 
 function translate(lang) {
@@ -618,12 +649,25 @@ fetch('/version.json?t=' + Date.now())
   })
   .catch(() => {});
 
-// GitHub: fetch download link
+// GitHub: fetch download link + show informational notice when a newer release exists
 fetch('https://api.github.com/repos/Shadow132245/OtpVault/releases/latest')
   .then(r => r.ok ? r.json() : Promise.reject())
   .then(d => {
     const msiAsset = d.assets.find(a => a.name.endsWith('_x64_en-US.msi'));
     if (msiAsset) document.getElementById('download-link').href = msiAsset.browser_download_url;
+    return Promise.all([
+      Promise.resolve(d.tag_name || ''),
+      fetch('/version.json?t=' + Date.now()).then(r => r.ok ? r.json() : Promise.reject())
+    ]);
+  })
+  .then(([tag, site]) => {
+    const notice = document.getElementById('update-notice');
+    const tagNum = tag ? tag.replace(/^v/, '').split('.').map(n => parseInt(n, 10) || 0) : null;
+    const siteNum = site && site.version ? site.version.split('.').map(n => parseInt(n, 10) || 0) : null;
+    if (notice && tagNum && siteNum && tagNum.length >= siteNum.length) {
+      const newer = tagNum.some((n, i) => n > ((siteNum[i] || 0)));
+      if (newer) notice.hidden = false;
+    }
   })
   .catch(() => {});
 

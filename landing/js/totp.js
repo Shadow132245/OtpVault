@@ -8,21 +8,29 @@ window.TOTP = {
     return bytes;
   },
 
-  async _hmacSha1(keyBytes, messageBytes) {
+  async _hmac(keyBytes, messageBytes, algorithm = 'SHA-1') {
     const key = await crypto.subtle.importKey(
-      'raw', keyBytes, { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']
+      'raw', keyBytes, { name: 'HMAC', hash: algorithm }, false, ['sign']
     );
     const sig = await crypto.subtle.sign('HMAC', key, messageBytes);
     return new Uint8Array(sig);
   },
 
-  async generate(secretB32, digits = 6, period = 30) {
+  _normalizeAlgorithm(algorithm) {
+    const alg = String(algorithm || 'SHA1').toUpperCase().replace(/-/g, '');
+    if (alg === 'SHA256' || alg === 'SHA2') return 'SHA-256';
+    if (alg === 'SHA512' || alg === 'SHA5') return 'SHA-512';
+    return 'SHA-1';
+  },
+
+  async generate(secretB32, digits = 6, period = 30, algorithm = 'SHA1') {
     try {
       const key = Base32.decode(secretB32.replace(/\s/g, ''));
       const now = Math.floor(Date.now() / 1000);
       const counter = Math.floor(now / period);
       const counterBytes = this._intToBytes(counter);
-      const hmac = await this._hmacSha1(key, counterBytes);
+      const hashName = this._normalizeAlgorithm(algorithm);
+      const hmac = await this._hmac(key, counterBytes, hashName);
       const offset = hmac[hmac.length - 1] & 0x0f;
       const truncated =
         ((hmac[offset] & 0x7f) << 24) |
